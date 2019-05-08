@@ -1,4 +1,4 @@
 [submodule "lora_gateway"]
-	path = lora_gateway
+	path = loragw-sys/lora_gateway
 	url = git@github.com:Lora-net/lora_gateway.git
 	ignore = dirty

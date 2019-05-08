@@ -11,7 +11,12 @@ fn main() {
         .expect("libloragw build failed");
 
     // statically link to `libloragw`
-    println!("cargo:rustc-link-search=native={}", "lora_gateway/libloragw");
+    let libloragw_path =
+        PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("lora_gateway/libloragw");
+    println!(
+        "cargo:rustc-link-search=native={}",
+        libloragw_path.to_str().unwrap()
+    );
     println!("cargo:rustc-link-lib=static=loragw");
 
     // generate bindings for `libloragw`
@@ -24,5 +29,4 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
-
 }

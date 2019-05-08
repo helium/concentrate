@@ -1,9 +1,5 @@
-[package]
-name = "loragw-sys"
-version = "0.1.0"
-authors = ["Jay Kickliter <jay@kickliter.com>"]
-edition = "2018"
-build = "build.rs"
-
-[build-dependencies]
-bindgen = "0.49.0"
+[workspace]
+members = [
+"loragw",
+"loragw-sys"
+]
