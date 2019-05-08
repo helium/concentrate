@@ -3,3 +3,9 @@ name = "loragw"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 edition = "2018"
+
+[dependencies]
+lgs = { package = "loragw-sys", path = "../loragw-sys" }
+
+[dev-dependencies]
+lazy_static = "*"
