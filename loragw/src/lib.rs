@@ -2,6 +2,8 @@ use llg;
 use std::ops::Drop;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+pub mod types;
+
 /// A common error type for this crate.
 #[derive(Debug)]
 pub enum Error {
