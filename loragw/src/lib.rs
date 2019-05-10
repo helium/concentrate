@@ -1,24 +1,9 @@
+pub mod error;
+pub mod types;
+use error::*;
 use llg;
 use std::ops::Drop;
 use std::sync::atomic::{AtomicBool, Ordering};
-
-pub mod types;
-
-/// A common error type for this crate.
-#[derive(Debug)]
-pub enum Error {
-    Busy,
-    HAL,
-}
-
-/// Converts `libloragw` return codes into a Result.
-fn into_result(code: ::std::os::raw::c_int) -> Result<(), Error> {
-    match code {
-        0 => Ok(()),
-        -1 => Err(Error::HAL),
-        _ => panic!("unexpected return code: {}", code),
-    }
-}
 
 pub struct Gateway {}
 
@@ -40,7 +25,7 @@ impl Gateway {
     /// Connect to the LoRa concentrator, reset it and configure it
     /// according to previously set parameters.
     pub fn start(&self) -> Result<(), Error> {
-        unsafe { into_result(llg::lgw_start()) }
+        unsafe { error::into_result(llg::lgw_start()) }
     }
 
     /// Stop the LoRa concentrator and disconnect it.
