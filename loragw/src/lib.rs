@@ -2,8 +2,9 @@ pub mod error;
 pub mod types;
 use error::*;
 use llg;
+use log;
 use std::mem;
-use std::ops::Drop;
+use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub struct Gateway {}
@@ -25,21 +26,25 @@ impl Gateway {
 
     /// Configure the gateway board.
     pub fn config_board(&self, conf: types::BoardConf) -> Result {
+        log::trace!("conf: {:?}", conf);
         into_result(unsafe { llg::lgw_board_setconf(mem::transmute(conf)) })
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, chain: u8, conf: types::RxRFConf) -> Result {
+        log::trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxrf_setconf(chain, mem::transmute(conf)) })
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_rx_if(&self, chain: u8, conf: types::RxIFConf) -> Result {
+        log::trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxif_setconf(chain, mem::transmute(conf)) })
     }
 
     /// Configure the Tx gain LUT.
     pub fn config_tx_gain(&self, lut: &mut types::TxGainLUT) -> Result {
+        log::trace!("lut: {:?}", lut);
         into_result(unsafe {
             llg::lgw_txgain_setconf(lut as *mut types::TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
         })
@@ -47,29 +52,34 @@ impl Gateway {
 
     /// according to previously set parameters.
     pub fn start(&self) -> Result {
+        log::trace!("starting");
         into_result(unsafe { llg::lgw_start() })
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&self) -> Result {
+        log::trace!("stopping");
         unsafe { into_result(llg::lgw_stop()) }
     }
 
     /// Perform a non-blocking read from concentrator's FIFO.
     pub fn receive(&self) -> Result<Vec<types::RxPacket>> {
+        log::trace!("receive");
         unimplemented!()
     }
 
     pub fn send(&self, _packet: types::TxPacket) -> Result {
+        log::trace!("send");
         unimplemented!()
     }
 
     pub fn status(&self) -> Result {
+        log::trace!("status");
         unimplemented!()
     }
 }
 
-impl Drop for Gateway {
+impl ops::Drop for Gateway {
     fn drop(&mut self) {
         GW_IS_OPEN.store(false, Ordering::Release);
     }
