@@ -1,6 +1,5 @@
-use llg::*;
-
 /// Radio types that can be found on the LoRa Gateway
+#[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub enum RadioType {
     None,
@@ -11,23 +10,26 @@ pub enum RadioType {
 }
 
 /// Configuration structure for board specificities
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct BoardConf {
     /// Enable ONLY for *public* networks using the LoRa MAC protocol.
     pub lorawan_public: bool,
     /// Index of RF chain which provides clock to concentrator
-    pub clksrc: usize,
+    pub clksrc: u8,
 }
 
 /// Configuration structure for LBT channels
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct LBTChanConf {
     pub freq_hz: u32,
     pub scan_time_us: u16,
 }
 
 /// Configuration structure for LBT specificities
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct LBTConf {
     /// enable LBT
     pub enable: bool,
@@ -35,13 +37,14 @@ pub struct LBTConf {
     pub rssi_target: i8,
     /// number of LBT channels
     pub nb_channel: u8,
-    pub channels: [LBTChanConf; 8usize],
+    pub channels: [LBTChanConf; 8],
     /// RSSI offset to be applied to SX127x RSSI values
     pub rssi_offset: i8,
 }
 
 /// Configuration structure for a RF chain
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct RxRFConf {
     /// enable or disable that RF chain
     pub enable: bool,
@@ -49,15 +52,17 @@ pub struct RxRFConf {
     pub freq_hz: u32,
     /// Board-specific RSSI correction factor
     pub rssi_offset: f32,
-    /// Radio type for that RF chain (SX1255, SX1257....)
-    pub type_: lgw_radio_type_e,
+    /// Radio type for that RF chain (SX1255, SX1257...)
+    pub type_: RadioType,
     /// enable or disable TX on that RF chain
     pub tx_enable: bool,
+    /// TX notch filter frequency 126..250 Khz
     pub tx_notch_freq: u32,
 }
 
 /// Configuration structure for an If chain
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct RxIFConf {
     /// enable or disable that If chain
     pub enable: bool,
@@ -71,10 +76,12 @@ pub struct RxIFConf {
     pub datarate: u32,
     /// size of FSK sync word (number of bytes, 0 for default)
     pub sync_word_size: u8,
+    /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
     pub sync_word: u64,
 }
 
 /// Structure containing the metadata of a packet that was received and a pointer to the payload
+#[repr(C)]
 #[derive(Clone)]
 pub struct RxPacket {
     /// central frequency of the If chain
@@ -107,10 +114,12 @@ pub struct RxPacket {
     pub crc: u16,
     /// payload size in bytes
     pub size: u16,
-    pub payload: [u8; 256usize],
+    /// buffer containing the payload
+    pub payload: [u8; 256],
 }
 
 /// Structure containing the configuration of a packet to send and a pointer to the payload
+#[repr(C)]
 #[derive(Clone)]
 pub struct TxPacket {
     /// center frequency of TX
@@ -143,11 +152,13 @@ pub struct TxPacket {
     pub no_header: bool,
     /// payload size in bytes
     pub size: u16,
-    pub payload: [u8; 256usize],
+    /// buffer containing the payload
+    pub payload: [u8; 256],
 }
 
 /// Structure containing all gains of Tx chain
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct TxGain {
     /// 2 bits, control of the digital gain of SX1301
     pub dig_gain: u8,
@@ -157,13 +168,16 @@ pub struct TxGain {
     pub dac_gain: u8,
     /// 4 bits, control of the radio mixer
     pub mix_gain: u8,
+    /// measured TX power at the board connector, in dBm
     pub rf_power: i8,
 }
 
 /// Structure defining the Tx gain LUT
-#[derive(Debug)]
+#[repr(C)]
+#[derive(Debug, Clone)]
 pub struct TxGainLUT {
     /// Array of Tx gain struct
-    pub lut: [TxGain; 16usize],
+    pub lut: [TxGain; 16],
+    /// Number of LUT indexes
     pub size: u8,
 }
