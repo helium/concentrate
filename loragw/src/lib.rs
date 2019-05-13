@@ -7,13 +7,12 @@ use std::mem;
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-pub struct Gateway {}
-
 // Ensures we only have 0 or 1 gateway instances opened at a time.
-//
-// TODO: This is not a great solution, since another process has its
+// This is not a great solution, since another process has its
 // own count.
 static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
+
+pub struct Gateway;
 
 impl Gateway {
     pub fn open() -> Result<Self> {
