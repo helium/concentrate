@@ -1,3 +1,6 @@
+use super::error;
+use std::convert::TryFrom;
+
 /// Radio types that can be found on the LoRa Gateway
 #[repr(u32)]
 #[derive(Debug, Clone, Copy)]
@@ -81,8 +84,7 @@ pub struct RxIFConf {
 }
 
 /// Structure containing the metadata of a packet that was received and a pointer to the payload
-#[repr(C)]
-#[derive(Clone)]
+#[derive(Debug)]
 pub struct RxPacket {
     /// central frequency of the If chain
     pub freq_hz: u32,
@@ -112,15 +114,34 @@ pub struct RxPacket {
     pub snr_max: f32,
     /// CRC that was received in the payload
     pub crc: u16,
-    /// payload size in bytes
-    pub size: u16,
     /// buffer containing the payload
-    pub payload: [u8; 256],
+    pub payload: Vec<u8>,
+}
+
+impl From<llg::lgw_pkt_rx_s> for RxPacket {
+    fn from(o: llg::lgw_pkt_rx_s) -> Self {
+        RxPacket {
+            freq_hz: o.freq_hz,
+            if_chain: o.if_chain,
+            status: o.status,
+            count_us: o.count_us,
+            rf_chain: o.rf_chain,
+            modulation: o.modulation,
+            bandwidth: o.bandwidth,
+            datarate: o.datarate,
+            coderate: o.coderate,
+            rssi: o.rssi,
+            snr: o.snr,
+            snr_min: o.snr_min,
+            snr_max: o.snr_max,
+            crc: o.crc,
+            payload: o.payload[..o.size as usize].to_vec(),
+        }
+    }
 }
 
 /// Structure containing the configuration of a packet to send and a pointer to the payload
-#[repr(C)]
-#[derive(Clone)]
+#[derive(Debug)]
 pub struct TxPacket {
     /// center frequency of TX
     pub freq_hz: u32,
@@ -150,10 +171,42 @@ pub struct TxPacket {
     pub no_crc: bool,
     /// if true, enable implicit header mode (LoRa), fixed length (FSK)
     pub no_header: bool,
-    /// payload size in bytes
-    pub size: u16,
     /// buffer containing the payload
-    pub payload: [u8; 256],
+    pub payload: Vec<u8>,
+}
+
+impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
+    type Error = error::Error;
+
+    fn try_from(o: TxPacket) -> Result<Self, error::Error> {
+        if o.payload.len() > 256 {
+            log::error!("attempt to send {} byte payload", o.payload.len());
+            Err(error::Error::Size)
+        } else {
+            Ok(llg::lgw_pkt_tx_s {
+                freq_hz: o.freq_hz,
+                tx_mode: o.tx_mode,
+                count_us: o.count_us,
+                rf_chain: o.rf_chain,
+                rf_power: o.rf_power,
+                modulation: o.modulation,
+                bandwidth: o.bandwidth,
+                datarate: o.datarate,
+                coderate: o.coderate,
+                invert_pol: o.invert_pol,
+                f_dev: o.f_dev,
+                preamble: o.preamble,
+                no_crc: o.no_crc,
+                no_header: o.no_header,
+                size: o.payload.len() as u16,
+                payload: {
+                    let mut buf: [u8; 256] = [0u8; 256];
+                    buf.copy_from_slice(o.payload.as_ref());
+                    buf
+                },
+            })
+        }
+    }
 }
 
 /// Structure containing all gains of Tx chain
