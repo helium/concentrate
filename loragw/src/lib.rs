@@ -69,10 +69,16 @@ impl Gateway {
         Ok(())
     }
 
-    /// Perform a non-blocking read from concentrator's FIFO.
+    /// Perform a non-blocking of up to 8 packets from concentrator's
+    /// FIFO.
     pub fn receive(&self) -> Result<Vec<types::RxPacket>> {
         log::trace!("receive");
-        unimplemented!()
+        let mut rx_buf: [llg::lgw_pkt_rx_s; 8] = [Default::default(); 8];
+        let len = into_result(unsafe { llg::lgw_receive(8, rx_buf.as_mut_ptr()) })?;
+        Ok(rx_buf[..len as usize]
+            .iter()
+            .map(|&pkt| pkt.into())
+            .collect())
     }
 
     pub fn send(&self, _packet: types::TxPacket) -> Result {
