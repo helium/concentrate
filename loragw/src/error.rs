@@ -13,14 +13,17 @@ quick_error! {
         HAL {
             description("concentrator HAL returned a generic error")
         }
+        Size {
+            description("provided buffer is too large")
+        }
     }
 }
 
 /// Converts `libloragw` return codes into a Result.
-pub(crate) fn into_result(code: ::std::os::raw::c_int) -> Result<()> {
+pub(crate) fn into_result(code: ::std::os::raw::c_int) -> Result<usize> {
     match code {
-        0 => Ok(()),
         -1 => Err(Error::HAL),
+        val if val >= 0 => Ok(val as usize),
         _ => panic!("unexpected return code: {}", code),
     }
 }

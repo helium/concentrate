@@ -28,19 +28,22 @@ impl Gateway {
     /// Configure the gateway board.
     pub fn config_board(&self, conf: types::BoardConf) -> Result {
         log::trace!("conf: {:?}", conf);
-        into_result(unsafe { llg::lgw_board_setconf(mem::transmute(conf)) })
+        into_result(unsafe { llg::lgw_board_setconf(mem::transmute(conf)) })?;
+        Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, chain: u8, conf: types::RxRFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxrf_setconf(chain, mem::transmute(conf)) })
+        into_result(unsafe { llg::lgw_rxrf_setconf(chain, mem::transmute(conf)) })?;
+        Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_rx_if(&self, chain: u8, conf: types::RxIFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxif_setconf(chain, mem::transmute(conf)) })
+        into_result(unsafe { llg::lgw_rxif_setconf(chain, mem::transmute(conf)) })?;
+        Ok(())
     }
 
     /// Configure the Tx gain LUT.
@@ -48,19 +51,22 @@ impl Gateway {
         log::trace!("lut: {:?}", lut);
         into_result(unsafe {
             llg::lgw_txgain_setconf(lut as *mut types::TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
-        })
+        })?;
+        Ok(())
     }
 
     /// according to previously set parameters.
     pub fn start(&self) -> Result {
         log::trace!("starting");
-        into_result(unsafe { llg::lgw_start() })
+        into_result(unsafe { llg::lgw_start() })?;
+        Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&self) -> Result {
         log::trace!("stopping");
-        unsafe { into_result(llg::lgw_stop()) }
+        unsafe { into_result(llg::lgw_stop()) }?;
+        Ok(())
     }
 
     /// Perform a non-blocking read from concentrator's FIFO.
