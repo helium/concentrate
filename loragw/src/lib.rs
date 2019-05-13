@@ -1,6 +1,6 @@
 pub mod error;
 pub mod types;
-use error::*;
+pub use error::*;
 use llg;
 use log;
 use std::mem;

@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 llg = { package = "loragw-sys", path = "../loragw-sys" }
 log = "0.4.6"
+quick-error = "1.2.2"
 
 [dev-dependencies]
 lazy_static = "*"
