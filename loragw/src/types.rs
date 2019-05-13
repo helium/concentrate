@@ -1,12 +1,12 @@
 /// Radio types that can be found on the LoRa Gateway
-#[repr(C)]
+#[repr(u32)]
 #[derive(Debug, Clone, Copy)]
 pub enum RadioType {
-    None,
-    SX1255,
-    SX1257,
-    SX1272,
-    SX1276,
+    None = 0,
+    SX1255 = 1,
+    SX1257 = 2,
+    SX1272 = 3,
+    SX1276 = 4,
 }
 
 /// Configuration structure for board specificities
