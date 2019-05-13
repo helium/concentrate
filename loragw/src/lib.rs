@@ -17,8 +17,10 @@ static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
 impl Gateway {
     pub fn open() -> Result<Self> {
+        log::trace!("opening concentrator");
         // We can only 'open' one instance
         if GW_IS_OPEN.compare_and_swap(false, true, Ordering::Acquire) {
+            log::error!("concentrator busy");
             return Err(Error::Busy);
         }
         Ok(Gateway {})

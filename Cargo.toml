@@ -1,5 +1,6 @@
 [workspace]
 members = [
 "loragw",
-"loragw-sys"
+"loragw-sys",
+"test_client",
 ]
