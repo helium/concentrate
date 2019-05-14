@@ -40,6 +40,27 @@ pub enum Bandwidth {
     BW7_8kHz = 0x07,
 }
 
+/// Represents one of two possible front-end radios connected to the
+/// concentrator
+#[derive(Debug, Clone, Copy)]
+pub enum Radio {
+    /// Radio 0
+    R0 = 0,
+    /// Radio 1
+    R1 = 1,
+}
+
+impl TryFrom<u8> for Radio {
+    type Error = error::Error;
+    fn try_from(o: u8) -> Result<Self, error::Error> {
+        match o {
+            0 => Ok(Radio::R0),
+            1 => Ok(Radio::R1),
+            _ => Err(error::Error::Data),
+        }
+    }
+}
+
 /// Configuration structure for board specificities
 #[repr(C)]
 #[derive(Debug, Clone)]
@@ -47,7 +68,7 @@ pub struct BoardConf {
     /// Enable ONLY for *public* networks using the LoRa MAC protocol.
     pub lorawan_public: bool,
     /// Index of RF chain which provides clock to concentrator
-    pub clksrc: u8,
+    pub clksrc: Radio,
 }
 
 /// Configuration structure for LBT channels
@@ -98,7 +119,7 @@ pub struct RxIFConf {
     /// enable or disable that If chain
     pub enable: bool,
     /// to which RF chain is that If chain associated
-    pub chain: u8,
+    pub radio: Radio,
     /// center frequ of the If chain, relative to RF chain frequency
     pub freq: i32,
     /// Rx bandwidth, 0 for default
@@ -123,7 +144,7 @@ pub struct RxPacket {
     /// internal concentrator counter for timestamping, 1 microsecond resolution
     pub count_us: u32,
     /// through which RF chain the packet was received
-    pub rf_chain: u8,
+    pub radio: Radio,
     /// modulation used by the packet
     pub modulation: u8,
     /// modulation bandwidth (LoRa only)
@@ -146,14 +167,15 @@ pub struct RxPacket {
     pub payload: Vec<u8>,
 }
 
-impl From<llg::lgw_pkt_rx_s> for RxPacket {
-    fn from(o: llg::lgw_pkt_rx_s) -> Self {
-        RxPacket {
+impl TryFrom<llg::lgw_pkt_rx_s> for RxPacket {
+    type Error = error::Error;
+    fn try_from(o: llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
+        Ok(RxPacket {
             freq: o.freq_hz,
             if_chain: o.if_chain,
             status: o.status,
             count_us: o.count_us,
-            rf_chain: o.rf_chain,
+            radio: Radio::try_from(o.rf_chain)?,
             modulation: o.modulation,
             bandwidth: o.bandwidth,
             datarate: o.datarate,
@@ -164,7 +186,7 @@ impl From<llg::lgw_pkt_rx_s> for RxPacket {
             snr_max: o.snr_max,
             crc: o.crc,
             payload: o.payload[..o.size as usize].to_vec(),
-        }
+        })
     }
 }
 

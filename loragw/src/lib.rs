@@ -3,9 +3,9 @@ mod types;
 pub use error::*;
 use llg;
 use log;
-use std::mem;
-use std::ops;
+use std::convert::TryFrom;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::{mem, ops};
 pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
@@ -72,14 +72,16 @@ impl Gateway {
 
     /// Perform a non-blocking of up to 8 packets from concentrator's
     /// FIFO.
-    pub fn receive(&self) -> Result<Vec<RxPacket>> {
+    pub fn receive(&self) -> Result<Option<RxPacket>> {
         log::trace!("receive");
-        let mut rx_buf: [llg::lgw_pkt_rx_s; 8] = [Default::default(); 8];
-        let len = into_result(unsafe { llg::lgw_receive(8, rx_buf.as_mut_ptr()) })?;
-        Ok(rx_buf[..len as usize]
-            .iter()
-            .map(|&pkt| pkt.into())
-            .collect())
+        let mut rx_pkt: llg::lgw_pkt_rx_s = Default::default();
+        let len =
+            into_result(unsafe { llg::lgw_receive(1, &mut rx_pkt as *mut llg::lgw_pkt_rx_s) })?;
+        if len == 1 {
+            Ok(Some(RxPacket::try_from(rx_pkt)?))
+        } else {
+            Ok(None)
+        }
     }
 
     pub fn send(&self, _packet: TxPacket) -> Result {

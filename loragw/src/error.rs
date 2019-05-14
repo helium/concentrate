@@ -16,6 +16,9 @@ quick_error! {
         Size {
             description("provided buffer is too large")
         }
+        Data {
+            description("failure to convert hardware val to symbolic val")
+        }
     }
 }
 

@@ -7,7 +7,7 @@ fn go() -> Result<(), loragw::Error> {
 
     let board_conf = loragw::BoardConf {
         lorawan_public: true,
-        clksrc: 0,
+        clksrc: loragw::Radio::R0,
     };
     concentrator.config_board(board_conf)?;
 
@@ -40,7 +40,7 @@ fn go() -> Result<(), loragw::Error> {
         0,
         loragw::RxIFConf {
             enable: true,
-            chain: 0,
+            radio: loragw::Radio::R0,
             freq: -400_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -54,7 +54,7 @@ fn go() -> Result<(), loragw::Error> {
         1,
         loragw::RxIFConf {
             enable: true,
-            chain: 0,
+            radio: loragw::Radio::R0,
             freq: -200_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -68,7 +68,7 @@ fn go() -> Result<(), loragw::Error> {
         2,
         loragw::RxIFConf {
             enable: true,
-            chain: 0,
+            radio: loragw::Radio::R0,
             freq: 0,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -82,7 +82,7 @@ fn go() -> Result<(), loragw::Error> {
         3,
         loragw::RxIFConf {
             enable: true,
-            chain: 0,
+            radio: loragw::Radio::R0,
             freq: 200_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -96,7 +96,7 @@ fn go() -> Result<(), loragw::Error> {
         4,
         loragw::RxIFConf {
             enable: true,
-            chain: 1,
+            radio: loragw::Radio::R1,
             freq: -400_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -110,7 +110,7 @@ fn go() -> Result<(), loragw::Error> {
         5,
         loragw::RxIFConf {
             enable: true,
-            chain: 1,
+            radio: loragw::Radio::R1,
             freq: -200_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -124,7 +124,7 @@ fn go() -> Result<(), loragw::Error> {
         6,
         loragw::RxIFConf {
             enable: true,
-            chain: 1,
+            radio: loragw::Radio::R1,
             freq: 0,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -138,7 +138,7 @@ fn go() -> Result<(), loragw::Error> {
         7,
         loragw::RxIFConf {
             enable: true,
-            chain: 1,
+            radio: loragw::Radio::R1,
             freq: 200_000,
             bandwidth: loragw::Bandwidth::Undefined,
             spreading: loragw::Spreading::Undefined,
@@ -152,7 +152,7 @@ fn go() -> Result<(), loragw::Error> {
         8,
         loragw::RxIFConf {
             enable: true,
-            chain: 0,
+            radio: loragw::Radio::R0,
             freq: 300_000,
             bandwidth: loragw::Bandwidth::BW500kHz,
             spreading: loragw::Spreading::SF8,
@@ -164,10 +164,10 @@ fn go() -> Result<(), loragw::Error> {
     concentrator.start()?;
 
     loop {
-        for pkt in concentrator.receive()? {
+        while let Some(pkt) = concentrator.receive()? {
             println!("{:?}", pkt);
         }
-        thread::sleep(time::Duration::from_millis(500));
+        thread::sleep(time::Duration::from_millis(100));
     }
 }
 
