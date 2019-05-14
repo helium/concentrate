@@ -1,11 +1,12 @@
-pub mod error;
-pub mod types;
+mod error;
+mod types;
 pub use error::*;
 use llg;
 use log;
 use std::mem;
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
+pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
 // This is not a great solution, since another process has its
@@ -26,31 +27,31 @@ impl Gateway {
     }
 
     /// Configure the gateway board.
-    pub fn config_board(&self, conf: types::BoardConf) -> Result {
+    pub fn config_board(&self, conf: BoardConf) -> Result {
         log::trace!("conf: {:?}", conf);
         into_result(unsafe { llg::lgw_board_setconf(mem::transmute(conf)) })?;
         Ok(())
     }
 
     /// Configure an RF chain.
-    pub fn config_rx_rf(&self, chain: u8, conf: types::RxRFConf) -> Result {
+    pub fn config_rx_rf(&self, chain: u8, conf: RxRFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxrf_setconf(chain, mem::transmute(conf)) })?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
-    pub fn config_rx_if(&self, chain: u8, conf: types::RxIFConf) -> Result {
+    pub fn config_rx_if(&self, chain: u8, conf: RxIFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxif_setconf(chain, mem::transmute(conf)) })?;
         Ok(())
     }
 
     /// Configure the Tx gain LUT.
-    pub fn config_tx_gain(&self, lut: &mut types::TxGainLUT) -> Result {
+    pub fn config_tx_gain(&self, lut: &mut TxGainLUT) -> Result {
         log::trace!("lut: {:?}", lut);
         into_result(unsafe {
-            llg::lgw_txgain_setconf(lut as *mut types::TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
+            llg::lgw_txgain_setconf(lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
         })?;
         Ok(())
     }
@@ -71,7 +72,7 @@ impl Gateway {
 
     /// Perform a non-blocking of up to 8 packets from concentrator's
     /// FIFO.
-    pub fn receive(&self) -> Result<Vec<types::RxPacket>> {
+    pub fn receive(&self) -> Result<Vec<RxPacket>> {
         log::trace!("receive");
         let mut rx_buf: [llg::lgw_pkt_rx_s; 8] = [Default::default(); 8];
         let len = into_result(unsafe { llg::lgw_receive(8, rx_buf.as_mut_ptr()) })?;
@@ -81,7 +82,7 @@ impl Gateway {
             .collect())
     }
 
-    pub fn send(&self, _packet: types::TxPacket) -> Result {
+    pub fn send(&self, _packet: TxPacket) -> Result {
         log::trace!("send");
         unimplemented!()
     }

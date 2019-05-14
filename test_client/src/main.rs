@@ -1,31 +1,31 @@
 use env_logger;
-use loragw::{self, types::*};
+use loragw;
 use std::{process, thread, time};
 
 fn go() -> Result<(), loragw::Error> {
     let concentrator = loragw::Gateway::open()?;
 
-    let board_conf = BoardConf {
+    let board_conf = loragw::BoardConf {
         lorawan_public: true,
         clksrc: 0,
     };
     concentrator.config_board(board_conf)?;
 
-    let radio_0 = RxRFConf {
+    let radio_0 = loragw::RxRFConf {
         enable: true,
         freq: 902_700_000,
         rssi_offset: -162.0,
-        type_: RadioType::SX1257,
+        type_: loragw::RadioType::SX1257,
         tx_enable: false,
         tx_notch_freq: 0,
     };
     concentrator.config_rx_rf(0, radio_0)?;
 
-    let radio_1 = RxRFConf {
+    let radio_1 = loragw::RxRFConf {
         enable: true,
         freq: 903_500_000,
         rssi_offset: -162.0,
-        type_: RadioType::SX1257,
+        type_: loragw::RadioType::SX1257,
         tx_enable: false,
         tx_notch_freq: 0,
     };
@@ -34,12 +34,12 @@ fn go() -> Result<(), loragw::Error> {
     // Lora STD
     concentrator.config_rx_if(
         8,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: true,
             chain: 0,
             freq: 300_000,
-            bandwidth: Bandwidth::BW500kHz,
-            spreading: Spreading::SF8,
+            bandwidth: loragw::Bandwidth::BW500kHz,
+            spreading: loragw::Spreading::SF8,
             sync_word_size: 0,
             sync_word: 0,
         },
@@ -48,12 +48,12 @@ fn go() -> Result<(), loragw::Error> {
     // FSK
     concentrator.config_rx_if(
         9,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: false,
             chain: 0,
             freq: 0,
-            bandwidth: Bandwidth::Undefined,
-            spreading: Spreading::Undefined,
+            bandwidth: loragw::Bandwidth::Undefined,
+            spreading: loragw::Spreading::Undefined,
             sync_word_size: 0,
             sync_word: 0,
         },
@@ -66,12 +66,12 @@ fn go() -> Result<(), loragw::Error> {
     // },
     concentrator.config_rx_if(
         0,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: true,
             chain: 0,
             freq: -400_000,
-            bandwidth: Bandwidth::Undefined,
-            spreading: Spreading::Undefined,
+            bandwidth: loragw::Bandwidth::Undefined,
+            spreading: loragw::Spreading::Undefined,
             sync_word_size: 0,
             sync_word: 0,
         },
@@ -84,12 +84,12 @@ fn go() -> Result<(), loragw::Error> {
     // },
     concentrator.config_rx_if(
         1,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: true,
             chain: 0,
             freq: -200_000,
-            bandwidth: Bandwidth::Undefined,
-            spreading: Spreading::Undefined,
+            bandwidth: loragw::Bandwidth::Undefined,
+            spreading: loragw::Spreading::Undefined,
             sync_word_size: 0,
             sync_word: 0,
         },
@@ -102,12 +102,12 @@ fn go() -> Result<(), loragw::Error> {
     // },
     concentrator.config_rx_if(
         2,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: true,
             chain: 0,
             freq: 0,
-            bandwidth: Bandwidth::Undefined,
-            spreading: Spreading::Undefined,
+            bandwidth: loragw::Bandwidth::Undefined,
+            spreading: loragw::Spreading::Undefined,
             sync_word_size: 0,
             sync_word: 0,
         },
@@ -120,12 +120,12 @@ fn go() -> Result<(), loragw::Error> {
     // },
     concentrator.config_rx_if(
         3,
-        RxIFConf {
+        loragw::RxIFConf {
             enable: true,
             chain: 0,
             freq: 200_000,
-            bandwidth: Bandwidth::Undefined,
-            spreading: Spreading::Undefined,
+            bandwidth: loragw::Bandwidth::Undefined,
+            spreading: loragw::Spreading::Undefined,
             sync_word_size: 0,
             sync_word: 0,
         },
