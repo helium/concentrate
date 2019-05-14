@@ -15,7 +15,7 @@ pub enum RadioType {
 /// Spreading factor
 #[repr(u32)]
 #[derive(Debug, Clone, Copy)]
-pub enum SpreadFactor {
+pub enum Spreading {
     Undefined = 0x00,
     SF7 = 0x02,
     SF8 = 0x04,
@@ -104,7 +104,7 @@ pub struct RxIFConf {
     /// Rx bandwidth, 0 for default
     pub bandwidth: Bandwidth,
     /// Rx spreading factor
-    pub spread_factor: SpreadFactor,
+    pub spreading: Spreading,
     /// size of FSK sync word (number of bytes, 0 for default)
     pub sync_word_size: u8,
     /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
