@@ -54,7 +54,7 @@ pub struct BoardConf {
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct LBTChanConf {
-    pub freq_hz: u32,
+    pub freq: u32,
     pub scan_time_us: u16,
 }
 
@@ -115,7 +115,7 @@ pub struct RxIFConf {
 #[derive(Debug)]
 pub struct RxPacket {
     /// central frequency of the If chain
-    pub freq_hz: u32,
+    pub freq: u32,
     /// by which If chain was packet received
     pub if_chain: u8,
     /// status of the received packet
@@ -149,7 +149,7 @@ pub struct RxPacket {
 impl From<llg::lgw_pkt_rx_s> for RxPacket {
     fn from(o: llg::lgw_pkt_rx_s) -> Self {
         RxPacket {
-            freq_hz: o.freq_hz,
+            freq: o.freq_hz,
             if_chain: o.if_chain,
             status: o.status,
             count_us: o.count_us,
@@ -172,7 +172,7 @@ impl From<llg::lgw_pkt_rx_s> for RxPacket {
 #[derive(Debug)]
 pub struct TxPacket {
     /// center frequency of TX
-    pub freq_hz: u32,
+    pub freq: u32,
     /// select on what event/time the TX is triggered
     pub tx_mode: u8,
     /// timestamp or delay in microseconds for TX trigger
@@ -212,7 +212,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
             Err(error::Error::Size)
         } else {
             Ok(llg::lgw_pkt_tx_s {
-                freq_hz: o.freq_hz,
+                freq_hz: o.freq,
                 tx_mode: o.tx_mode,
                 count_us: o.count_us,
                 rf_chain: o.rf_chain,
