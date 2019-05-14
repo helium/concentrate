@@ -12,6 +12,34 @@ pub enum RadioType {
     SX1276 = 4,
 }
 
+/// Spreading factor
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum SpreadFactor {
+    Undefined = 0x00,
+    SF7 = 0x02,
+    SF8 = 0x04,
+    SF9 = 0x08,
+    SF10 = 0x10,
+    SF11 = 0x20,
+    SF12 = 0x40,
+    Multi = 0x7E,
+}
+
+/// Spreading factor
+#[repr(u8)]
+#[derive(Debug, Clone, Copy)]
+pub enum Bandwidth {
+    Undefined = 0,
+    BW500kHz = 0x01,
+    BW250kHz = 0x02,
+    BW125kHz = 0x03,
+    BW62_5kHz = 0x04,
+    BW31_2kHz = 0x05,
+    BW15_6Hz = 0x06,
+    BW7_8kHz = 0x07,
+}
+
 /// Configuration structure for board specificities
 #[repr(C)]
 #[derive(Debug, Clone)]
@@ -52,7 +80,7 @@ pub struct RxRFConf {
     /// enable or disable that RF chain
     pub enable: bool,
     /// center frequency of the radio in Hz
-    pub freq_hz: u32,
+    pub freq: u32,
     /// Board-specific RSSI correction factor
     pub rssi_offset: f32,
     /// Radio type for that RF chain (SX1255, SX1257...)
@@ -70,13 +98,13 @@ pub struct RxIFConf {
     /// enable or disable that If chain
     pub enable: bool,
     /// to which RF chain is that If chain associated
-    pub rf_chain: u8,
+    pub chain: u8,
     /// center frequ of the If chain, relative to RF chain frequency
-    pub freq_hz: i32,
+    pub freq: i32,
     /// Rx bandwidth, 0 for default
-    pub bandwidth: u8,
-    /// Rx datarate, 0 for default
-    pub datarate: u32,
+    pub bandwidth: Bandwidth,
+    /// Rx spreading factor
+    pub spread_factor: SpreadFactor,
     /// size of FSK sync word (number of bytes, 0 for default)
     pub sync_word_size: u8,
     /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
