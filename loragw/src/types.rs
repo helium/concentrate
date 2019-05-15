@@ -1,5 +1,6 @@
 use super::error;
 use std::convert::TryFrom;
+use std::fmt;
 
 /// Radio types that can be found on the LoRa Gateway
 #[repr(u32)]
@@ -55,6 +56,45 @@ pub enum Bandwidth {
     BW31_2kHz = 0x05,
     BW15_6Hz = 0x06,
     BW7_8kHz = 0x07,
+}
+
+#[derive(Clone, Copy)]
+pub enum Coderate {
+    Undefined = 0,
+    Cr4_5 = 0x01,
+    Cr4_6 = 0x02,
+    Cr4_7 = 0x03,
+    Cr4_8 = 0x04,
+}
+
+impl TryFrom<u8> for Coderate {
+    type Error = error::Error;
+    fn try_from(o: u8) -> Result<Self, error::Error> {
+        Ok(match o {
+            0 => Coderate::Undefined,
+            0x01 => Coderate::Cr4_5,
+            0x02 => Coderate::Cr4_6,
+            0x03 => Coderate::Cr4_7,
+            0x04 => Coderate::Cr4_8,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}
+
+impl fmt::Debug for Coderate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Coderate::Undefined => "Undefined",
+                Coderate::Cr4_5 => "4/5",
+                Coderate::Cr4_6 => "4/6",
+                Coderate::Cr4_7 => "4/7",
+                Coderate::Cr4_8 => "4/8",
+            }
+        )
+    }
 }
 
 /// Represents one of two possible front-end radios connected to the
@@ -167,7 +207,7 @@ pub struct LoraPkt {
     /// Rx datarate of the packet
     pub spreading: Spreading,
     /// error-correcting code of the packet
-    pub coderate: u8,
+    pub coderate: Coderate,
     /// average packet RSSI in dB
     pub rssi: f32,
     /// average packet SNR, in dB
@@ -226,7 +266,7 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 radio: Radio::try_from(o.rf_chain)?,
                 bandwidth: o.bandwidth,
                 spreading: Spreading::try_from(o.datarate)?,
-                coderate: o.coderate,
+                coderate: Coderate::try_from(o.coderate)?,
                 rssi: o.rssi,
                 snr: o.snr,
                 snr_min: o.snr_min,
