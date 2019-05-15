@@ -45,8 +45,7 @@ impl TryFrom<u32> for Spreading {
     }
 }
 
-/// Spreading factor
-#[repr(u8)]
+/// Configured receive bandwidth
 #[derive(Debug, Clone, Copy)]
 pub enum Bandwidth {
     Undefined = 0,
@@ -57,6 +56,23 @@ pub enum Bandwidth {
     BW31_2kHz = 0x05,
     BW15_6Hz = 0x06,
     BW7_8kHz = 0x07,
+}
+
+impl TryFrom<u8> for Bandwidth {
+    type Error = error::Error;
+    fn try_from(o: u8) -> Result<Self, error::Error> {
+        Ok(match o {
+            0 => Bandwidth::Undefined,
+            0x01 => Bandwidth::BW500kHz,
+            0x02 => Bandwidth::BW250kHz,
+            0x03 => Bandwidth::BW125kHz,
+            0x04 => Bandwidth::BW62_5kHz,
+            0x05 => Bandwidth::BW31_2kHz,
+            0x06 => Bandwidth::BW15_6Hz,
+            0x07 => Bandwidth::BW7_8kHz,
+            _ => return Err(error::Error::Data),
+        })
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -238,7 +254,7 @@ pub struct LoraPkt {
     /// through which RF chain the packet was received
     pub radio: Radio,
     /// modulation bandwidth
-    pub bandwidth: u8,
+    pub bandwidth: Bandwidth,
     /// Rx datarate of the packet
     pub spreading: Spreading,
     /// error-correcting code of the packet
@@ -299,7 +315,7 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 status: o.status,
                 timestamp: time::Duration::from_micros(o.count_us as u64),
                 radio: Radio::try_from(o.rf_chain)?,
-                bandwidth: o.bandwidth,
+                bandwidth: Bandwidth::try_from(o.bandwidth)?,
                 spreading: Spreading::try_from(o.datarate)?,
                 coderate: Coderate::try_from(o.coderate)?,
                 rssi: o.rssi,
