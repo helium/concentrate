@@ -165,7 +165,7 @@ fn go() -> Result<(), loragw::Error> {
 
     loop {
         while let Some(pkt) = concentrator.receive()? {
-            println!("{:?}", pkt);
+            println!("{:?}\n", pkt);
         }
         thread::sleep(time::Duration::from_millis(100));
     }
