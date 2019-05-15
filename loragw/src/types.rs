@@ -299,9 +299,9 @@ pub enum RxPkt {
     Lora(LoraPkt),
 }
 
-impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
+impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
     type Error = error::Error;
-    fn try_from(o: llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
+    fn try_from(o: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
         const MOD_LORA: u8 = 0x10;
         const MOD_FSK: u8 = 0x20;
         Ok(match o.modulation {
@@ -309,11 +309,11 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 status: o.status,
-                timestamp: time::Duration::from_micros(o.count_us as u64),
-                radio: Radio::try_from(o.rf_chain as u32)?,
-                bandwidth: Bandwidth::try_from(o.bandwidth as u32)?,
+                timestamp: time::Duration::from_micros(u64::from(o.count_us)),
+                radio: Radio::try_from(u32::from(o.rf_chain))?,
+                bandwidth: Bandwidth::try_from(u32::from(o.bandwidth))?,
                 spreading: Spreading::try_from(o.datarate)?,
-                coderate: Coderate::try_from(o.coderate as u32)?,
+                coderate: Coderate::try_from(u32::from(o.coderate))?,
                 rssi: o.rssi,
                 snr: o.snr,
                 snr_min: o.snr_min,
@@ -325,8 +325,8 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 status: o.status,
-                timestamp: time::Duration::from_micros(o.count_us as u64),
-                radio: Radio::try_from(o.rf_chain as u32)?,
+                timestamp: time::Duration::from_micros(u64::from(o.count_us)),
+                radio: Radio::try_from(u32::from(o.rf_chain))?,
                 datarate: o.datarate,
                 rssi: o.rssi,
                 crc: o.crc,

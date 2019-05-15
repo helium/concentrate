@@ -70,15 +70,20 @@ impl Gateway {
         Ok(())
     }
 
-    /// Perform a non-blocking of up to 8 packets from concentrator's
+    /// Perform a non-blocking of up to 16 packets from concentrator's
     /// FIFO.
-    pub fn receive(&self) -> Result<Option<RxPkt>> {
+    pub fn read(&self) -> Result<Option<Vec<RxPkt>>> {
         log::trace!("receive");
-        let mut rx_pkt: llg::lgw_pkt_rx_s = Default::default();
+        let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len =
-            into_result(unsafe { llg::lgw_receive(1, &mut rx_pkt as *mut llg::lgw_pkt_rx_s) })?;
-        if len == 1 {
-            Ok(Some(RxPkt::try_from(rx_pkt)?))
+            into_result(unsafe { llg::lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr()) })?;
+        if len > 0 {
+            log::debug!("read {} packets out of concentrator", len);
+            let mut out = Vec::new();
+            for tmp in tmp_buf[..len].iter() {
+                out.push(RxPkt::try_from(tmp)?);
+            }
+            Ok(Some(out))
         } else {
             Ok(None)
         }

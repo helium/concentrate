@@ -164,8 +164,10 @@ fn go() -> Result<(), loragw::Error> {
     concentrator.start()?;
 
     loop {
-        while let Some(pkt) = concentrator.receive()? {
-            println!("{:?}\n", pkt);
+        while let Some(packets) = concentrator.read()? {
+            for pkt in packets {
+                println!("{:?}\n", pkt);
+            }
         }
         thread::sleep(time::Duration::from_millis(100));
     }
