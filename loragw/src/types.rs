@@ -1,6 +1,7 @@
 use super::error;
 use std::convert::TryFrom;
 use std::fmt;
+use std::time;
 
 /// Radio types that can be found on the LoRa Gateway
 #[repr(u32)]
@@ -233,7 +234,7 @@ pub struct LoraPkt {
     /// status of the received packet
     pub status: u8,
     /// internal concentrator counter for timestamping, 1 microsecond resolution
-    pub count_us: u32,
+    pub timestamp: time::Duration,
     /// through which RF chain the packet was received
     pub radio: Radio,
     /// modulation bandwidth
@@ -266,7 +267,7 @@ pub struct FSKPkt {
     /// status of the received packet
     pub status: u8,
     /// internal concentrator counter for timestamping, 1 microsecond resolution
-    pub count_us: u32,
+    pub timestamp: time::Duration,
     /// through which RF chain the packet was received
     pub radio: Radio,
     /// Rx datarate of the packet
@@ -296,7 +297,7 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 status: o.status,
-                count_us: o.count_us,
+                timestamp: time::Duration::from_micros(o.count_us as u64),
                 radio: Radio::try_from(o.rf_chain)?,
                 bandwidth: o.bandwidth,
                 spreading: Spreading::try_from(o.datarate)?,
@@ -312,7 +313,7 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 status: o.status,
-                count_us: o.count_us,
+                timestamp: time::Duration::from_micros(o.count_us as u64),
                 radio: Radio::try_from(o.rf_chain)?,
                 datarate: o.datarate,
                 rssi: o.rssi,
