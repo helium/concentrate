@@ -66,7 +66,7 @@ impl Gateway {
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&self) -> Result {
         log::trace!("stopping");
-        unsafe { into_result(llg::lgw_stop()) }?;
+        into_result(unsafe { llg::lgw_stop() })?;
         Ok(())
     }
 
