@@ -142,8 +142,8 @@ pub struct BoardConf {
     pub clksrc: Radio,
 }
 
-impl From<BoardConf> for llg::lgw_conf_board_s {
-    fn from(o: BoardConf) -> Self {
+impl From<&BoardConf> for llg::lgw_conf_board_s {
+    fn from(o: &BoardConf) -> Self {
         llg::lgw_conf_board_s {
             lorawan_public: o.lorawan_public,
             clksrc: o.clksrc as u8,
@@ -189,8 +189,8 @@ pub struct RxRFConf {
     pub tx_notch_freq: u32,
 }
 
-impl From<RxRFConf> for llg::lgw_conf_rxrf_s {
-    fn from(o: RxRFConf) -> Self {
+impl From<&RxRFConf> for llg::lgw_conf_rxrf_s {
+    fn from(o: &RxRFConf) -> Self {
         llg::lgw_conf_rxrf_s {
             enable: o.enable,
             freq_hz: o.freq,
@@ -221,8 +221,8 @@ pub struct RxIFConf {
     pub sync_word: u64,
 }
 
-impl From<RxIFConf> for llg::lgw_conf_rxif_s {
-    fn from(o: RxIFConf) -> Self {
+impl From<&RxIFConf> for llg::lgw_conf_rxif_s {
+    fn from(o: &RxIFConf) -> Self {
         llg::lgw_conf_rxif_s {
             enable: o.enable,
             rf_chain: o.radio as u8,

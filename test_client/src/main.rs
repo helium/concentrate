@@ -9,11 +9,11 @@ fn go() -> Result<(), loragw::Error> {
         lorawan_public: true,
         clksrc: loragw::Radio::R0,
     };
-    concentrator.config_board(board_conf)?;
+    concentrator.config_board(&board_conf)?;
 
     concentrator.config_rx_rf(
         0,
-        loragw::RxRFConf {
+        &loragw::RxRFConf {
             enable: true,
             freq: 911_000_000,
             rssi_offset: -162.0,
@@ -25,7 +25,7 @@ fn go() -> Result<(), loragw::Error> {
 
     concentrator.config_rx_rf(
         1,
-        loragw::RxRFConf {
+        &loragw::RxRFConf {
             enable: true,
             freq: 903_500_000,
             rssi_offset: -162.0,
@@ -38,7 +38,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_0
     concentrator.config_rx_if(
         0,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R0,
             freq: -400_000,
@@ -52,7 +52,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_1
     concentrator.config_rx_if(
         1,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R0,
             freq: -200_000,
@@ -66,7 +66,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_2
     concentrator.config_rx_if(
         2,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R0,
             freq: 0,
@@ -80,7 +80,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_3
     concentrator.config_rx_if(
         3,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R0,
             freq: 200_000,
@@ -94,7 +94,7 @@ fn go() -> Result<(), loragw::Error> {
     // "chan_multiSF_4"
     concentrator.config_rx_if(
         4,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R1,
             freq: -400_000,
@@ -108,7 +108,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_5
     concentrator.config_rx_if(
         5,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R1,
             freq: -200_000,
@@ -122,7 +122,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_6
     concentrator.config_rx_if(
         6,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R1,
             freq: 0,
@@ -136,7 +136,7 @@ fn go() -> Result<(), loragw::Error> {
     // chan_multiSF_7
     concentrator.config_rx_if(
         7,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R1,
             freq: 200_000,
@@ -150,7 +150,7 @@ fn go() -> Result<(), loragw::Error> {
     // Lora STD
     concentrator.config_rx_if(
         8,
-        loragw::RxIFConf {
+        &loragw::RxIFConf {
             enable: true,
             radio: loragw::Radio::R0,
             freq: 300_000,
