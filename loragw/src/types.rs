@@ -4,7 +4,6 @@ use std::fmt;
 use std::time;
 
 /// Radio types that can be found on the LoRa Gateway
-#[repr(u32)]
 #[derive(Debug, Clone, Copy)]
 pub enum RadioType {
     None = 0,
@@ -15,7 +14,6 @@ pub enum RadioType {
 }
 
 /// Spreading factor
-#[repr(u32)]
 #[derive(Debug, Clone, Copy)]
 pub enum Spreading {
     Undefined = 0x00,
@@ -58,9 +56,9 @@ pub enum Bandwidth {
     BW7_8kHz = 0x07,
 }
 
-impl TryFrom<u8> for Bandwidth {
+impl TryFrom<u32> for Bandwidth {
     type Error = error::Error;
-    fn try_from(o: u8) -> Result<Self, error::Error> {
+    fn try_from(o: u32) -> Result<Self, error::Error> {
         Ok(match o {
             0 => Bandwidth::Undefined,
             0x01 => Bandwidth::BW500kHz,
@@ -84,9 +82,9 @@ pub enum Coderate {
     Cr4_8 = 0x04,
 }
 
-impl TryFrom<u8> for Coderate {
+impl TryFrom<u32> for Coderate {
     type Error = error::Error;
-    fn try_from(o: u8) -> Result<Self, error::Error> {
+    fn try_from(o: u32) -> Result<Self, error::Error> {
         Ok(match o {
             0 => Coderate::Undefined,
             0x01 => Coderate::Cr4_5,
@@ -124,9 +122,9 @@ pub enum Radio {
     R1 = 1,
 }
 
-impl TryFrom<u8> for Radio {
+impl TryFrom<u32> for Radio {
     type Error = error::Error;
-    fn try_from(o: u8) -> Result<Self, error::Error> {
+    fn try_from(o: u32) -> Result<Self, error::Error> {
         match o {
             0 => Ok(Radio::R0),
             1 => Ok(Radio::R1),
@@ -154,7 +152,6 @@ impl From<BoardConf> for llg::lgw_conf_board_s {
 }
 
 /// Configuration structure for LBT channels
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct LBTChanConf {
     pub freq: u32,
@@ -162,7 +159,6 @@ pub struct LBTChanConf {
 }
 
 /// Configuration structure for LBT specificities
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct LBTConf {
     /// enable LBT
@@ -314,10 +310,10 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 if_chain: o.if_chain,
                 status: o.status,
                 timestamp: time::Duration::from_micros(o.count_us as u64),
-                radio: Radio::try_from(o.rf_chain)?,
-                bandwidth: Bandwidth::try_from(o.bandwidth)?,
+                radio: Radio::try_from(o.rf_chain as u32)?,
+                bandwidth: Bandwidth::try_from(o.bandwidth as u32)?,
                 spreading: Spreading::try_from(o.datarate)?,
-                coderate: Coderate::try_from(o.coderate)?,
+                coderate: Coderate::try_from(o.coderate as u32)?,
                 rssi: o.rssi,
                 snr: o.snr,
                 snr_min: o.snr_min,
@@ -330,7 +326,7 @@ impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
                 if_chain: o.if_chain,
                 status: o.status,
                 timestamp: time::Duration::from_micros(o.count_us as u64),
-                radio: Radio::try_from(o.rf_chain)?,
+                radio: Radio::try_from(o.rf_chain as u32)?,
                 datarate: o.datarate,
                 rssi: o.rssi,
                 crc: o.crc,
@@ -411,7 +407,6 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
 }
 
 /// Structure containing all gains of Tx chain
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct TxGain {
     /// 2 bits, control of the digital gain of SX1301
@@ -427,7 +422,6 @@ pub struct TxGain {
 }
 
 /// Structure defining the Tx gain LUT
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct TxGainLUT {
     /// Array of Tx gain struct
