@@ -4,8 +4,8 @@ pub use error::*;
 use llg;
 use log;
 use std::convert::TryFrom;
+use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::{mem, ops};
 pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
@@ -29,21 +29,21 @@ impl Gateway {
     /// Configure the gateway board.
     pub fn config_board(&self, conf: BoardConf) -> Result {
         log::trace!("conf: {:?}", conf);
-        into_result(unsafe { llg::lgw_board_setconf(mem::transmute(conf)) })?;
+        into_result(unsafe { llg::lgw_board_setconf(conf.into()) })?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, chain: u8, conf: RxRFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxrf_setconf(chain, mem::transmute(conf)) })?;
+        into_result(unsafe { llg::lgw_rxrf_setconf(chain, conf.into()) })?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_rx_if(&self, chain: u8, conf: RxIFConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxif_setconf(chain, mem::transmute(conf)) })?;
+        into_result(unsafe { llg::lgw_rxif_setconf(chain, conf.into()) })?;
         Ok(())
     }
 

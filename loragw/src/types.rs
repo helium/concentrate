@@ -119,13 +119,21 @@ impl TryFrom<u8> for Radio {
 }
 
 /// Configuration structure for board specificities
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct BoardConf {
     /// Enable ONLY for *public* networks using the LoRa MAC protocol.
     pub lorawan_public: bool,
     /// Index of RF chain which provides clock to concentrator
     pub clksrc: Radio,
+}
+
+impl From<BoardConf> for llg::lgw_conf_board_s {
+    fn from(o: BoardConf) -> Self {
+        llg::lgw_conf_board_s {
+            lorawan_public: o.lorawan_public,
+            clksrc: o.clksrc as u8,
+        }
+    }
 }
 
 /// Configuration structure for LBT channels
@@ -152,7 +160,6 @@ pub struct LBTConf {
 }
 
 /// Configuration structure for a RF chain
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct RxRFConf {
     /// enable or disable that RF chain
@@ -169,8 +176,20 @@ pub struct RxRFConf {
     pub tx_notch_freq: u32,
 }
 
+impl From<RxRFConf> for llg::lgw_conf_rxrf_s {
+    fn from(o: RxRFConf) -> Self {
+        llg::lgw_conf_rxrf_s {
+            enable: o.enable,
+            freq_hz: o.freq,
+            rssi_offset: o.rssi_offset,
+            type_: o.type_ as u32,
+            tx_enable: o.tx_enable,
+            tx_notch_freq: o.tx_notch_freq,
+        }
+    }
+}
+
 /// Configuration structure for an If chain
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct RxIFConf {
     /// enable or disable that If chain
@@ -187,6 +206,21 @@ pub struct RxIFConf {
     pub sync_word_size: u8,
     /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
     pub sync_word: u64,
+}
+
+impl From<RxIFConf> for llg::lgw_conf_rxif_s {
+    fn from(o: RxIFConf) -> Self {
+        llg::lgw_conf_rxif_s {
+            enable: o.enable,
+            rf_chain: o.radio as u8,
+            freq_hz: o.freq,
+            bandwidth: o.bandwidth as u8,
+            datarate: o.spreading as u32,
+            sync_word_size: o.sync_word_size,
+            sync_word: o.sync_word,
+            __bindgen_padding_0: Default::default(),
+        }
+    }
 }
 
 /// A _received_ Lora packet.
