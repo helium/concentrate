@@ -72,13 +72,13 @@ impl Gateway {
 
     /// Perform a non-blocking of up to 8 packets from concentrator's
     /// FIFO.
-    pub fn receive(&self) -> Result<Option<RxPacket>> {
+    pub fn receive(&self) -> Result<Option<RxPkt>> {
         log::trace!("receive");
         let mut rx_pkt: llg::lgw_pkt_rx_s = Default::default();
         let len =
             into_result(unsafe { llg::lgw_receive(1, &mut rx_pkt as *mut llg::lgw_pkt_rx_s) })?;
         if len == 1 {
-            Ok(Some(RxPacket::try_from(rx_pkt)?))
+            Ok(Some(RxPkt::try_from(rx_pkt)?))
         } else {
             Ok(None)
         }

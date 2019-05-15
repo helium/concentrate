@@ -26,6 +26,23 @@ pub enum Spreading {
     Multi = 0x7E,
 }
 
+impl TryFrom<u32> for Spreading {
+    type Error = error::Error;
+    fn try_from(o: u32) -> Result<Self, error::Error> {
+        Ok(match o {
+            0x00 => Spreading::Undefined,
+            0x02 => Spreading::SF7,
+            0x04 => Spreading::SF8,
+            0x08 => Spreading::SF9,
+            0x10 => Spreading::SF10,
+            0x20 => Spreading::SF11,
+            0x40 => Spreading::SF12,
+            0x7E => Spreading::Multi,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}
+
 /// Spreading factor
 #[repr(u8)]
 #[derive(Debug, Clone, Copy)]
@@ -132,9 +149,9 @@ pub struct RxIFConf {
     pub sync_word: u64,
 }
 
-/// Structure containing the metadata of a packet that was received and a pointer to the payload
+/// A _received_ Lora packet.
 #[derive(Debug)]
-pub struct RxPacket {
+pub struct LoraPkt {
     /// central frequency of the If chain
     pub freq: u32,
     /// by which If chain was packet received
@@ -145,21 +162,19 @@ pub struct RxPacket {
     pub count_us: u32,
     /// through which RF chain the packet was received
     pub radio: Radio,
-    /// modulation used by the packet
-    pub modulation: u8,
-    /// modulation bandwidth (LoRa only)
+    /// modulation bandwidth
     pub bandwidth: u8,
-    /// Rx datarate of the packet (SF for LoRa)
-    pub datarate: u32,
-    /// error-correcting code of the packet (LoRa only)
+    /// Rx datarate of the packet
+    pub spreading: Spreading,
+    /// error-correcting code of the packet
     pub coderate: u8,
     /// average packet RSSI in dB
     pub rssi: f32,
-    /// average packet SNR, in dB (LoRa only)
+    /// average packet SNR, in dB
     pub snr: f32,
-    /// minimum packet SNR, in dB (LoRa only)
+    /// minimum packet SNR, in dB
     pub snr_min: f32,
-    /// maximum packet SNR, in dB (LoRa only)
+    /// maximum packet SNR, in dB
     pub snr_max: f32,
     /// CRC that was received in the payload
     pub crc: u16,
@@ -167,25 +182,70 @@ pub struct RxPacket {
     pub payload: Vec<u8>,
 }
 
-impl TryFrom<llg::lgw_pkt_rx_s> for RxPacket {
+/// A _received_ FSK packet.
+#[derive(Debug)]
+pub struct FSKPkt {
+    /// central frequency of the If chain
+    pub freq: u32,
+    /// by which If chain was packet received
+    pub if_chain: u8,
+    /// status of the received packet
+    pub status: u8,
+    /// internal concentrator counter for timestamping, 1 microsecond resolution
+    pub count_us: u32,
+    /// through which RF chain the packet was received
+    pub radio: Radio,
+    /// Rx datarate of the packet
+    pub datarate: u32,
+    /// average packet RSSI in dB
+    pub rssi: f32,
+    /// CRC that was received in the payload
+    pub crc: u16,
+    /// buffer containing the payload
+    pub payload: Vec<u8>,
+}
+
+/// A _received_ packet.
+#[derive(Debug)]
+pub enum RxPkt {
+    FSK(FSKPkt),
+    Lora(LoraPkt),
+}
+
+impl TryFrom<llg::lgw_pkt_rx_s> for RxPkt {
     type Error = error::Error;
     fn try_from(o: llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
-        Ok(RxPacket {
-            freq: o.freq_hz,
-            if_chain: o.if_chain,
-            status: o.status,
-            count_us: o.count_us,
-            radio: Radio::try_from(o.rf_chain)?,
-            modulation: o.modulation,
-            bandwidth: o.bandwidth,
-            datarate: o.datarate,
-            coderate: o.coderate,
-            rssi: o.rssi,
-            snr: o.snr,
-            snr_min: o.snr_min,
-            snr_max: o.snr_max,
-            crc: o.crc,
-            payload: o.payload[..o.size as usize].to_vec(),
+        const MOD_LORA: u8 = 0x10;
+        const MOD_FSK: u8 = 0x20;
+        Ok(match o.modulation {
+            MOD_LORA => RxPkt::Lora(LoraPkt {
+                freq: o.freq_hz,
+                if_chain: o.if_chain,
+                status: o.status,
+                count_us: o.count_us,
+                radio: Radio::try_from(o.rf_chain)?,
+                bandwidth: o.bandwidth,
+                spreading: Spreading::try_from(o.datarate)?,
+                coderate: o.coderate,
+                rssi: o.rssi,
+                snr: o.snr,
+                snr_min: o.snr_min,
+                snr_max: o.snr_max,
+                crc: o.crc,
+                payload: o.payload[..o.size as usize].to_vec(),
+            }),
+            MOD_FSK => RxPkt::FSK(FSKPkt {
+                freq: o.freq_hz,
+                if_chain: o.if_chain,
+                status: o.status,
+                count_us: o.count_us,
+                radio: Radio::try_from(o.rf_chain)?,
+                datarate: o.datarate,
+                rssi: o.rssi,
+                crc: o.crc,
+                payload: o.payload[..o.size as usize].to_vec(),
+            }),
+            _ => return Err(error::Error::Data),
         })
     }
 }
