@@ -231,8 +231,29 @@ impl From<&RxIFConf> for llg::lgw_conf_rxif_s {
             datarate: o.spreading as u32,
             sync_word_size: o.sync_word_size,
             sync_word: o.sync_word,
+            // TODO: having to init is not portable
             __bindgen_padding_0: Default::default(),
         }
+    }
+}
+
+/// Status of CRC check returned with received packets
+#[derive(Debug, Clone, Copy)]
+pub enum CRCCheck {
+    NoCRC,
+    Fail,
+    Pass,
+}
+
+impl TryFrom<u32> for CRCCheck {
+    type Error = error::Error;
+    fn try_from(o: u32) -> Result<Self, Self::Error> {
+        Ok(match o {
+            0x01 => CRCCheck::NoCRC,
+            0x11 => CRCCheck::Fail,
+            0x10 => CRCCheck::Pass,
+            _ => return Err(error::Error::Data),
+        })
     }
 }
 
@@ -243,8 +264,8 @@ pub struct LoraPkt {
     pub freq: u32,
     /// by which If chain was packet received
     pub if_chain: u8,
-    /// status of the received packet
-    pub status: u8,
+    /// status of CRC check
+    pub crc_check: CRCCheck,
     /// internal concentrator counter for timestamping, 1 microsecond resolution
     pub timestamp: time::Duration,
     /// through which RF chain the packet was received
@@ -276,8 +297,8 @@ pub struct FSKPkt {
     pub freq: u32,
     /// by which If chain was packet received
     pub if_chain: u8,
-    /// status of the received packet
-    pub status: u8,
+    /// status of CRC check
+    pub crc_check: CRCCheck,
     /// internal concentrator counter for timestamping, 1 microsecond resolution
     pub timestamp: time::Duration,
     /// through which RF chain the packet was received
@@ -308,7 +329,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
             MOD_LORA => RxPkt::Lora(LoraPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
-                status: o.status,
+                crc_check: CRCCheck::try_from(u32::from(o.status))?,
                 timestamp: time::Duration::from_micros(u64::from(o.count_us)),
                 radio: Radio::try_from(u32::from(o.rf_chain))?,
                 bandwidth: Bandwidth::try_from(u32::from(o.bandwidth))?,
@@ -324,7 +345,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
             MOD_FSK => RxPkt::FSK(FSKPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
-                status: o.status,
+                crc_check: CRCCheck::try_from(u32::from(o.status))?,
                 timestamp: time::Duration::from_micros(u64::from(o.count_us)),
                 radio: Radio::try_from(u32::from(o.rf_chain))?,
                 datarate: o.datarate,
