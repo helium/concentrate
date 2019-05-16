@@ -202,37 +202,105 @@ impl From<&RxRFConf> for llg::lgw_conf_rxrf_s {
     }
 }
 
-/// Configuration structure for an If chain
+/// Configuration for RX IF+modem.
 #[derive(Debug, Clone)]
-pub struct RxIFConf {
-    /// enable or disable that If chain
-    pub enable: bool,
-    /// to which RF chain is that If chain associated
-    pub radio: Radio,
-    /// center frequ of the If chain, relative to RF chain frequency
-    pub freq: i32,
-    /// Rx bandwidth, 0 for default
-    pub bandwidth: Bandwidth,
-    /// Rx spreading factor
-    pub spreading: Spreading,
-    /// size of FSK sync word (number of bytes, 0 for default)
-    pub sync_word_size: u8,
-    /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
-    pub sync_word: u64,
+pub enum ChannelConf {
+    /// Disable this channel
+    Disable,
+    /// Standard (fixed bandwidth and spreading) LoRa channel
+    Fixed {
+        /// to which RF chain is that If chain associated
+        radio: Radio,
+        /// center frequ of the If chain, relative to RF chain frequency
+        freq: i32,
+        /// Rx bandwidth, 0 for default
+        bandwidth: Bandwidth,
+        /// Rx spreading factor
+        spreading: Spreading,
+    },
+    /// Multirate (flexible bandwidth and spreading)  LoRa channel
+    Multirate {
+        /// to which RF chain is that If chain associated
+        radio: Radio,
+        /// center frequ of the If chain, relative to RF chain frequency
+        freq: i32,
+    },
+    /// FSK channel
+    FSK {
+        /// to which RF chain is that If chain associated
+        radio: Radio,
+        /// center frequ of the If chain, relative to RF chain frequency
+        freq: i32,
+        /// Rx bandwidth, 0 for default
+        bandwidth: Bandwidth,
+        /// Rx datarate
+        datarate: u32,
+        /// size of FSK sync word (number of bytes, 0 for default)
+        sync_word_size: u8,
+        /// FSK sync word (ALIGN RIGHT, eg. 0xC194C1)
+        sync_word: u64,
+    },
 }
 
-impl From<&RxIFConf> for llg::lgw_conf_rxif_s {
-    fn from(o: &RxIFConf) -> Self {
-        llg::lgw_conf_rxif_s {
-            enable: o.enable,
-            rf_chain: o.radio as u8,
-            freq_hz: o.freq,
-            bandwidth: o.bandwidth as u8,
-            datarate: o.spreading as u32,
-            sync_word_size: o.sync_word_size,
-            sync_word: o.sync_word,
-            // TODO: having to init is not portable
-            __bindgen_padding_0: Default::default(),
+impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
+    fn from(o: &ChannelConf) -> Self {
+        match o {
+            ChannelConf::Disable => llg::lgw_conf_rxif_s {
+                enable: false,
+                rf_chain: 0,
+                freq_hz: 0,
+                bandwidth: 0,
+                datarate: 0,
+                sync_word_size: 0,
+                sync_word: 0,
+                // TODO: having to init is not portable
+                __bindgen_padding_0: Default::default(),
+            },
+            &ChannelConf::Fixed {
+                radio,
+                freq,
+                bandwidth,
+                spreading,
+            } => llg::lgw_conf_rxif_s {
+                enable: true,
+                rf_chain: radio as u8,
+                freq_hz: freq,
+                bandwidth: bandwidth as u8,
+                datarate: spreading as u32,
+                sync_word_size: 0,
+                sync_word: 0,
+                // TODO: having to init is not portable
+                __bindgen_padding_0: Default::default(),
+            },
+            &ChannelConf::Multirate { radio, freq } => llg::lgw_conf_rxif_s {
+                enable: true,
+                rf_chain: radio as u8,
+                freq_hz: freq,
+                bandwidth: Bandwidth::Undefined as u8,
+                datarate: Spreading::Undefined as u32,
+                sync_word_size: 0,
+                sync_word: 0,
+                // TODO: having to init is not portable
+                __bindgen_padding_0: Default::default(),
+            },
+            &ChannelConf::FSK {
+                radio,
+                freq,
+                bandwidth,
+                datarate,
+                sync_word_size,
+                sync_word,
+            } => llg::lgw_conf_rxif_s {
+                enable: true,
+                rf_chain: radio as u8,
+                freq_hz: freq,
+                bandwidth: bandwidth as u8,
+                datarate,
+                sync_word_size,
+                sync_word,
+                // TODO: having to init is not portable
+                __bindgen_padding_0: Default::default(),
+            },
         }
     }
 }

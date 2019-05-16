@@ -41,7 +41,7 @@ impl Gateway {
     }
 
     /// Configure an IF chain + modem (must configure before start).
-    pub fn config_rx_if(&self, chain: u8, conf: &RxIFConf) -> Result {
+    pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
         log::trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxif_setconf(chain, conf.into()) })?;
         Ok(())
@@ -136,4 +136,5 @@ mod tests {
         assert!(GW_IS_OPEN.load(Ordering::Relaxed));
         assert!(Gateway::open().is_err());
     }
+
 }

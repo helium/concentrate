@@ -36,130 +36,90 @@ fn go() -> Result<(), loragw::Error> {
     )?;
 
     // chan_multiSF_0
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         0,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R0,
             freq: -400_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_1
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         1,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R0,
             freq: -200_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_2
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         2,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R0,
             freq: 0,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_3
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         3,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R0,
             freq: 200_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // "chan_multiSF_4"
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         4,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R1,
             freq: -400_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_5
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         5,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R1,
             freq: -200_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_6
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         6,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R1,
             freq: 0,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // chan_multiSF_7
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         7,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Multirate {
             radio: loragw::Radio::R1,
             freq: 200_000,
-            bandwidth: loragw::Bandwidth::Undefined,
-            spreading: loragw::Spreading::Undefined,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
 
     // Lora STD
-    concentrator.config_rx_if(
+    concentrator.config_channel(
         8,
-        &loragw::RxIFConf {
-            enable: true,
+        &loragw::ChannelConf::Fixed {
             radio: loragw::Radio::R0,
             freq: 300_000,
             bandwidth: loragw::Bandwidth::BW500kHz,
             spreading: loragw::Spreading::SF8,
-            sync_word_size: 0,
-            sync_word: 0,
         },
     )?;
+
+    // [G]FSK
+    concentrator.config_channel(9, &loragw::ChannelConf::Disable)?;
 
     concentrator.start()?;
 
