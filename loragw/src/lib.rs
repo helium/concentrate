@@ -1,3 +1,10 @@
+//! This crate provides a high-level interface which serves as
+//! building-block for creating LoRa gateways using the
+//! [SX1301](https://www.semtech.com/products/wireless-rf/lora-gateways/sx1301)
+//! concentrator chip.
+
+#![deny(missing_docs)]
+
 mod error;
 mod types;
 pub use error::*;
@@ -13,9 +20,11 @@ pub use types::*;
 // own count.
 static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
+/// A LoRa concentrator.
 pub struct Gateway;
 
 impl Gateway {
+    /// Open the spidev-connected concentrator.
     pub fn open() -> Result<Self> {
         log::trace!("opening concentrator");
         // We can only 'open' one instance
@@ -89,13 +98,9 @@ impl Gateway {
         }
     }
 
+    /// Transmit `packet` over the air.
     pub fn send(&self, _packet: TxPacket) -> Result {
         log::trace!("send");
-        unimplemented!()
-    }
-
-    pub fn status(&self) -> Result {
-        log::trace!("status");
         unimplemented!()
     }
 }
