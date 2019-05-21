@@ -264,6 +264,7 @@ pub enum ChannelConf {
     },
 }
 
+#[allow(clippy::needless_update)]
 impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
     fn from(o: &ChannelConf) -> Self {
         match o {
