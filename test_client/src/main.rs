@@ -107,7 +107,7 @@ fn go() -> Result<(), loragw::Error> {
         },
     )?;
 
-    // Lora STD
+    // LoRa STD
     concentrator.config_channel(
         8,
         &loragw::ChannelConf::Fixed {

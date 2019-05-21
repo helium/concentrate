@@ -346,9 +346,9 @@ impl TryFrom<u32> for CRCCheck {
     }
 }
 
-/// A received Lora-modulated packet.
+/// A received LoRa-modulated packet.
 #[derive(Debug)]
-pub struct LoraPkt {
+pub struct LoRaPkt {
     /// Center frequency of the channel this packet was received on.
     pub freq: u32,
     /// Channel this packet packet was received on.
@@ -412,7 +412,7 @@ pub enum RxPkt {
     /// This packet was transmitted using FSK modulation.
     FSK(FSKPkt),
     /// This packet was transmitted using LoRa modulation.
-    Lora(LoraPkt),
+    LoRa(LoRaPkt),
 }
 
 impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
@@ -421,7 +421,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
         const MOD_LORA: u8 = 0x10;
         const MOD_FSK: u8 = 0x20;
         Ok(match o.modulation {
-            MOD_LORA => RxPkt::Lora(LoraPkt {
+            MOD_LORA => RxPkt::LoRa(LoRaPkt {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 crc_check: CRCCheck::try_from(u32::from(o.status))?,
