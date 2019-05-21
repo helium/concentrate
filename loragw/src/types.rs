@@ -253,8 +253,7 @@ impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
                 datarate: 0,
                 sync_word_size: 0,
                 sync_word: 0,
-                // TODO: having to init is not portable
-                __bindgen_padding_0: Default::default(),
+                ..Default::default()
             },
             &ChannelConf::Fixed {
                 radio,
@@ -269,8 +268,7 @@ impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
                 datarate: spreading as u32,
                 sync_word_size: 0,
                 sync_word: 0,
-                // TODO: having to init is not portable
-                __bindgen_padding_0: Default::default(),
+                ..Default::default()
             },
             &ChannelConf::Multirate { radio, freq } => llg::lgw_conf_rxif_s {
                 enable: true,
@@ -280,8 +278,7 @@ impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
                 datarate: Spreading::Undefined as u32,
                 sync_word_size: 0,
                 sync_word: 0,
-                // TODO: having to init is not portable
-                __bindgen_padding_0: Default::default(),
+                ..Default::default()
             },
             &ChannelConf::FSK {
                 radio,
@@ -298,8 +295,7 @@ impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
                 datarate,
                 sync_word_size,
                 sync_word,
-                // TODO: having to init is not portable
-                __bindgen_padding_0: Default::default(),
+                ..Default::default()
             },
         }
     }

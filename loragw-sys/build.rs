@@ -22,6 +22,7 @@ fn main() {
     // generate bindings for `libloragw`
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
+        .derive_default(true)
         .whitelist_function("lgw_board_setconf")
         .whitelist_function("lgw_lbt_setconf")
         .whitelist_function("lgw_rxrf_setconf")
