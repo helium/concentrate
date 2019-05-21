@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::time;
 
-/// Radio types that can be found on the LoRa Gateway.
+/// Radio types that can be found on the LoRa concentrator.
 #[derive(Debug, Clone, Copy)]
 #[allow(missing_docs)]
 pub enum RadioType {

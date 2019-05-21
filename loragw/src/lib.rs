@@ -21,9 +21,9 @@ pub use types::*;
 static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
 /// A LoRa concentrator.
-pub struct Gateway;
+pub struct Concentrator;
 
-impl Gateway {
+impl Concentrator {
     /// Open the spidev-connected concentrator.
     pub fn open() -> Result<Self> {
         log::trace!("opening concentrator");
@@ -32,7 +32,7 @@ impl Gateway {
             log::error!("concentrator busy");
             return Err(Error::Busy);
         }
-        Ok(Gateway {})
+        Ok(Concentrator {})
     }
 
     /// Configure the gateway board.
@@ -79,9 +79,9 @@ impl Gateway {
         Ok(())
     }
 
-    /// Perform a non-blocking of up to 16 packets from concentrator's
-    /// FIFO.
-    pub fn read(&self) -> Result<Option<Vec<RxPkt>>> {
+    /// Perform a non-blocking read of up to 16 packets from
+    /// concentrator's FIFO.
+    pub fn receive(&self) -> Result<Option<Vec<RxPkt>>> {
         log::trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len =
@@ -99,13 +99,13 @@ impl Gateway {
     }
 
     /// Transmit `packet` over the air.
-    pub fn send(&self, _packet: TxPacket) -> Result {
+    pub fn trasnmit(&self, _packet: TxPacket) -> Result {
         log::trace!("send");
         unimplemented!()
     }
 }
 
-impl ops::Drop for Gateway {
+impl ops::Drop for Concentrator {
     fn drop(&mut self) {
         GW_IS_OPEN.store(false, Ordering::Release);
     }
@@ -126,7 +126,7 @@ mod tests {
         let _lock = TEST_MUTEX.lock().unwrap();
         assert!(!GW_IS_OPEN.load(Ordering::Relaxed));
         {
-            let _gw = Gateway::open().unwrap();
+            let _gw = Concentrator::open().unwrap();
             assert!(GW_IS_OPEN.load(Ordering::Relaxed));
             // _gw `drop`ped here
         }
@@ -137,9 +137,9 @@ mod tests {
     fn test_double_open_fails() {
         let _lock = TEST_MUTEX.lock().unwrap();
         assert!(!GW_IS_OPEN.load(Ordering::Relaxed));
-        let _gw1 = Gateway::open().unwrap();
+        let _gw1 = Concentrator::open().unwrap();
         assert!(GW_IS_OPEN.load(Ordering::Relaxed));
-        assert!(Gateway::open().is_err());
+        assert!(Concentrator::open().is_err());
     }
 
 }

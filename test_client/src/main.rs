@@ -3,7 +3,7 @@ use loragw;
 use std::{process, thread, time};
 
 fn go() -> Result<(), loragw::Error> {
-    let concentrator = loragw::Gateway::open()?;
+    let concentrator = loragw::Concentrator::open()?;
 
     let board_conf = loragw::BoardConf {
         lorawan_public: true,
@@ -124,7 +124,7 @@ fn go() -> Result<(), loragw::Error> {
     concentrator.start()?;
 
     loop {
-        while let Some(packets) = concentrator.read()? {
+        while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
                 println!("{:?}\n", pkt);
             }
