@@ -10,7 +10,7 @@ mod types;
 pub use error::*;
 use llg;
 use log;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub use types::*;
@@ -99,9 +99,10 @@ impl Concentrator {
     }
 
     /// Transmit `packet` over the air.
-    pub fn trasnmit(&self, _packet: TxPacket) -> Result {
+    pub fn transmit(&self, packet: TxPacket) -> Result {
         log::trace!("send");
-        unimplemented!()
+        into_result(unsafe { llg::lgw_send(packet.try_into()?) })?;
+        Ok(())
     }
 }
 
