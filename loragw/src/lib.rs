@@ -81,7 +81,7 @@ impl Concentrator {
 
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
-    pub fn receive(&self) -> Result<Option<Vec<RxPkt>>> {
+    pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
         log::trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len =
@@ -90,7 +90,7 @@ impl Concentrator {
             log::debug!("read {} packets out of concentrator", len);
             let mut out = Vec::new();
             for tmp in tmp_buf[..len].iter() {
-                out.push(RxPkt::try_from(tmp)?);
+                out.push(RxPacket::try_from(tmp)?);
             }
             Ok(Some(out))
         } else {

@@ -348,7 +348,7 @@ impl TryFrom<u32> for CRCCheck {
 
 /// A received LoRa-modulated packet.
 #[derive(Debug)]
-pub struct RxPktLoRa {
+pub struct RxPacketLoRa {
     /// Center frequency of the channel this packet was received on.
     pub freq: u32,
     /// Channel this packet packet was received on.
@@ -383,7 +383,7 @@ pub struct RxPktLoRa {
 
 /// A received FSK-modulated packet.
 #[derive(Debug)]
-pub struct RxPktFSK {
+pub struct RxPacketFSK {
     /// Center frequency of the channel this packet was received on.
     pub freq: u32,
     /// Channel this packet packet was received on.
@@ -408,20 +408,20 @@ pub struct RxPktFSK {
 
 /// A received packet.
 #[derive(Debug)]
-pub enum RxPkt {
+pub enum RxPacket {
     /// This packet was transmitted using FSK modulation.
-    FSK(RxPktFSK),
+    FSK(RxPacketFSK),
     /// This packet was transmitted using LoRa modulation.
-    LoRa(RxPktLoRa),
+    LoRa(RxPacketLoRa),
 }
 
-impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
+impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
     type Error = error::Error;
     fn try_from(o: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
         const MOD_LORA: u8 = 0x10;
         const MOD_FSK: u8 = 0x20;
         Ok(match o.modulation {
-            MOD_LORA => RxPkt::LoRa(RxPktLoRa {
+            MOD_LORA => RxPacket::LoRa(RxPacketLoRa {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 crc_check: CRCCheck::try_from(u32::from(o.status))?,
@@ -437,7 +437,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPkt {
                 crc: o.crc,
                 payload: o.payload[..o.size as usize].to_vec(),
             }),
-            MOD_FSK => RxPkt::FSK(RxPktFSK {
+            MOD_FSK => RxPacket::FSK(RxPacketFSK {
                 freq: o.freq_hz,
                 if_chain: o.if_chain,
                 crc_check: CRCCheck::try_from(u32::from(o.status))?,
