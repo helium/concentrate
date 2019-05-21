@@ -30,8 +30,8 @@ pub enum Spreading {
 
 impl TryFrom<u32> for Spreading {
     type Error = error::Error;
-    fn try_from(o: u32) -> Result<Self, error::Error> {
-        Ok(match o {
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        Ok(match other {
             0x00 => Spreading::Undefined,
             0x02 => Spreading::SF7,
             0x04 => Spreading::SF8,
@@ -68,8 +68,8 @@ pub enum Bandwidth {
 
 impl TryFrom<u32> for Bandwidth {
     type Error = error::Error;
-    fn try_from(o: u32) -> Result<Self, error::Error> {
-        Ok(match o {
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        Ok(match other {
             0 => Bandwidth::Undefined,
             0x01 => Bandwidth::BW500kHz,
             0x02 => Bandwidth::BW250kHz,
@@ -100,8 +100,8 @@ pub enum Coderate {
 
 impl TryFrom<u32> for Coderate {
     type Error = error::Error;
-    fn try_from(o: u32) -> Result<Self, error::Error> {
-        Ok(match o {
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        Ok(match other {
             0 => Coderate::Undefined,
             0x01 => Coderate::Cr4_5,
             0x02 => Coderate::Cr4_6,
@@ -140,8 +140,8 @@ pub enum Radio {
 
 impl TryFrom<u32> for Radio {
     type Error = error::Error;
-    fn try_from(o: u32) -> Result<Self, error::Error> {
-        match o {
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        match other {
             0 => Ok(Radio::R0),
             1 => Ok(Radio::R1),
             _ => Err(error::Error::Data),
@@ -159,10 +159,10 @@ pub struct BoardConf {
 }
 
 impl From<&BoardConf> for llg::lgw_conf_board_s {
-    fn from(o: &BoardConf) -> Self {
+    fn from(other: &BoardConf) -> Self {
         llg::lgw_conf_board_s {
-            lorawan_public: o.lorawan_public,
-            clksrc: o.clksrc as u8,
+            lorawan_public: other.lorawan_public,
+            clksrc: other.clksrc as u8,
         }
     }
 }
@@ -209,14 +209,14 @@ pub struct RxRFConf {
 }
 
 impl From<&RxRFConf> for llg::lgw_conf_rxrf_s {
-    fn from(o: &RxRFConf) -> Self {
+    fn from(other: &RxRFConf) -> Self {
         llg::lgw_conf_rxrf_s {
-            enable: o.enable,
-            freq_hz: o.freq,
-            rssi_offset: o.rssi_offset,
-            type_: o.type_ as u32,
-            tx_enable: o.tx_enable,
-            tx_notch_freq: o.tx_notch_freq,
+            enable: other.enable,
+            freq_hz: other.freq,
+            rssi_offset: other.rssi_offset,
+            type_: other.type_ as u32,
+            tx_enable: other.tx_enable,
+            tx_notch_freq: other.tx_notch_freq,
         }
     }
 }
@@ -266,8 +266,8 @@ pub enum ChannelConf {
 
 #[allow(clippy::needless_update)]
 impl From<&ChannelConf> for llg::lgw_conf_rxif_s {
-    fn from(o: &ChannelConf) -> Self {
-        match o {
+    fn from(other: &ChannelConf) -> Self {
+        match other {
             ChannelConf::Disable => llg::lgw_conf_rxif_s {
                 enable: false,
                 rf_chain: 0,
@@ -337,8 +337,8 @@ pub enum CRCCheck {
 
 impl TryFrom<u32> for CRCCheck {
     type Error = error::Error;
-    fn try_from(o: u32) -> Result<Self, Self::Error> {
-        Ok(match o {
+    fn try_from(other: u32) -> Result<Self, Self::Error> {
+        Ok(match other {
             0x01 => CRCCheck::NoCRC,
             0x11 => CRCCheck::Fail,
             0x10 => CRCCheck::Pass,
@@ -418,36 +418,36 @@ pub enum RxPacket {
 
 impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
     type Error = error::Error;
-    fn try_from(o: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
+    fn try_from(other: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
         const MOD_LORA: u8 = 0x10;
         const MOD_FSK: u8 = 0x20;
-        Ok(match o.modulation {
+        Ok(match other.modulation {
             MOD_LORA => RxPacket::LoRa(RxPacketLoRa {
-                freq: o.freq_hz,
-                if_chain: o.if_chain,
-                crc_check: CRCCheck::try_from(u32::from(o.status))?,
-                timestamp: time::Duration::from_micros(u64::from(o.count_us)),
-                radio: Radio::try_from(u32::from(o.rf_chain))?,
-                bandwidth: Bandwidth::try_from(u32::from(o.bandwidth))?,
-                spreading: Spreading::try_from(o.datarate)?,
-                coderate: Coderate::try_from(u32::from(o.coderate))?,
-                rssi: o.rssi,
-                snr: o.snr,
-                snr_min: o.snr_min,
-                snr_max: o.snr_max,
-                crc: o.crc,
-                payload: o.payload[..o.size as usize].to_vec(),
+                freq: other.freq_hz,
+                if_chain: other.if_chain,
+                crc_check: CRCCheck::try_from(u32::from(other.status))?,
+                timestamp: time::Duration::from_micros(u64::from(other.count_us)),
+                radio: Radio::try_from(u32::from(other.rf_chain))?,
+                bandwidth: Bandwidth::try_from(u32::from(other.bandwidth))?,
+                spreading: Spreading::try_from(other.datarate)?,
+                coderate: Coderate::try_from(u32::from(other.coderate))?,
+                rssi: other.rssi,
+                snr: other.snr,
+                snr_min: other.snr_min,
+                snr_max: other.snr_max,
+                crc: other.crc,
+                payload: other.payload[..other.size as usize].to_vec(),
             }),
             MOD_FSK => RxPacket::FSK(RxPacketFSK {
-                freq: o.freq_hz,
-                if_chain: o.if_chain,
-                crc_check: CRCCheck::try_from(u32::from(o.status))?,
-                timestamp: time::Duration::from_micros(u64::from(o.count_us)),
-                radio: Radio::try_from(u32::from(o.rf_chain))?,
-                datarate: o.datarate,
-                rssi: o.rssi,
-                crc: o.crc,
-                payload: o.payload[..o.size as usize].to_vec(),
+                freq: other.freq_hz,
+                if_chain: other.if_chain,
+                crc_check: CRCCheck::try_from(u32::from(other.status))?,
+                timestamp: time::Duration::from_micros(u64::from(other.count_us)),
+                radio: Radio::try_from(u32::from(other.rf_chain))?,
+                datarate: other.datarate,
+                rssi: other.rssi,
+                crc: other.crc,
+                payload: other.payload[..other.size as usize].to_vec(),
             }),
             _ => return Err(error::Error::Data),
         })
@@ -493,30 +493,30 @@ pub struct TxPacket {
 impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
     type Error = error::Error;
 
-    fn try_from(o: TxPacket) -> Result<Self, error::Error> {
-        if o.payload.len() > 256 {
-            log::error!("attempt to send {} byte payload", o.payload.len());
+    fn try_from(other: TxPacket) -> Result<Self, error::Error> {
+        if other.payload.len() > 256 {
+            log::error!("attempt to send {} byte payload", other.payload.len());
             Err(error::Error::Size)
         } else {
             Ok(llg::lgw_pkt_tx_s {
-                freq_hz: o.freq,
-                tx_mode: o.tx_mode,
-                count_us: o.count_us,
-                rf_chain: o.rf_chain,
-                rf_power: o.rf_power,
-                modulation: o.modulation,
-                bandwidth: o.bandwidth,
-                datarate: o.datarate,
-                coderate: o.coderate,
-                invert_pol: o.invert_pol,
-                f_dev: o.f_dev,
-                preamble: o.preamble,
-                no_crc: o.no_crc,
-                no_header: o.no_header,
-                size: o.payload.len() as u16,
+                freq_hz: other.freq,
+                tx_mode: other.tx_mode,
+                count_us: other.count_us,
+                rf_chain: other.rf_chain,
+                rf_power: other.rf_power,
+                modulation: other.modulation,
+                bandwidth: other.bandwidth,
+                datarate: other.datarate,
+                coderate: other.coderate,
+                invert_pol: other.invert_pol,
+                f_dev: other.f_dev,
+                preamble: other.preamble,
+                no_crc: other.no_crc,
+                no_header: other.no_header,
+                size: other.payload.len() as u16,
                 payload: {
                     let mut buf: [u8; 256] = [0u8; 256];
-                    buf.copy_from_slice(o.payload.as_ref());
+                    buf.copy_from_slice(other.payload.as_ref());
                     buf
                 },
             })
