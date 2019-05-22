@@ -23,6 +23,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
         .derive_default(true)
+        .derive_debug(true)
         .whitelist_function("lgw_board_setconf")
         .whitelist_function("lgw_lbt_setconf")
         .whitelist_function("lgw_rxrf_setconf")
