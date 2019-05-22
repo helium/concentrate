@@ -1,3 +1,4 @@
+use byteorder::{BigEndian, WriteBytesExt};
 use env_logger;
 use loragw;
 use std::{process, thread, time};
@@ -18,8 +19,8 @@ fn go() -> Result<(), loragw::Error> {
             freq: 911_000_000,
             rssi_offset: -162.0,
             type_: loragw::RadioType::SX1257,
-            tx_enable: false,
-            tx_notch_freq: 0,
+            tx_enable: true,
+            tx_notch_freq: 126_000,
         },
     )?;
 
@@ -122,6 +123,31 @@ fn go() -> Result<(), loragw::Error> {
     concentrator.config_channel(9, &loragw::ChannelConf::Disable)?;
 
     concentrator.start()?;
+
+    // let mut counter: u32 = 0;
+    // loop {
+    //     use loragw::*;
+    //     concentrator.transmit(TxPacket::LoRa(TxPacketLoRa {
+    //         freq: 911_000_000,
+    //         mode: TxMode::Immediate,
+    //         radio: Radio::R0,
+    //         power: 10,
+    //         bandwidth: Bandwidth::BW125kHz,
+    //         spreading: Spreading::SF10,
+    //         coderate: Coderate::Cr4_5,
+    //         invert_polarity: true,
+    //         preamble: None,
+    //         omit_crc: false,
+    //         implicit_header: false,
+    //         payload: {
+    //             let mut wtr = Vec::new();
+    //             wtr.write_u32::<BigEndian>(counter).unwrap();
+    //             wtr
+    //         },
+    //     }))?;
+    //     thread::sleep(time::Duration::from_millis(300));
+    //     counter += 1;
+    // }
 
     loop {
         while let Some(packets) = concentrator.receive()? {
