@@ -3,6 +3,9 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::time;
 
+const MOD_LORA: u8 = 0x10;
+const MOD_FSK: u8 = 0x20;
+
 /// Radio types that can be found on the LoRa concentrator.
 #[derive(Debug, Clone, Copy)]
 #[allow(missing_docs)]
@@ -419,8 +422,6 @@ pub enum RxPacket {
 impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
     type Error = error::Error;
     fn try_from(other: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
-        const MOD_LORA: u8 = 0x10;
-        const MOD_FSK: u8 = 0x20;
         Ok(match other.modulation {
             MOD_LORA => RxPacket::LoRa(RxPacketLoRa {
                 freq: other.freq_hz,
@@ -454,38 +455,94 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
     }
 }
 
-/// A packet to transmit.
-#[derive(Debug)]
-pub struct TxPacket {
+/// Specifies when to send a `TxPacket`
+#[derive(Debug, Clone, Copy)]
+pub enum TxMode {
+    /// Do not delay.
+    ///
+    /// There are still delays incurred from SPI communication and
+    /// analog circuitry settling.
+    Immediate,
+    /// Send when concentrator's internal counter equals the time specified.
+    Timestamp(time::Duration),
+    /// Send at specified duration after the next GPS pulse-per-second transition.
+    PPS(time::Duration),
+}
+
+impl From<TxMode> for (u8, u32) {
+    fn from(other: TxMode) -> (u8, u32) {
+        use TxMode::*;
+        match other {
+            Immediate => (0, 0),
+            Timestamp(delay) => (1, delay.as_micros() as u32),
+            PPS(delay) => (2, delay.as_micros() as u32),
+        }
+    }
+}
+
+/// Holds either a LoRa or FSK packet.
+#[derive(Debug, Clone)]
+pub enum TxPacket {
+    /// A transmittable LoRa packet.
+    LoRa(TxPacketLoRa),
+    /// A transmittable FSK packet.
+    FSK(TxPacketFSK),
+}
+
+/// A transmittable LoRa packet.
+#[derive(Debug, Clone)]
+pub struct TxPacketLoRa {
     /// Center frequency to transmit on.
     pub freq: u32,
-    /// select on what event/time the TX is triggered.
-    pub tx_mode: u8,
-    /// Timestamp or delay (in uS) for when this packet should be
-    /// transmitted.
-    pub count_us: u32,
-    /// RF chain to transmit on.
-    pub rf_chain: u8,
+    /// When to send this packet.
+    pub mode: TxMode,
+    /// Which radio to transmit on.
+    pub radio: Radio,
     /// TX power (in dBm).
-    pub rf_power: i8,
-    /// Modulation type to use for this packet.
-    pub modulation: u8,
-    /// Modulation bandwidth (LoRa only).
-    pub bandwidth: u8,
-    /// Tx datarate (baudrate for FSK, SF for LoRa).
-    pub datarate: u32,
-    /// Error-correcting-code of the packet (LoRa only).
-    pub coderate: u8,
-    /// Invert signal polarity, for orthogonal downlinks (LoRa only).
-    pub invert_pol: bool,
-    /// Frequency deviation, in kHz (FSK only).
-    pub f_dev: u8,
-    /// Preamble length, 0 for default.
-    pub preamble: u16,
+    pub power: i8,
+    /// Modulation bandwidth.
+    pub bandwidth: Bandwidth,
+    /// Spreading factor to use with this packet.
+    pub spreading: Spreading,
+    /// Error-correcting-code of the packet.
+    pub coderate: Coderate,
+    /// Invert signal polarity for orthogonal downlinks.
+    pub invert_polarity: bool,
+    /// Preamble length.
+    ///
+    /// Use `None` for default.
+    pub preamble: Option<u16>,
     /// Do not send a CRC in the packet.
-    pub no_crc: bool,
-    /// Enable implicit header mode (LoRa), fixed length (FSK).
-    pub no_header: bool,
+    pub omit_crc: bool,
+    /// Enable implicit header mode.
+    pub implicit_header: bool,
+    /// Arbitrary user-defined payload to transmit.
+    pub payload: Vec<u8>,
+}
+
+/// A transmittable LoRa packet.
+#[derive(Debug, Clone)]
+pub struct TxPacketFSK {
+    /// Center frequency to transmit on.
+    pub freq: u32,
+    /// When to send this packet.
+    pub mode: TxMode,
+    /// Which radio to transmit on.
+    pub radio: Radio,
+    /// TX power (in dBm).
+    pub power: i8,
+    /// Datarate in bits/second.
+    pub datarate: u32,
+    /// Frequency deviation, in kHz.
+    pub deviation: u8,
+    /// Preamble length.
+    ///
+    /// Use `None` for default.
+    pub preamble: Option<u16>,
+    /// Do not send a CRC in the packet.
+    pub omit_crc: bool,
+    /// Enable fixed length packet.
+    pub fixed_len: bool,
     /// Arbitrary user-defined payload to transmit.
     pub payload: Vec<u8>,
 }
@@ -494,32 +551,67 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
     type Error = error::Error;
 
     fn try_from(other: TxPacket) -> Result<Self, error::Error> {
-        if other.payload.len() > 256 {
-            log::error!("attempt to send {} byte payload", other.payload.len());
-            Err(error::Error::Size)
-        } else {
-            Ok(llg::lgw_pkt_tx_s {
-                freq_hz: other.freq,
-                tx_mode: other.tx_mode,
-                count_us: other.count_us,
-                rf_chain: other.rf_chain,
-                rf_power: other.rf_power,
-                modulation: other.modulation,
-                bandwidth: other.bandwidth,
-                datarate: other.datarate,
-                coderate: other.coderate,
-                invert_pol: other.invert_pol,
-                f_dev: other.f_dev,
-                preamble: other.preamble,
-                no_crc: other.no_crc,
-                no_header: other.no_header,
-                size: other.payload.len() as u16,
-                payload: {
-                    let mut buf: [u8; 256] = [0u8; 256];
-                    buf.copy_from_slice(other.payload.as_ref());
-                    buf
-                },
-            })
+        match other {
+            TxPacket::LoRa(other) => {
+                if other.payload.len() > 256 {
+                    log::error!("attempt to send {} byte payload", other.payload.len());
+                    Err(error::Error::Size)
+                } else {
+                    let (mode, delay) = other.mode.into();
+                    Ok(llg::lgw_pkt_tx_s {
+                        freq_hz: other.freq,
+                        tx_mode: mode,
+                        count_us: delay,
+                        rf_chain: other.radio as u8,
+                        rf_power: other.power,
+                        modulation: MOD_LORA,
+                        bandwidth: other.bandwidth as u8,
+                        datarate: other.spreading as u32,
+                        coderate: other.coderate as u8,
+                        invert_pol: other.invert_polarity,
+                        f_dev: 0,
+                        preamble: other.preamble.unwrap_or(0),
+                        no_crc: other.omit_crc,
+                        no_header: other.implicit_header,
+                        size: other.payload.len() as u16,
+                        payload: {
+                            let mut buf: [u8; 256] = [0u8; 256];
+                            buf[..other.payload.len()].copy_from_slice(other.payload.as_ref());
+                            buf
+                        },
+                    })
+                }
+            }
+            TxPacket::FSK(other) => {
+                if other.payload.len() > 256 {
+                    log::error!("attempt to send {} byte payload", other.payload.len());
+                    Err(error::Error::Size)
+                } else {
+                    let (mode, delay) = other.mode.into();
+                    Ok(llg::lgw_pkt_tx_s {
+                        freq_hz: other.freq,
+                        tx_mode: mode,
+                        count_us: delay,
+                        rf_chain: other.radio as u8,
+                        rf_power: other.power,
+                        modulation: MOD_FSK,
+                        bandwidth: 0,
+                        datarate: other.datarate,
+                        coderate: Coderate::Undefined as u8,
+                        invert_pol: false,
+                        f_dev: other.deviation,
+                        preamble: other.preamble.unwrap_or(0),
+                        no_crc: other.omit_crc,
+                        no_header: other.fixed_len,
+                        size: other.payload.len() as u16,
+                        payload: {
+                            let mut buf: [u8; 256] = [0u8; 256];
+                            buf[..other.payload.len()].copy_from_slice(other.payload.as_ref());
+                            buf
+                        },
+                    })
+                }
+            }
         }
     }
 }

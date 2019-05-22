@@ -100,7 +100,7 @@ impl Concentrator {
 
     /// Transmit `packet` over the air.
     pub fn transmit(&self, packet: TxPacket) -> Result {
-        log::trace!("send");
+        log::debug!("transmitting {:?}", packet);
         into_result(unsafe { llg::lgw_send(packet.try_into()?) })?;
         Ok(())
     }
