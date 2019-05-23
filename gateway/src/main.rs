@@ -7,7 +7,7 @@ fn go() -> Result<(), loragw::Error> {
     let concentrator = loragw::Concentrator::open()?;
 
     let board_conf = loragw::BoardConf {
-        lorawan_public: true,
+        lorawan_public: false,
         clksrc: loragw::Radio::R0,
     };
     concentrator.config_board(&board_conf)?;
@@ -16,7 +16,7 @@ fn go() -> Result<(), loragw::Error> {
         0,
         &loragw::RxRFConf {
             enable: true,
-            freq: 911_000_000,
+            freq: 911_500_000,
             rssi_offset: -162.0,
             type_: loragw::RadioType::SX1257,
             tx_enable: true,
