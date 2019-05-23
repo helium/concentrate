@@ -40,6 +40,8 @@ fn main() {
         .rustfmt_bindings(true)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(::std::path::PathBuf::from(::std::env::var("OUT_DIR").unwrap()).join("bindings.rs"))
+        .write_to_file(
+            ::std::path::PathBuf::from(::std::env::var("OUT_DIR").unwrap()).join("bindings.rs"),
+        )
         .expect("Couldn't write bindings!");
 }
