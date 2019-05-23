@@ -1,27 +1,26 @@
 use bindgen;
-use std::env;
-use std::path::PathBuf;
-use std::process::Command;
+use cc;
 
 fn main() {
-    // build `libloragw`
-    Command::new("make")
-        .args(&["-C", "lora_gateway/libloragw"])
-        .status()
-        .expect("libloragw build failed");
+    // Build our extracted, modified, and vendored `libloragw`.
+    //
+    // The origial source can be found at
+    // https://github.com/Lora-net/lora_gateway
+    cc::Build::new()
+        .file("vendor/libloragw/loragw_aux.c")
+        .file("vendor/libloragw/loragw_fpga.c")
+        .file("vendor/libloragw/loragw_gps.c")
+        .file("vendor/libloragw/loragw_hal.c")
+        .file("vendor/libloragw/loragw_lbt.c")
+        .file("vendor/libloragw/loragw_radio.c")
+        .file("vendor/libloragw/loragw_reg.c")
+        .file("vendor/libloragw/loragw_spi.native.c")
+        .static_flag(true)
+        .compile("loragw");
 
-    // statically link to `libloragw`
-    let libloragw_path =
-        PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("lora_gateway/libloragw");
-    println!(
-        "cargo:rustc-link-search=native={}",
-        libloragw_path.to_str().unwrap()
-    );
-    println!("cargo:rustc-link-lib=static=loragw");
-
-    // generate bindings for `libloragw`
-    let bindings = bindgen::Builder::default()
-        .header("wrapper.h")
+    // Generate rust bindings to HAL portion of `libloragw`
+    bindgen::Builder::default()
+        .header("vendor/libloragw/loragw_hal.h")
         .derive_default(true)
         .derive_debug(true)
         .whitelist_function("lgw_board_setconf")
@@ -40,9 +39,7 @@ fn main() {
         .whitelist_function("lgw_time_on_air")
         .rustfmt_bindings(true)
         .generate()
-        .expect("Unable to generate bindings");
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Unable to generate bindings")
+        .write_to_file(::std::path::PathBuf::from(::std::env::var("OUT_DIR").unwrap()).join("bindings.rs"))
         .expect("Couldn't write bindings!");
 }
