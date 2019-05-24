@@ -1,10 +1,11 @@
 [package]
-name = "gateway"
+name = "messages"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 edition = "2018"
 
 [dependencies]
-env_logger = "0.6.1"
-loragw = { path = "../loragw" }
-structopt = "0.2.15"
+protobuf = "2.6.0"
+
+[build-dependencies]
+protobuf-codegen-pure = "2.6.0"

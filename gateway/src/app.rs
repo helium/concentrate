@@ -1,5 +1,5 @@
 use loragw;
-use std::{thread, time};
+use std::{net::UdpSocket, thread, time};
 
 pub fn go(polling_interval: u64, print_level: u8) -> Result<(), loragw::Error> {
     let concentrator = loragw::Concentrator::open()?;
@@ -158,20 +158,5 @@ pub fn go(polling_interval: u64, print_level: u8) -> Result<(), loragw::Error> {
             }
         }
         thread::sleep(time::Duration::from_millis(polling_interval));
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_proto_round_trip() {
-        use crate::gateway::*;
-        use protobuf::{parse_from_bytes, Message};
-        let mut buf = Vec::new();
-        let mut pkt0 = RxPacket::new();
-        pkt0.dummy = 42;
-        pkt0.write_to_vec(&mut buf).unwrap();
-        let pkt1: RxPacket = parse_from_bytes(&buf).unwrap();
-        assert_eq!(pkt0.dummy, pkt1.dummy);
     }
 }

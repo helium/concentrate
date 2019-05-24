@@ -3,4 +3,5 @@ members = [
 "gateway",
 "loragw",
 "loragw-sys",
+"messages",
 ]
