@@ -9,5 +9,5 @@ pub struct Args {
         long = "interval",
         default_value = "100"
     )]
-    interval: u32,
+    pub interval: u64,
 }
