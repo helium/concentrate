@@ -2,6 +2,7 @@ use crate::error;
 use log;
 use loragw;
 use std::{
+    io::ErrorKind,
     net::{SocketAddr, UdpSocket},
     time,
 };
@@ -38,8 +39,9 @@ pub fn go(
             }
         }
         match socket.recv(&mut rx_buffer) {
-            Ok(sz) => println!("Read {} bytes {:?}", sz, &rx_buffer[..sz]),
-            Err(e) => println!("Read returned {:?}", e),
+            Ok(sz) => log::debug!("Read {} bytes {:?}", sz, &rx_buffer[..sz]),
+            Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
+            Err(e) => return Err(e.into()),
         }
     }
 }
