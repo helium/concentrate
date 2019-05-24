@@ -6,7 +6,7 @@ pub fn go(polling_interval: u64, print_level: u8) -> Result<(), loragw::Error> {
 
     let board_conf = loragw::BoardConf {
         lorawan_public: false,
-        clksrc: loragw::Radio::R0,
+        clksrc: loragw::Radio::R1,
     };
     concentrator.config_board(&board_conf)?;
 
