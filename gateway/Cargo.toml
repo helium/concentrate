@@ -7,7 +7,8 @@ edition = "2018"
 [dependencies]
 env_logger = "0.6.1"
 loragw = { path = "../loragw" }
-protobuf = { version = "2" }
+protobuf = "2.6.0"
+structopt = "0.2.15"
 
 [build-dependencies]
 protobuf-codegen-pure = "2.6.0"

@@ -1,7 +1,8 @@
 use env_logger;
 use loragw;
 use std::{process, thread, time};
-mod args;
+mod cmdline;
+use structopt::StructOpt;
 
 fn go() -> Result<(), loragw::Error> {
     let concentrator = loragw::Concentrator::open()?;
@@ -160,6 +161,7 @@ fn go() -> Result<(), loragw::Error> {
 }
 
 fn main() {
+    let args = cmdline::Args::from_args();
     env_logger::init();
     match go() {
         Ok(()) => process::exit(0),
