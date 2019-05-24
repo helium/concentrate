@@ -1,7 +1,8 @@
+use crate::error;
 use loragw;
 use std::{net::UdpSocket, thread, time};
 
-pub fn go(polling_interval: u64, print_level: u8) -> Result<(), loragw::Error> {
+pub fn go(polling_interval: u64, print_level: u8) -> error::Result {
     let concentrator = loragw::Concentrator::open()?;
 
     let board_conf = loragw::BoardConf {
