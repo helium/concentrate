@@ -4,7 +4,24 @@ use std::{net::UdpSocket, thread, time};
 
 pub fn go(polling_interval: u64, print_level: u8) -> error::Result {
     let concentrator = loragw::Concentrator::open()?;
+    config(&concentrator)?;
+    concentrator.start()?;
 
+    loop {
+        while let Some(packets) = concentrator.receive()? {
+            for pkt in packets {
+                if print_level > 1 {
+                    println!("{:#?}\n", pkt);
+                } else if print_level == 1 {
+                    println!("{:?}\n", pkt);
+                }
+            }
+        }
+        thread::sleep(time::Duration::from_millis(polling_interval));
+    }
+}
+
+fn config(concentrator: &loragw::Concentrator) -> error::Result {
     let board_conf = loragw::BoardConf {
         lorawan_public: false,
         clksrc: loragw::Radio::R1,
@@ -121,43 +138,5 @@ pub fn go(polling_interval: u64, print_level: u8) -> error::Result {
     // [G]FSK
     concentrator.config_channel(9, &loragw::ChannelConf::Disable)?;
 
-    concentrator.start()?;
-
-    // let mut counter: u32 = 0;
-    // loop {
-    //     use loragw::*;
-    //     concentrator.transmit(TxPacket::LoRa(TxPacketLoRa {
-    //         freq: 911_000_000,
-    //         mode: TxMode::Immediate,
-    //         radio: Radio::R0,
-    //         power: 10,
-    //         bandwidth: Bandwidth::BW125kHz,
-    //         spreading: Spreading::SF10,
-    //         coderate: Coderate::Cr4_5,
-    //         invert_polarity: true,
-    //         preamble: None,
-    //         omit_crc: false,
-    //         implicit_header: false,
-    //         payload: {
-    //             let mut wtr = Vec::new();
-    //             wtr.write_u32::<BigEndian>(counter).unwrap();
-    //             wtr
-    //         },
-    //     }))?;
-    //     thread::sleep(time::Duration::from_millis(300));
-    //     counter += 1;
-    // }
-
-    loop {
-        while let Some(packets) = concentrator.receive()? {
-            for pkt in packets {
-                if print_level > 1 {
-                    println!("{:#?}\n", pkt);
-                } else if print_level == 1 {
-                    println!("{:?}\n", pkt);
-                }
-            }
-        }
-        thread::sleep(time::Duration::from_millis(polling_interval));
-    }
+    Ok(())
 }
