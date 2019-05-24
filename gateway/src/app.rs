@@ -1,15 +1,35 @@
 use crate::error;
+use log;
 use loragw;
-use std::{net::UdpSocket, thread, time};
+use std::{
+    net::{SocketAddr, UdpSocket},
+    time,
+};
 
-pub fn go(polling_interval: u64, print_level: u8) -> error::Result {
+pub fn go(
+    polling_interval: u64,
+    print_level: u8,
+    listen_port: u16,
+    publish_port: u16,
+) -> error::Result {
+    let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
+    let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
+    assert_ne!(listen_addr, publish_addr);
+    log::debug!("listening for TX packets on {}", listen_addr);
+    log::debug!("publishing received packets to {}", publish_addr);
+    let socket = UdpSocket::bind(listen_addr)?;
+    socket.set_read_timeout(Some(time::Duration::from_millis(polling_interval)))?;
+
     let concentrator = loragw::Concentrator::open()?;
     config(&concentrator)?;
     concentrator.start()?;
 
+    let mut rx_buffer = [0; 1024];
+
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
+                socket.send_to(&rx_buffer[..16], publish_addr)?;
                 if print_level > 1 {
                     println!("{:#?}\n", pkt);
                 } else if print_level == 1 {
@@ -17,7 +37,10 @@ pub fn go(polling_interval: u64, print_level: u8) -> error::Result {
                 }
             }
         }
-        thread::sleep(time::Duration::from_millis(polling_interval));
+        match socket.recv(&mut rx_buffer) {
+            Ok(sz) => println!("Read {} bytes {:?}", sz, &rx_buffer[..sz]),
+            Err(e) => println!("Read returned {:?}", e),
+        }
     }
 }
 
