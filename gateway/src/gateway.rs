@@ -22,646 +22,43 @@ use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
-pub struct RxLoraPacket {
+pub struct RxPacket {
+    // message fields
+    pub dummy: i32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a RxLoraPacket {
-    fn default() -> &'a RxLoraPacket {
-        <RxLoraPacket as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a RxPacket {
+    fn default() -> &'a RxPacket {
+        <RxPacket as ::protobuf::Message>::default_instance()
     }
 }
 
-impl RxLoraPacket {
-    pub fn new() -> RxLoraPacket {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for RxLoraPacket {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> RxLoraPacket {
-        RxLoraPacket::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new::<RxLoraPacket>(
-                    "RxLoraPacket",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static RxLoraPacket {
-        static mut instance: ::protobuf::lazy::Lazy<RxLoraPacket> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const RxLoraPacket,
-        };
-        unsafe {
-            instance.get(RxLoraPacket::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for RxLoraPacket {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for RxLoraPacket {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RxLoraPacket {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct RxFSKPacket {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a RxFSKPacket {
-    fn default() -> &'a RxFSKPacket {
-        <RxFSKPacket as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl RxFSKPacket {
-    pub fn new() -> RxFSKPacket {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for RxFSKPacket {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> RxFSKPacket {
-        RxFSKPacket::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new::<RxFSKPacket>(
-                    "RxFSKPacket",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static RxFSKPacket {
-        static mut instance: ::protobuf::lazy::Lazy<RxFSKPacket> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const RxFSKPacket,
-        };
-        unsafe {
-            instance.get(RxFSKPacket::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for RxFSKPacket {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for RxFSKPacket {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for RxFSKPacket {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct TxLoraPacket {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a TxLoraPacket {
-    fn default() -> &'a TxLoraPacket {
-        <TxLoraPacket as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl TxLoraPacket {
-    pub fn new() -> TxLoraPacket {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for TxLoraPacket {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> TxLoraPacket {
-        TxLoraPacket::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new::<TxLoraPacket>(
-                    "TxLoraPacket",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static TxLoraPacket {
-        static mut instance: ::protobuf::lazy::Lazy<TxLoraPacket> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const TxLoraPacket,
-        };
-        unsafe {
-            instance.get(TxLoraPacket::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for TxLoraPacket {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for TxLoraPacket {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for TxLoraPacket {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct TxFSKPacket {
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a TxFSKPacket {
-    fn default() -> &'a TxFSKPacket {
-        <TxFSKPacket as ::protobuf::Message>::default_instance()
-    }
-}
-
-impl TxFSKPacket {
-    pub fn new() -> TxFSKPacket {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for TxFSKPacket {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> TxFSKPacket {
-        TxFSKPacket::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new::<TxFSKPacket>(
-                    "TxFSKPacket",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static TxFSKPacket {
-        static mut instance: ::protobuf::lazy::Lazy<TxFSKPacket> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const TxFSKPacket,
-        };
-        unsafe {
-            instance.get(TxFSKPacket::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for TxFSKPacket {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for TxFSKPacket {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for TxFSKPacket {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct SendReq {
-    // message oneof groups
-    pub pkt: ::std::option::Option<SendReq_oneof_pkt>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a SendReq {
-    fn default() -> &'a SendReq {
-        <SendReq as ::protobuf::Message>::default_instance()
-    }
-}
-
-#[derive(Clone,PartialEq,Debug)]
-pub enum SendReq_oneof_pkt {
-    lora(TxLoraPacket),
-    fsk(TxFSKPacket),
-}
-
-impl SendReq {
-    pub fn new() -> SendReq {
+impl RxPacket {
+    pub fn new() -> RxPacket {
         ::std::default::Default::default()
     }
 
-    // .TxLoraPacket lora = 1;
+    // int32 dummy = 1;
 
 
-    pub fn get_lora(&self) -> &TxLoraPacket {
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::lora(ref v)) => v,
-            _ => TxLoraPacket::default_instance(),
-        }
+    pub fn get_dummy(&self) -> i32 {
+        self.dummy
     }
-    pub fn clear_lora(&mut self) {
-        self.pkt = ::std::option::Option::None;
-    }
-
-    pub fn has_lora(&self) -> bool {
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::lora(..)) => true,
-            _ => false,
-        }
+    pub fn clear_dummy(&mut self) {
+        self.dummy = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_lora(&mut self, v: TxLoraPacket) {
-        self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::lora(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_lora(&mut self) -> &mut TxLoraPacket {
-        if let ::std::option::Option::Some(SendReq_oneof_pkt::lora(_)) = self.pkt {
-        } else {
-            self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::lora(TxLoraPacket::new()));
-        }
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::lora(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_lora(&mut self) -> TxLoraPacket {
-        if self.has_lora() {
-            match self.pkt.take() {
-                ::std::option::Option::Some(SendReq_oneof_pkt::lora(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            TxLoraPacket::new()
-        }
-    }
-
-    // .TxFSKPacket fsk = 2;
-
-
-    pub fn get_fsk(&self) -> &TxFSKPacket {
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::fsk(ref v)) => v,
-            _ => TxFSKPacket::default_instance(),
-        }
-    }
-    pub fn clear_fsk(&mut self) {
-        self.pkt = ::std::option::Option::None;
-    }
-
-    pub fn has_fsk(&self) -> bool {
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::fsk(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_fsk(&mut self, v: TxFSKPacket) {
-        self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::fsk(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_fsk(&mut self) -> &mut TxFSKPacket {
-        if let ::std::option::Option::Some(SendReq_oneof_pkt::fsk(_)) = self.pkt {
-        } else {
-            self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::fsk(TxFSKPacket::new()));
-        }
-        match self.pkt {
-            ::std::option::Option::Some(SendReq_oneof_pkt::fsk(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_fsk(&mut self) -> TxFSKPacket {
-        if self.has_fsk() {
-            match self.pkt.take() {
-                ::std::option::Option::Some(SendReq_oneof_pkt::fsk(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            TxFSKPacket::new()
-        }
+    pub fn set_dummy(&mut self, v: i32) {
+        self.dummy = v;
     }
 }
 
-impl ::protobuf::Message for SendReq {
+impl ::protobuf::Message for RxPacket {
     fn is_initialized(&self) -> bool {
-        if let Some(SendReq_oneof_pkt::lora(ref v)) = self.pkt {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(SendReq_oneof_pkt::fsk(ref v)) = self.pkt {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
         true
     }
 
@@ -670,16 +67,11 @@ impl ::protobuf::Message for SendReq {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::lora(is.read_message()?));
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.pkt = ::std::option::Option::Some(SendReq_oneof_pkt::fsk(is.read_message()?));
+                    let tmp = is.read_int32()?;
+                    self.dummy = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -693,17 +85,8 @@ impl ::protobuf::Message for SendReq {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if let ::std::option::Option::Some(ref v) = self.pkt {
-            match v {
-                &SendReq_oneof_pkt::lora(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &SendReq_oneof_pkt::fsk(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
+        if self.dummy != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.dummy, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -711,19 +94,8 @@ impl ::protobuf::Message for SendReq {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if let ::std::option::Option::Some(ref v) = self.pkt {
-            match v {
-                &SendReq_oneof_pkt::lora(ref v) => {
-                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &SendReq_oneof_pkt::fsk(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
+        if self.dummy != 0 {
+            os.write_int32(1, self.dummy)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -755,8 +127,8 @@ impl ::protobuf::Message for SendReq {
         Self::descriptor_static()
     }
 
-    fn new() -> SendReq {
-        SendReq::new()
+    fn new() -> RxPacket {
+        RxPacket::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -767,18 +139,13 @@ impl ::protobuf::Message for SendReq {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, TxLoraPacket>(
-                    "lora",
-                    SendReq::has_lora,
-                    SendReq::get_lora,
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "dummy",
+                    |m: &RxPacket| { &m.dummy },
+                    |m: &mut RxPacket| { &mut m.dummy },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, TxFSKPacket>(
-                    "fsk",
-                    SendReq::has_fsk,
-                    SendReq::get_fsk,
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<SendReq>(
-                    "SendReq",
+                ::protobuf::reflect::MessageDescriptor::new::<RxPacket>(
+                    "RxPacket",
                     fields,
                     file_descriptor_proto()
                 )
@@ -786,300 +153,74 @@ impl ::protobuf::Message for SendReq {
         }
     }
 
-    fn default_instance() -> &'static SendReq {
-        static mut instance: ::protobuf::lazy::Lazy<SendReq> = ::protobuf::lazy::Lazy {
+    fn default_instance() -> &'static RxPacket {
+        static mut instance: ::protobuf::lazy::Lazy<RxPacket> = ::protobuf::lazy::Lazy {
             lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const SendReq,
+            ptr: 0 as *const RxPacket,
         };
         unsafe {
-            instance.get(SendReq::new)
+            instance.get(RxPacket::new)
         }
     }
 }
 
-impl ::protobuf::Clear for SendReq {
+impl ::protobuf::Clear for RxPacket {
     fn clear(&mut self) {
-        self.pkt = ::std::option::Option::None;
-        self.pkt = ::std::option::Option::None;
+        self.dummy = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for SendReq {
+impl ::std::fmt::Debug for RxPacket {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for SendReq {
+impl ::protobuf::reflect::ProtobufValue for RxPacket {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
 }
 
 #[derive(PartialEq,Clone,Default)]
-pub struct SendResp {
+pub struct TxPacket {
+    // message fields
+    pub dummy: i32,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
 }
 
-impl<'a> ::std::default::Default for &'a SendResp {
-    fn default() -> &'a SendResp {
-        <SendResp as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a TxPacket {
+    fn default() -> &'a TxPacket {
+        <TxPacket as ::protobuf::Message>::default_instance()
     }
 }
 
-impl SendResp {
-    pub fn new() -> SendResp {
-        ::std::default::Default::default()
-    }
-}
-
-impl ::protobuf::Message for SendResp {
-    fn is_initialized(&self) -> bool {
-        true
-    }
-
-    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
-        while !is.eof()? {
-            let (field_number, wire_type) = is.read_tag_unpack()?;
-            match field_number {
-                _ => {
-                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
-                },
-            };
-        }
-        ::std::result::Result::Ok(())
-    }
-
-    // Compute sizes of nested messages
-    #[allow(unused_variables)]
-    fn compute_size(&self) -> u32 {
-        let mut my_size = 0;
-        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
-        self.cached_size.set(my_size);
-        my_size
-    }
-
-    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        os.write_unknown_fields(self.get_unknown_fields())?;
-        ::std::result::Result::Ok(())
-    }
-
-    fn get_cached_size(&self) -> u32 {
-        self.cached_size.get()
-    }
-
-    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
-        &self.unknown_fields
-    }
-
-    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
-        &mut self.unknown_fields
-    }
-
-    fn as_any(&self) -> &::std::any::Any {
-        self as &::std::any::Any
-    }
-    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
-        self as &mut ::std::any::Any
-    }
-    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
-        self
-    }
-
-    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
-        Self::descriptor_static()
-    }
-
-    fn new() -> SendResp {
-        SendResp::new()
-    }
-
-    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
-        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
-        };
-        unsafe {
-            descriptor.get(|| {
-                let fields = ::std::vec::Vec::new();
-                ::protobuf::reflect::MessageDescriptor::new::<SendResp>(
-                    "SendResp",
-                    fields,
-                    file_descriptor_proto()
-                )
-            })
-        }
-    }
-
-    fn default_instance() -> &'static SendResp {
-        static mut instance: ::protobuf::lazy::Lazy<SendResp> = ::protobuf::lazy::Lazy {
-            lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const SendResp,
-        };
-        unsafe {
-            instance.get(SendResp::new)
-        }
-    }
-}
-
-impl ::protobuf::Clear for SendResp {
-    fn clear(&mut self) {
-        self.unknown_fields.clear();
-    }
-}
-
-impl ::std::fmt::Debug for SendResp {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        ::protobuf::text_format::fmt(self, f)
-    }
-}
-
-impl ::protobuf::reflect::ProtobufValue for SendResp {
-    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
-        ::protobuf::reflect::ProtobufValueRef::Message(self)
-    }
-}
-
-#[derive(PartialEq,Clone,Default)]
-pub struct AsyncRx {
-    // message oneof groups
-    pub pkt: ::std::option::Option<AsyncRx_oneof_pkt>,
-    // special fields
-    pub unknown_fields: ::protobuf::UnknownFields,
-    pub cached_size: ::protobuf::CachedSize,
-}
-
-impl<'a> ::std::default::Default for &'a AsyncRx {
-    fn default() -> &'a AsyncRx {
-        <AsyncRx as ::protobuf::Message>::default_instance()
-    }
-}
-
-#[derive(Clone,PartialEq,Debug)]
-pub enum AsyncRx_oneof_pkt {
-    lora(RxLoraPacket),
-    fsk(RxFSKPacket),
-}
-
-impl AsyncRx {
-    pub fn new() -> AsyncRx {
+impl TxPacket {
+    pub fn new() -> TxPacket {
         ::std::default::Default::default()
     }
 
-    // .RxLoraPacket lora = 1;
+    // int32 dummy = 1;
 
 
-    pub fn get_lora(&self) -> &RxLoraPacket {
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(ref v)) => v,
-            _ => RxLoraPacket::default_instance(),
-        }
+    pub fn get_dummy(&self) -> i32 {
+        self.dummy
     }
-    pub fn clear_lora(&mut self) {
-        self.pkt = ::std::option::Option::None;
-    }
-
-    pub fn has_lora(&self) -> bool {
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(..)) => true,
-            _ => false,
-        }
+    pub fn clear_dummy(&mut self) {
+        self.dummy = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_lora(&mut self, v: RxLoraPacket) {
-        self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_lora(&mut self) -> &mut RxLoraPacket {
-        if let ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(_)) = self.pkt {
-        } else {
-            self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(RxLoraPacket::new()));
-        }
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_lora(&mut self) -> RxLoraPacket {
-        if self.has_lora() {
-            match self.pkt.take() {
-                ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            RxLoraPacket::new()
-        }
-    }
-
-    // .RxFSKPacket fsk = 2;
-
-
-    pub fn get_fsk(&self) -> &RxFSKPacket {
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(ref v)) => v,
-            _ => RxFSKPacket::default_instance(),
-        }
-    }
-    pub fn clear_fsk(&mut self) {
-        self.pkt = ::std::option::Option::None;
-    }
-
-    pub fn has_fsk(&self) -> bool {
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(..)) => true,
-            _ => false,
-        }
-    }
-
-    // Param is passed by value, moved
-    pub fn set_fsk(&mut self, v: RxFSKPacket) {
-        self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(v))
-    }
-
-    // Mutable pointer to the field.
-    pub fn mut_fsk(&mut self) -> &mut RxFSKPacket {
-        if let ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(_)) = self.pkt {
-        } else {
-            self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(RxFSKPacket::new()));
-        }
-        match self.pkt {
-            ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(ref mut v)) => v,
-            _ => panic!(),
-        }
-    }
-
-    // Take field
-    pub fn take_fsk(&mut self) -> RxFSKPacket {
-        if self.has_fsk() {
-            match self.pkt.take() {
-                ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(v)) => v,
-                _ => panic!(),
-            }
-        } else {
-            RxFSKPacket::new()
-        }
+    pub fn set_dummy(&mut self, v: i32) {
+        self.dummy = v;
     }
 }
 
-impl ::protobuf::Message for AsyncRx {
+impl ::protobuf::Message for TxPacket {
     fn is_initialized(&self) -> bool {
-        if let Some(AsyncRx_oneof_pkt::lora(ref v)) = self.pkt {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
-        if let Some(AsyncRx_oneof_pkt::fsk(ref v)) = self.pkt {
-            if !v.is_initialized() {
-                return false;
-            }
-        }
         true
     }
 
@@ -1088,16 +229,11 @@ impl ::protobuf::Message for AsyncRx {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::lora(is.read_message()?));
-                },
-                2 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    self.pkt = ::std::option::Option::Some(AsyncRx_oneof_pkt::fsk(is.read_message()?));
+                    let tmp = is.read_int32()?;
+                    self.dummy = tmp;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -1111,17 +247,8 @@ impl ::protobuf::Message for AsyncRx {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if let ::std::option::Option::Some(ref v) = self.pkt {
-            match v {
-                &AsyncRx_oneof_pkt::lora(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-                &AsyncRx_oneof_pkt::fsk(ref v) => {
-                    let len = v.compute_size();
-                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
-                },
-            };
+        if self.dummy != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.dummy, ::protobuf::wire_format::WireTypeVarint);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -1129,19 +256,8 @@ impl ::protobuf::Message for AsyncRx {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if let ::std::option::Option::Some(ref v) = self.pkt {
-            match v {
-                &AsyncRx_oneof_pkt::lora(ref v) => {
-                    os.write_tag(1, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-                &AsyncRx_oneof_pkt::fsk(ref v) => {
-                    os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
-                    os.write_raw_varint32(v.get_cached_size())?;
-                    v.write_to_with_cached_sizes(os)?;
-                },
-            };
+        if self.dummy != 0 {
+            os.write_int32(1, self.dummy)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -1173,8 +289,8 @@ impl ::protobuf::Message for AsyncRx {
         Self::descriptor_static()
     }
 
-    fn new() -> AsyncRx {
-        AsyncRx::new()
+    fn new() -> TxPacket {
+        TxPacket::new()
     }
 
     fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
@@ -1185,18 +301,13 @@ impl ::protobuf::Message for AsyncRx {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, RxLoraPacket>(
-                    "lora",
-                    AsyncRx::has_lora,
-                    AsyncRx::get_lora,
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
+                    "dummy",
+                    |m: &TxPacket| { &m.dummy },
+                    |m: &mut TxPacket| { &mut m.dummy },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, RxFSKPacket>(
-                    "fsk",
-                    AsyncRx::has_fsk,
-                    AsyncRx::get_fsk,
-                ));
-                ::protobuf::reflect::MessageDescriptor::new::<AsyncRx>(
-                    "AsyncRx",
+                ::protobuf::reflect::MessageDescriptor::new::<TxPacket>(
+                    "TxPacket",
                     fields,
                     file_descriptor_proto()
                 )
@@ -1204,45 +315,40 @@ impl ::protobuf::Message for AsyncRx {
         }
     }
 
-    fn default_instance() -> &'static AsyncRx {
-        static mut instance: ::protobuf::lazy::Lazy<AsyncRx> = ::protobuf::lazy::Lazy {
+    fn default_instance() -> &'static TxPacket {
+        static mut instance: ::protobuf::lazy::Lazy<TxPacket> = ::protobuf::lazy::Lazy {
             lock: ::protobuf::lazy::ONCE_INIT,
-            ptr: 0 as *const AsyncRx,
+            ptr: 0 as *const TxPacket,
         };
         unsafe {
-            instance.get(AsyncRx::new)
+            instance.get(TxPacket::new)
         }
     }
 }
 
-impl ::protobuf::Clear for AsyncRx {
+impl ::protobuf::Clear for TxPacket {
     fn clear(&mut self) {
-        self.pkt = ::std::option::Option::None;
-        self.pkt = ::std::option::Option::None;
+        self.dummy = 0;
         self.unknown_fields.clear();
     }
 }
 
-impl ::std::fmt::Debug for AsyncRx {
+impl ::std::fmt::Debug for TxPacket {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for AsyncRx {
+impl ::protobuf::reflect::ProtobufValue for TxPacket {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\rgateway.proto\x12\0\"\x10\n\x0cRxLoraPacket:\0\"\x0f\n\x0bRxFSKPacke\
-    t:\0\"\x10\n\x0cTxLoraPacket:\0\"\x0f\n\x0bTxFSKPacket:\0\"R\n\x07SendRe\
-    q\x12\x1f\n\x04lora\x18\x01\x20\x01(\x0b2\r.TxLoraPacketH\0B\0\x12\x1d\n\
-    \x03fsk\x18\x02\x20\x01(\x0b2\x0c.TxFSKPacketH\0B\0B\x05\n\x03pkt:\0\"\
-    \x0c\n\x08SendResp:\0\"R\n\x07AsyncRx\x12\x1f\n\x04lora\x18\x01\x20\x01(\
-    \x0b2\r.RxLoraPacketH\0B\0\x12\x1d\n\x03fsk\x18\x02\x20\x01(\x0b2\x0c.Rx\
-    FSKPacketH\0B\0B\x05\n\x03pkt:\0B\0b\x06proto3\
+    \n\rgateway.proto\x12\0\"\x1d\n\x08RxPacket\x12\x0f\n\x05dummy\x18\x01\
+    \x20\x01(\x05B\0:\0\"\x1d\n\x08TxPacket\x12\x0f\n\x05dummy\x18\x01\x20\
+    \x01(\x05B\0:\0B\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

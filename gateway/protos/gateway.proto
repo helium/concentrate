@@ -1,37 +1,9 @@
 syntax = "proto3";
 
-message RxLoraPacket {
+message RxPacket {
+    int32 dummy = 1;
 }
 
-message RxFSKPacket {
-}
-
-message TxLoraPacket {
-}
-
-message TxFSKPacket {
-}
-
-// Client->Gateway request to transmit a packet.
-message SendReq {
-    oneof pkt {
-        TxLoraPacket lora = 1;
-        TxFSKPacket fsk = 2;
-    }
-}
-
-
-// Response to SendReqs
-message SendResp {
-    // TODO: The SX1301 is very async nad it might not be possible to
-    //       get any useful status on sent packets. If so, this
-    //       message would only serve to acknowlege that we got the
-    //       request. Is that desireble?
-}
-
-message AsyncRx {
-    oneof pkt {
-        RxLoraPacket lora = 1;
-        RxFSKPacket fsk = 2;
-    }
+message TxPacket {
+    int32 dummy = 1;
 }
