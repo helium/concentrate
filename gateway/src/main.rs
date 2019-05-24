@@ -1,11 +1,11 @@
-use env_logger;
+use env_logger::{Builder, Env};
 mod app;
 mod cmdline;
 use std::process;
 use structopt::StructOpt;
 
 fn main() {
-    env_logger::init();
+    Builder::from_env(Env::new().filter("GW_LOG").write_style("GW_LOG_STYLE")).init();
     let args = cmdline::Args::from_args();
     match app::go(args.interval) {
         Ok(()) => process::exit(0),
