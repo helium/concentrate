@@ -1,7 +1,7 @@
 use loragw;
 use std::{thread, time};
 
-pub fn go(polling_interval: u64) -> Result<(), loragw::Error> {
+pub fn go(polling_interval: u64, print_level: u8) -> Result<(), loragw::Error> {
     let concentrator = loragw::Concentrator::open()?;
 
     let board_conf = loragw::BoardConf {
@@ -150,7 +150,11 @@ pub fn go(polling_interval: u64) -> Result<(), loragw::Error> {
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
-                println!("{:?}\n", pkt);
+                if print_level > 1 {
+                    println!("{:#?}\n", pkt);
+                } else if print_level == 1 {
+                    println!("{:?}\n", pkt);
+                }
             }
         }
         thread::sleep(time::Duration::from_millis(polling_interval));
