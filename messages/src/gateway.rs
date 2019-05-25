@@ -24,7 +24,17 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(PartialEq,Clone,Default)]
 pub struct RxPacket {
     // message fields
-    pub dummy: i32,
+    pub freq: u32,
+    pub if_chain: u32,
+    pub crc_check: bool,
+    pub timestamp: u64,
+    pub radio: u32,
+    pub bandwidth: u32,
+    pub spreading: u32,
+    pub coderate: u32,
+    pub rssi: f32,
+    pub snr: f32,
+    pub payload: ::std::vec::Vec<u8>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -41,19 +51,180 @@ impl RxPacket {
         ::std::default::Default::default()
     }
 
-    // int32 dummy = 1;
+    // uint32 freq = 1;
 
 
-    pub fn get_dummy(&self) -> i32 {
-        self.dummy
+    pub fn get_freq(&self) -> u32 {
+        self.freq
     }
-    pub fn clear_dummy(&mut self) {
-        self.dummy = 0;
+    pub fn clear_freq(&mut self) {
+        self.freq = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_dummy(&mut self, v: i32) {
-        self.dummy = v;
+    pub fn set_freq(&mut self, v: u32) {
+        self.freq = v;
+    }
+
+    // uint32 if_chain = 2;
+
+
+    pub fn get_if_chain(&self) -> u32 {
+        self.if_chain
+    }
+    pub fn clear_if_chain(&mut self) {
+        self.if_chain = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_if_chain(&mut self, v: u32) {
+        self.if_chain = v;
+    }
+
+    // bool crc_check = 3;
+
+
+    pub fn get_crc_check(&self) -> bool {
+        self.crc_check
+    }
+    pub fn clear_crc_check(&mut self) {
+        self.crc_check = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_crc_check(&mut self, v: bool) {
+        self.crc_check = v;
+    }
+
+    // uint64 timestamp = 4;
+
+
+    pub fn get_timestamp(&self) -> u64 {
+        self.timestamp
+    }
+    pub fn clear_timestamp(&mut self) {
+        self.timestamp = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_timestamp(&mut self, v: u64) {
+        self.timestamp = v;
+    }
+
+    // uint32 radio = 5;
+
+
+    pub fn get_radio(&self) -> u32 {
+        self.radio
+    }
+    pub fn clear_radio(&mut self) {
+        self.radio = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_radio(&mut self, v: u32) {
+        self.radio = v;
+    }
+
+    // uint32 bandwidth = 6;
+
+
+    pub fn get_bandwidth(&self) -> u32 {
+        self.bandwidth
+    }
+    pub fn clear_bandwidth(&mut self) {
+        self.bandwidth = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_bandwidth(&mut self, v: u32) {
+        self.bandwidth = v;
+    }
+
+    // uint32 spreading = 7;
+
+
+    pub fn get_spreading(&self) -> u32 {
+        self.spreading
+    }
+    pub fn clear_spreading(&mut self) {
+        self.spreading = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_spreading(&mut self, v: u32) {
+        self.spreading = v;
+    }
+
+    // uint32 coderate = 8;
+
+
+    pub fn get_coderate(&self) -> u32 {
+        self.coderate
+    }
+    pub fn clear_coderate(&mut self) {
+        self.coderate = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_coderate(&mut self, v: u32) {
+        self.coderate = v;
+    }
+
+    // float rssi = 9;
+
+
+    pub fn get_rssi(&self) -> f32 {
+        self.rssi
+    }
+    pub fn clear_rssi(&mut self) {
+        self.rssi = 0.;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_rssi(&mut self, v: f32) {
+        self.rssi = v;
+    }
+
+    // float snr = 10;
+
+
+    pub fn get_snr(&self) -> f32 {
+        self.snr
+    }
+    pub fn clear_snr(&mut self) {
+        self.snr = 0.;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_snr(&mut self, v: f32) {
+        self.snr = v;
+    }
+
+    // bytes payload = 11;
+
+
+    pub fn get_payload(&self) -> &[u8] {
+        &self.payload
+    }
+    pub fn clear_payload(&mut self) {
+        self.payload.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_payload(&mut self, v: ::std::vec::Vec<u8>) {
+        self.payload = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_payload(&mut self) -> &mut ::std::vec::Vec<u8> {
+        &mut self.payload
+    }
+
+    // Take field
+    pub fn take_payload(&mut self) -> ::std::vec::Vec<u8> {
+        ::std::mem::replace(&mut self.payload, ::std::vec::Vec::new())
     }
 }
 
@@ -70,8 +241,74 @@ impl ::protobuf::Message for RxPacket {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    let tmp = is.read_int32()?;
-                    self.dummy = tmp;
+                    let tmp = is.read_uint32()?;
+                    self.freq = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.if_chain = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.crc_check = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.timestamp = tmp;
+                },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.radio = tmp;
+                },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.bandwidth = tmp;
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.spreading = tmp;
+                },
+                8 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.coderate = tmp;
+                },
+                9 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeFixed32 {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_float()?;
+                    self.rssi = tmp;
+                },
+                10 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeFixed32 {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_float()?;
+                    self.snr = tmp;
+                },
+                11 => {
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.payload)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -85,8 +322,38 @@ impl ::protobuf::Message for RxPacket {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.dummy != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.dummy, ::protobuf::wire_format::WireTypeVarint);
+        if self.freq != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.freq, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.if_chain != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.if_chain, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.crc_check != false {
+            my_size += 2;
+        }
+        if self.timestamp != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.timestamp, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.radio != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.radio, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.bandwidth != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.bandwidth, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.spreading != 0 {
+            my_size += ::protobuf::rt::value_size(7, self.spreading, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.coderate != 0 {
+            my_size += ::protobuf::rt::value_size(8, self.coderate, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.rssi != 0. {
+            my_size += 5;
+        }
+        if self.snr != 0. {
+            my_size += 5;
+        }
+        if !self.payload.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(11, &self.payload);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -94,8 +361,38 @@ impl ::protobuf::Message for RxPacket {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if self.dummy != 0 {
-            os.write_int32(1, self.dummy)?;
+        if self.freq != 0 {
+            os.write_uint32(1, self.freq)?;
+        }
+        if self.if_chain != 0 {
+            os.write_uint32(2, self.if_chain)?;
+        }
+        if self.crc_check != false {
+            os.write_bool(3, self.crc_check)?;
+        }
+        if self.timestamp != 0 {
+            os.write_uint64(4, self.timestamp)?;
+        }
+        if self.radio != 0 {
+            os.write_uint32(5, self.radio)?;
+        }
+        if self.bandwidth != 0 {
+            os.write_uint32(6, self.bandwidth)?;
+        }
+        if self.spreading != 0 {
+            os.write_uint32(7, self.spreading)?;
+        }
+        if self.coderate != 0 {
+            os.write_uint32(8, self.coderate)?;
+        }
+        if self.rssi != 0. {
+            os.write_float(9, self.rssi)?;
+        }
+        if self.snr != 0. {
+            os.write_float(10, self.snr)?;
+        }
+        if !self.payload.is_empty() {
+            os.write_bytes(11, &self.payload)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -139,10 +436,60 @@ impl ::protobuf::Message for RxPacket {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "dummy",
-                    |m: &RxPacket| { &m.dummy },
-                    |m: &mut RxPacket| { &mut m.dummy },
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "freq",
+                    |m: &RxPacket| { &m.freq },
+                    |m: &mut RxPacket| { &mut m.freq },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "if_chain",
+                    |m: &RxPacket| { &m.if_chain },
+                    |m: &mut RxPacket| { &mut m.if_chain },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "crc_check",
+                    |m: &RxPacket| { &m.crc_check },
+                    |m: &mut RxPacket| { &mut m.crc_check },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                    "timestamp",
+                    |m: &RxPacket| { &m.timestamp },
+                    |m: &mut RxPacket| { &mut m.timestamp },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "radio",
+                    |m: &RxPacket| { &m.radio },
+                    |m: &mut RxPacket| { &mut m.radio },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "bandwidth",
+                    |m: &RxPacket| { &m.bandwidth },
+                    |m: &mut RxPacket| { &mut m.bandwidth },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "spreading",
+                    |m: &RxPacket| { &m.spreading },
+                    |m: &mut RxPacket| { &mut m.spreading },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "coderate",
+                    |m: &RxPacket| { &m.coderate },
+                    |m: &mut RxPacket| { &mut m.coderate },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeFloat>(
+                    "rssi",
+                    |m: &RxPacket| { &m.rssi },
+                    |m: &mut RxPacket| { &mut m.rssi },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeFloat>(
+                    "snr",
+                    |m: &RxPacket| { &m.snr },
+                    |m: &mut RxPacket| { &mut m.snr },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
+                    "payload",
+                    |m: &RxPacket| { &m.payload },
+                    |m: &mut RxPacket| { &mut m.payload },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<RxPacket>(
                     "RxPacket",
@@ -166,7 +513,17 @@ impl ::protobuf::Message for RxPacket {
 
 impl ::protobuf::Clear for RxPacket {
     fn clear(&mut self) {
-        self.dummy = 0;
+        self.freq = 0;
+        self.if_chain = 0;
+        self.crc_check = false;
+        self.timestamp = 0;
+        self.radio = 0;
+        self.bandwidth = 0;
+        self.spreading = 0;
+        self.coderate = 0;
+        self.rssi = 0.;
+        self.snr = 0.;
+        self.payload.clear();
         self.unknown_fields.clear();
     }
 }
@@ -346,9 +703,15 @@ impl ::protobuf::reflect::ProtobufValue for TxPacket {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\rgateway.proto\x12\0\"\x1d\n\x08RxPacket\x12\x0f\n\x05dummy\x18\x01\
-    \x20\x01(\x05B\0:\0\"\x1d\n\x08TxPacket\x12\x0f\n\x05dummy\x18\x01\x20\
-    \x01(\x05B\0:\0B\0b\x06proto3\
+    \n\rgateway.proto\x12\0\"\xdb\x01\n\x08RxPacket\x12\x0e\n\x04freq\x18\
+    \x01\x20\x01(\rB\0\x12\x12\n\x08if_chain\x18\x02\x20\x01(\rB\0\x12\x13\n\
+    \tcrc_check\x18\x03\x20\x01(\x08B\0\x12\x13\n\ttimestamp\x18\x04\x20\x01\
+    (\x04B\0\x12\x0f\n\x05radio\x18\x05\x20\x01(\rB\0\x12\x13\n\tbandwidth\
+    \x18\x06\x20\x01(\rB\0\x12\x13\n\tspreading\x18\x07\x20\x01(\rB\0\x12\
+    \x12\n\x08coderate\x18\x08\x20\x01(\rB\0\x12\x0e\n\x04rssi\x18\t\x20\x01\
+    (\x02B\0\x12\r\n\x03snr\x18\n\x20\x01(\x02B\0\x12\x11\n\x07payload\x18\
+    \x0b\x20\x01(\x0cB\0:\0\"\x1d\n\x08TxPacket\x12\x0f\n\x05dummy\x18\x01\
+    \x20\x01(\x05B\0:\0B\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {
