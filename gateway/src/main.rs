@@ -3,11 +3,17 @@ mod app;
 mod cmdline;
 use std::process;
 use structopt::StructOpt;
+mod error;
 
 fn main() {
     Builder::from_env(Env::new().filter("GW_LOG").write_style("GW_LOG_STYLE")).init();
     let args = cmdline::Args::from_args();
-    match app::go(args.interval, args.print_level) {
+    match app::go(
+        args.interval,
+        args.print_level,
+        args.listen_port,
+        args.publish_port,
+    ) {
         Ok(()) => process::exit(0),
         Err(e) => {
             eprintln!("ERROR: {}", e);

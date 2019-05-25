@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+message RxPacket {
+    // Center frequency of the channel this packet was received on.
+    uint32 freq = 1;
+    // Channel this packet packet was received on.
+    uint32 if_chain = 2;
+    // Status of CRC check.
+    bool crc_check = 3;
+    // 1uS-resolution timestamp derived from concentrator's internal counter.
+    uint64 timestamp = 4;
+    // RF chain this packet was received on.
+    uint32 radio = 5;
+    // Modulation bandwidth.
+    uint32 bandwidth = 6;
+    // Spreading factor of this packet.
+    uint32 spreading  = 7;
+    // Error Correcting Code rate of this packet.
+    uint32 coderate = 8;
+    // Average packet RSSI in dB.
+    float rssi = 9;
+    // Average packet SNR, in dB.
+    float snr = 10;
+    // This packet's payload.
+    bytes payload = 11;
+}
+
+message TxPacket {
+    int32 dummy = 1;
+}

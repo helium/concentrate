@@ -1,0 +1,11 @@
+[package]
+name = "messages"
+version = "0.1.0"
+authors = ["Jay Kickliter <jay@kickliter.com>"]
+edition = "2018"
+
+[dependencies]
+protobuf = "2.6.0"
+
+[build-dependencies]
+protobuf-codegen-pure = "2.6.0"
