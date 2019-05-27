@@ -1,5 +1,33 @@
 syntax = "proto3";
 
+enum Spreading {
+    UNDEFINED = 0;
+    SF7 = 7;
+    SF8 = 8;
+    SF9 = 9;
+    SF10 = 10;
+    SF11 = 11;
+    SF12 = 12;
+}
+
+enum Bandwidth {
+    UNDEFINED = 0;
+    BW7_8kHz = 7800;
+    BW15_6kHz = 15600;
+    BW31_2kHz = 31200;
+    BW62_5kHz = 62500;
+    BW125kHz = 125000;
+    BW250kHz = 250000;
+    BW500kHz = 500000;
+}
+enum Coderate {
+    UNDEFINED = 0;
+    CR4_5 = 5;
+    CR4_6 = 6;
+    CR4_7 = 7;
+    CR4_8 = 8;
+}
+
 message RxPacket {
     // Center frequency of the channel this packet was received on.
     uint32 freq = 1;
@@ -12,11 +40,11 @@ message RxPacket {
     // RF chain this packet was received on.
     uint32 radio = 5;
     // Modulation bandwidth.
-    uint32 bandwidth = 6;
+    Bandwidth bandwidth = 6;
     // Spreading factor of this packet.
-    uint32 spreading  = 7;
+    Spreading spreading  = 7;
     // Error Correcting Code rate of this packet.
-    uint32 coderate = 8;
+    Coderate coderate = 8;
     // Average packet RSSI in dB.
     float rssi = 9;
     // Average packet SNR, in dB.
