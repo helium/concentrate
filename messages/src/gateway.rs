@@ -28,7 +28,7 @@ pub struct RxPacket {
     pub if_chain: u32,
     pub crc_check: bool,
     pub timestamp: u64,
-    pub radio: u32,
+    pub radio: Radio,
     pub bandwidth: Bandwidth,
     pub spreading: Spreading,
     pub coderate: Coderate,
@@ -111,18 +111,18 @@ impl RxPacket {
         self.timestamp = v;
     }
 
-    // uint32 radio = 5;
+    // .Radio radio = 5;
 
 
-    pub fn get_radio(&self) -> u32 {
+    pub fn get_radio(&self) -> Radio {
         self.radio
     }
     pub fn clear_radio(&mut self) {
-        self.radio = 0;
+        self.radio = Radio::R0;
     }
 
     // Param is passed by value, moved
-    pub fn set_radio(&mut self, v: u32) {
+    pub fn set_radio(&mut self, v: Radio) {
         self.radio = v;
     }
 
@@ -266,11 +266,7 @@ impl ::protobuf::Message for RxPacket {
                     self.timestamp = tmp;
                 },
                 5 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_uint32()?;
-                    self.radio = tmp;
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.radio, 5, &mut self.unknown_fields)?
                 },
                 6 => {
                     ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.bandwidth, 6, &mut self.unknown_fields)?
@@ -322,8 +318,8 @@ impl ::protobuf::Message for RxPacket {
         if self.timestamp != 0 {
             my_size += ::protobuf::rt::value_size(4, self.timestamp, ::protobuf::wire_format::WireTypeVarint);
         }
-        if self.radio != 0 {
-            my_size += ::protobuf::rt::value_size(5, self.radio, ::protobuf::wire_format::WireTypeVarint);
+        if self.radio != Radio::R0 {
+            my_size += ::protobuf::rt::enum_size(5, self.radio);
         }
         if self.bandwidth != Bandwidth::UNDEFINED {
             my_size += ::protobuf::rt::enum_size(6, self.bandwidth);
@@ -361,8 +357,8 @@ impl ::protobuf::Message for RxPacket {
         if self.timestamp != 0 {
             os.write_uint64(4, self.timestamp)?;
         }
-        if self.radio != 0 {
-            os.write_uint32(5, self.radio)?;
+        if self.radio != Radio::R0 {
+            os.write_enum(5, self.radio.value())?;
         }
         if self.bandwidth != Bandwidth::UNDEFINED {
             os.write_enum(6, self.bandwidth.value())?;
@@ -444,7 +440,7 @@ impl ::protobuf::Message for RxPacket {
                     |m: &RxPacket| { &m.timestamp },
                     |m: &mut RxPacket| { &mut m.timestamp },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Radio>>(
                     "radio",
                     |m: &RxPacket| { &m.radio },
                     |m: &mut RxPacket| { &mut m.radio },
@@ -505,7 +501,7 @@ impl ::protobuf::Clear for RxPacket {
         self.if_chain = 0;
         self.crc_check = false;
         self.timestamp = 0;
-        self.radio = 0;
+        self.radio = Radio::R0;
         self.bandwidth = Bandwidth::UNDEFINED;
         self.spreading = Spreading::UNDEFINED;
         self.coderate = Coderate::UNDEFINED;
@@ -531,7 +527,16 @@ impl ::protobuf::reflect::ProtobufValue for RxPacket {
 #[derive(PartialEq,Clone,Default)]
 pub struct TxPacket {
     // message fields
-    pub dummy: i32,
+    pub freq: u32,
+    pub radio: Radio,
+    pub power: i32,
+    pub bandwidth: Bandwidth,
+    pub spreading: Spreading,
+    pub coderate: Coderate,
+    pub invert_polarity: bool,
+    pub omit_crc: bool,
+    pub implicit_header: bool,
+    pub payload: ::std::vec::Vec<u8>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -548,19 +553,165 @@ impl TxPacket {
         ::std::default::Default::default()
     }
 
-    // int32 dummy = 1;
+    // uint32 freq = 1;
 
 
-    pub fn get_dummy(&self) -> i32 {
-        self.dummy
+    pub fn get_freq(&self) -> u32 {
+        self.freq
     }
-    pub fn clear_dummy(&mut self) {
-        self.dummy = 0;
+    pub fn clear_freq(&mut self) {
+        self.freq = 0;
     }
 
     // Param is passed by value, moved
-    pub fn set_dummy(&mut self, v: i32) {
-        self.dummy = v;
+    pub fn set_freq(&mut self, v: u32) {
+        self.freq = v;
+    }
+
+    // .Radio radio = 2;
+
+
+    pub fn get_radio(&self) -> Radio {
+        self.radio
+    }
+    pub fn clear_radio(&mut self) {
+        self.radio = Radio::R0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_radio(&mut self, v: Radio) {
+        self.radio = v;
+    }
+
+    // int32 power = 3;
+
+
+    pub fn get_power(&self) -> i32 {
+        self.power
+    }
+    pub fn clear_power(&mut self) {
+        self.power = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_power(&mut self, v: i32) {
+        self.power = v;
+    }
+
+    // .Bandwidth bandwidth = 4;
+
+
+    pub fn get_bandwidth(&self) -> Bandwidth {
+        self.bandwidth
+    }
+    pub fn clear_bandwidth(&mut self) {
+        self.bandwidth = Bandwidth::UNDEFINED;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_bandwidth(&mut self, v: Bandwidth) {
+        self.bandwidth = v;
+    }
+
+    // .Spreading spreading = 5;
+
+
+    pub fn get_spreading(&self) -> Spreading {
+        self.spreading
+    }
+    pub fn clear_spreading(&mut self) {
+        self.spreading = Spreading::UNDEFINED;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_spreading(&mut self, v: Spreading) {
+        self.spreading = v;
+    }
+
+    // .Coderate coderate = 6;
+
+
+    pub fn get_coderate(&self) -> Coderate {
+        self.coderate
+    }
+    pub fn clear_coderate(&mut self) {
+        self.coderate = Coderate::UNDEFINED;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_coderate(&mut self, v: Coderate) {
+        self.coderate = v;
+    }
+
+    // bool invert_polarity = 7;
+
+
+    pub fn get_invert_polarity(&self) -> bool {
+        self.invert_polarity
+    }
+    pub fn clear_invert_polarity(&mut self) {
+        self.invert_polarity = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_invert_polarity(&mut self, v: bool) {
+        self.invert_polarity = v;
+    }
+
+    // bool omit_crc = 8;
+
+
+    pub fn get_omit_crc(&self) -> bool {
+        self.omit_crc
+    }
+    pub fn clear_omit_crc(&mut self) {
+        self.omit_crc = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_omit_crc(&mut self, v: bool) {
+        self.omit_crc = v;
+    }
+
+    // bool implicit_header = 9;
+
+
+    pub fn get_implicit_header(&self) -> bool {
+        self.implicit_header
+    }
+    pub fn clear_implicit_header(&mut self) {
+        self.implicit_header = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_implicit_header(&mut self, v: bool) {
+        self.implicit_header = v;
+    }
+
+    // bytes payload = 10;
+
+
+    pub fn get_payload(&self) -> &[u8] {
+        &self.payload
+    }
+    pub fn clear_payload(&mut self) {
+        self.payload.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_payload(&mut self, v: ::std::vec::Vec<u8>) {
+        self.payload = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_payload(&mut self) -> &mut ::std::vec::Vec<u8> {
+        &mut self.payload
+    }
+
+    // Take field
+    pub fn take_payload(&mut self) -> ::std::vec::Vec<u8> {
+        ::std::mem::replace(&mut self.payload, ::std::vec::Vec::new())
     }
 }
 
@@ -577,8 +728,51 @@ impl ::protobuf::Message for TxPacket {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
+                    let tmp = is.read_uint32()?;
+                    self.freq = tmp;
+                },
+                2 => {
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.radio, 2, &mut self.unknown_fields)?
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
                     let tmp = is.read_int32()?;
-                    self.dummy = tmp;
+                    self.power = tmp;
+                },
+                4 => {
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.bandwidth, 4, &mut self.unknown_fields)?
+                },
+                5 => {
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.spreading, 5, &mut self.unknown_fields)?
+                },
+                6 => {
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.coderate, 6, &mut self.unknown_fields)?
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.invert_polarity = tmp;
+                },
+                8 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.omit_crc = tmp;
+                },
+                9 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.implicit_header = tmp;
+                },
+                10 => {
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.payload)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -592,8 +786,35 @@ impl ::protobuf::Message for TxPacket {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.dummy != 0 {
-            my_size += ::protobuf::rt::value_size(1, self.dummy, ::protobuf::wire_format::WireTypeVarint);
+        if self.freq != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.freq, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.radio != Radio::R0 {
+            my_size += ::protobuf::rt::enum_size(2, self.radio);
+        }
+        if self.power != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.power, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.bandwidth != Bandwidth::UNDEFINED {
+            my_size += ::protobuf::rt::enum_size(4, self.bandwidth);
+        }
+        if self.spreading != Spreading::UNDEFINED {
+            my_size += ::protobuf::rt::enum_size(5, self.spreading);
+        }
+        if self.coderate != Coderate::UNDEFINED {
+            my_size += ::protobuf::rt::enum_size(6, self.coderate);
+        }
+        if self.invert_polarity != false {
+            my_size += 2;
+        }
+        if self.omit_crc != false {
+            my_size += 2;
+        }
+        if self.implicit_header != false {
+            my_size += 2;
+        }
+        if !self.payload.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(10, &self.payload);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -601,8 +822,35 @@ impl ::protobuf::Message for TxPacket {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if self.dummy != 0 {
-            os.write_int32(1, self.dummy)?;
+        if self.freq != 0 {
+            os.write_uint32(1, self.freq)?;
+        }
+        if self.radio != Radio::R0 {
+            os.write_enum(2, self.radio.value())?;
+        }
+        if self.power != 0 {
+            os.write_int32(3, self.power)?;
+        }
+        if self.bandwidth != Bandwidth::UNDEFINED {
+            os.write_enum(4, self.bandwidth.value())?;
+        }
+        if self.spreading != Spreading::UNDEFINED {
+            os.write_enum(5, self.spreading.value())?;
+        }
+        if self.coderate != Coderate::UNDEFINED {
+            os.write_enum(6, self.coderate.value())?;
+        }
+        if self.invert_polarity != false {
+            os.write_bool(7, self.invert_polarity)?;
+        }
+        if self.omit_crc != false {
+            os.write_bool(8, self.omit_crc)?;
+        }
+        if self.implicit_header != false {
+            os.write_bool(9, self.implicit_header)?;
+        }
+        if !self.payload.is_empty() {
+            os.write_bytes(10, &self.payload)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -646,10 +894,55 @@ impl ::protobuf::Message for TxPacket {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "freq",
+                    |m: &TxPacket| { &m.freq },
+                    |m: &mut TxPacket| { &mut m.freq },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Radio>>(
+                    "radio",
+                    |m: &TxPacket| { &m.radio },
+                    |m: &mut TxPacket| { &mut m.radio },
+                ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeInt32>(
-                    "dummy",
-                    |m: &TxPacket| { &m.dummy },
-                    |m: &mut TxPacket| { &mut m.dummy },
+                    "power",
+                    |m: &TxPacket| { &m.power },
+                    |m: &mut TxPacket| { &mut m.power },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Bandwidth>>(
+                    "bandwidth",
+                    |m: &TxPacket| { &m.bandwidth },
+                    |m: &mut TxPacket| { &mut m.bandwidth },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Spreading>>(
+                    "spreading",
+                    |m: &TxPacket| { &m.spreading },
+                    |m: &mut TxPacket| { &mut m.spreading },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Coderate>>(
+                    "coderate",
+                    |m: &TxPacket| { &m.coderate },
+                    |m: &mut TxPacket| { &mut m.coderate },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "invert_polarity",
+                    |m: &TxPacket| { &m.invert_polarity },
+                    |m: &mut TxPacket| { &mut m.invert_polarity },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "omit_crc",
+                    |m: &TxPacket| { &m.omit_crc },
+                    |m: &mut TxPacket| { &mut m.omit_crc },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "implicit_header",
+                    |m: &TxPacket| { &m.implicit_header },
+                    |m: &mut TxPacket| { &mut m.implicit_header },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
+                    "payload",
+                    |m: &TxPacket| { &m.payload },
+                    |m: &mut TxPacket| { &mut m.payload },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<TxPacket>(
                     "TxPacket",
@@ -673,7 +966,16 @@ impl ::protobuf::Message for TxPacket {
 
 impl ::protobuf::Clear for TxPacket {
     fn clear(&mut self) {
-        self.dummy = 0;
+        self.freq = 0;
+        self.radio = Radio::R0;
+        self.power = 0;
+        self.bandwidth = Bandwidth::UNDEFINED;
+        self.spreading = Spreading::UNDEFINED;
+        self.coderate = Coderate::UNDEFINED;
+        self.invert_polarity = false;
+        self.omit_crc = false;
+        self.implicit_header = false;
+        self.payload.clear();
         self.unknown_fields.clear();
     }
 }
@@ -691,14 +993,69 @@ impl ::protobuf::reflect::ProtobufValue for TxPacket {
 }
 
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
+pub enum Radio {
+    R0 = 0,
+    R1 = 1,
+}
+
+impl ::protobuf::ProtobufEnum for Radio {
+    fn value(&self) -> i32 {
+        *self as i32
+    }
+
+    fn from_i32(value: i32) -> ::std::option::Option<Radio> {
+        match value {
+            0 => ::std::option::Option::Some(Radio::R0),
+            1 => ::std::option::Option::Some(Radio::R1),
+            _ => ::std::option::Option::None
+        }
+    }
+
+    fn values() -> &'static [Self] {
+        static values: &'static [Radio] = &[
+            Radio::R0,
+            Radio::R1,
+        ];
+        values
+    }
+
+    fn enum_descriptor_static() -> &'static ::protobuf::reflect::EnumDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::EnumDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                ::protobuf::reflect::EnumDescriptor::new("Radio", file_descriptor_proto())
+            })
+        }
+    }
+}
+
+impl ::std::marker::Copy for Radio {
+}
+
+impl ::std::default::Default for Radio {
+    fn default() -> Self {
+        Radio::R0
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Radio {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Enum(self.descriptor())
+    }
+}
+
+#[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum Spreading {
     UNDEFINED = 0,
-    SF7 = 7,
-    SF8 = 8,
-    SF9 = 9,
-    SF10 = 10,
-    SF11 = 11,
-    SF12 = 12,
+    SF7 = 1,
+    SF8 = 2,
+    SF9 = 3,
+    SF10 = 4,
+    SF11 = 5,
+    SF12 = 6,
 }
 
 impl ::protobuf::ProtobufEnum for Spreading {
@@ -709,12 +1066,12 @@ impl ::protobuf::ProtobufEnum for Spreading {
     fn from_i32(value: i32) -> ::std::option::Option<Spreading> {
         match value {
             0 => ::std::option::Option::Some(Spreading::UNDEFINED),
-            7 => ::std::option::Option::Some(Spreading::SF7),
-            8 => ::std::option::Option::Some(Spreading::SF8),
-            9 => ::std::option::Option::Some(Spreading::SF9),
-            10 => ::std::option::Option::Some(Spreading::SF10),
-            11 => ::std::option::Option::Some(Spreading::SF11),
-            12 => ::std::option::Option::Some(Spreading::SF12),
+            1 => ::std::option::Option::Some(Spreading::SF7),
+            2 => ::std::option::Option::Some(Spreading::SF8),
+            3 => ::std::option::Option::Some(Spreading::SF9),
+            4 => ::std::option::Option::Some(Spreading::SF10),
+            5 => ::std::option::Option::Some(Spreading::SF11),
+            6 => ::std::option::Option::Some(Spreading::SF12),
             _ => ::std::option::Option::None
         }
     }
@@ -763,13 +1120,13 @@ impl ::protobuf::reflect::ProtobufValue for Spreading {
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum Bandwidth {
     UNDEFINED = 0,
-    BW7_8kHz = 7800,
-    BW15_6kHz = 15600,
-    BW31_2kHz = 31200,
-    BW62_5kHz = 62500,
-    BW125kHz = 125000,
-    BW250kHz = 250000,
-    BW500kHz = 500000,
+    BW7_8kHz = 1,
+    BW15_6kHz = 2,
+    BW31_2kHz = 3,
+    BW62_5kHz = 4,
+    BW125kHz = 5,
+    BW250kHz = 6,
+    BW500kHz = 7,
 }
 
 impl ::protobuf::ProtobufEnum for Bandwidth {
@@ -780,13 +1137,13 @@ impl ::protobuf::ProtobufEnum for Bandwidth {
     fn from_i32(value: i32) -> ::std::option::Option<Bandwidth> {
         match value {
             0 => ::std::option::Option::Some(Bandwidth::UNDEFINED),
-            7800 => ::std::option::Option::Some(Bandwidth::BW7_8kHz),
-            15600 => ::std::option::Option::Some(Bandwidth::BW15_6kHz),
-            31200 => ::std::option::Option::Some(Bandwidth::BW31_2kHz),
-            62500 => ::std::option::Option::Some(Bandwidth::BW62_5kHz),
-            125000 => ::std::option::Option::Some(Bandwidth::BW125kHz),
-            250000 => ::std::option::Option::Some(Bandwidth::BW250kHz),
-            500000 => ::std::option::Option::Some(Bandwidth::BW500kHz),
+            1 => ::std::option::Option::Some(Bandwidth::BW7_8kHz),
+            2 => ::std::option::Option::Some(Bandwidth::BW15_6kHz),
+            3 => ::std::option::Option::Some(Bandwidth::BW31_2kHz),
+            4 => ::std::option::Option::Some(Bandwidth::BW62_5kHz),
+            5 => ::std::option::Option::Some(Bandwidth::BW125kHz),
+            6 => ::std::option::Option::Some(Bandwidth::BW250kHz),
+            7 => ::std::option::Option::Some(Bandwidth::BW500kHz),
             _ => ::std::option::Option::None
         }
     }
@@ -836,10 +1193,10 @@ impl ::protobuf::reflect::ProtobufValue for Bandwidth {
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum Coderate {
     UNDEFINED = 0,
-    CR4_5 = 5,
-    CR4_6 = 6,
-    CR4_7 = 7,
-    CR4_8 = 8,
+    CR4_5 = 1,
+    CR4_6 = 2,
+    CR4_7 = 3,
+    CR4_8 = 4,
 }
 
 impl ::protobuf::ProtobufEnum for Coderate {
@@ -850,10 +1207,10 @@ impl ::protobuf::ProtobufEnum for Coderate {
     fn from_i32(value: i32) -> ::std::option::Option<Coderate> {
         match value {
             0 => ::std::option::Option::Some(Coderate::UNDEFINED),
-            5 => ::std::option::Option::Some(Coderate::CR4_5),
-            6 => ::std::option::Option::Some(Coderate::CR4_6),
-            7 => ::std::option::Option::Some(Coderate::CR4_7),
-            8 => ::std::option::Option::Some(Coderate::CR4_8),
+            1 => ::std::option::Option::Some(Coderate::CR4_5),
+            2 => ::std::option::Option::Some(Coderate::CR4_6),
+            3 => ::std::option::Option::Some(Coderate::CR4_7),
+            4 => ::std::option::Option::Some(Coderate::CR4_8),
             _ => ::std::option::Option::None
         }
     }
@@ -898,25 +1255,32 @@ impl ::protobuf::reflect::ProtobufValue for Coderate {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\rgateway.proto\x12\0\"\xfe\x01\n\x08RxPacket\x12\x0e\n\x04freq\x18\
+    \n\rgateway.proto\x12\0\"\x86\x02\n\x08RxPacket\x12\x0e\n\x04freq\x18\
     \x01\x20\x01(\rB\0\x12\x12\n\x08if_chain\x18\x02\x20\x01(\rB\0\x12\x13\n\
     \tcrc_check\x18\x03\x20\x01(\x08B\0\x12\x13\n\ttimestamp\x18\x04\x20\x01\
-    (\x04B\0\x12\x0f\n\x05radio\x18\x05\x20\x01(\rB\0\x12\x1f\n\tbandwidth\
-    \x18\x06\x20\x01(\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\x18\x07\x20\
-    \x01(\x0e2\n.SpreadingB\0\x12\x1d\n\x08coderate\x18\x08\x20\x01(\x0e2\t.\
-    CoderateB\0\x12\x0e\n\x04rssi\x18\t\x20\x01(\x02B\0\x12\r\n\x03snr\x18\n\
-    \x20\x01(\x02B\0\x12\x11\n\x07payload\x18\x0b\x20\x01(\x0cB\0:\0\"\x1d\n\
-    \x08TxPacket\x12\x0f\n\x05dummy\x18\x01\x20\x01(\x05B\0:\0*U\n\tSpreadin\
-    g\x12\r\n\tUNDEFINED\x10\0\x12\x07\n\x03SF7\x10\x07\x12\x07\n\x03SF8\x10\
-    \x08\x12\x07\n\x03SF9\x10\t\x12\x08\n\x04SF10\x10\n\x12\x08\n\x04SF11\
-    \x10\x0b\x12\x08\n\x04SF12\x10\x0c\x1a\0*\x8d\x01\n\tBandwidth\x12\r\n\t\
-    UNDEFINED\x10\0\x12\r\n\x08BW7_8kHz\x10\xf8<\x12\x0e\n\tBW15_6kHz\x10\
-    \xf0y\x12\x0f\n\tBW31_2kHz\x10\xe0\xf3\x01\x12\x0f\n\tBW62_5kHz\x10\xa4\
-    \xe8\x03\x12\x0e\n\x08BW125kHz\x10\xc8\xd0\x07\x12\x0e\n\x08BW250kHz\x10\
-    \x90\xa1\x0f\x12\x0e\n\x08BW500kHz\x10\xa0\xc2\x1e\x1a\0*G\n\x08Coderate\
-    \x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x05\x12\t\n\x05CR4_6\x10\
-    \x06\x12\t\n\x05CR4_7\x10\x07\x12\t\n\x05CR4_8\x10\x08\x1a\0B\0b\x06prot\
-    o3\
+    (\x04B\0\x12\x17\n\x05radio\x18\x05\x20\x01(\x0e2\x06.RadioB\0\x12\x1f\n\
+    \tbandwidth\x18\x06\x20\x01(\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\
+    \x18\x07\x20\x01(\x0e2\n.SpreadingB\0\x12\x1d\n\x08coderate\x18\x08\x20\
+    \x01(\x0e2\t.CoderateB\0\x12\x0e\n\x04rssi\x18\t\x20\x01(\x02B\0\x12\r\n\
+    \x03snr\x18\n\x20\x01(\x02B\0\x12\x11\n\x07payload\x18\x0b\x20\x01(\x0cB\
+    \0:\0\"\x84\x02\n\x08TxPacket\x12\x0e\n\x04freq\x18\x01\x20\x01(\rB\0\
+    \x12\x17\n\x05radio\x18\x02\x20\x01(\x0e2\x06.RadioB\0\x12\x0f\n\x05powe\
+    r\x18\x03\x20\x01(\x05B\0\x12\x1f\n\tbandwidth\x18\x04\x20\x01(\x0e2\n.B\
+    andwidthB\0\x12\x1f\n\tspreading\x18\x05\x20\x01(\x0e2\n.SpreadingB\0\
+    \x12\x1d\n\x08coderate\x18\x06\x20\x01(\x0e2\t.CoderateB\0\x12\x19\n\x0f\
+    invert_polarity\x18\x07\x20\x01(\x08B\0\x12\x12\n\x08omit_crc\x18\x08\
+    \x20\x01(\x08B\0\x12\x19\n\x0fimplicit_header\x18\t\x20\x01(\x08B\0\x12\
+    \x11\n\x07payload\x18\n\x20\x01(\x0cB\0:\0*\x19\n\x05Radio\x12\x06\n\x02\
+    R0\x10\0\x12\x06\n\x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUNDEFINED\
+    \x10\0\x12\x07\n\x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\x03SF\
+    9\x10\x03\x12\x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\x08\n\
+    \x04SF12\x10\x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\x10\0\
+    \x12\x0c\n\x08BW7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\tBW31_\
+    2kHz\x10\x03\x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\x05\
+    \x12\x0c\n\x08BW250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\n\
+    \x08Coderate\x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\
+    \x05CR4_6\x10\x02\x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\
+    \0B\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

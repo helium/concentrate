@@ -21,6 +21,24 @@ fn main() {
             args.publish_port,
         ),
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
+        cmdline::Cmd::Send {
+            freq,
+            radio,
+            power,
+            spreading,
+            coderate,
+            bandwidth,
+            payload,
+        } => app::send(
+            args.listen_port,
+            freq,
+            radio,
+            power,
+            spreading,
+            coderate,
+            bandwidth,
+            payload,
+        ),
     };
     match res {
         Ok(()) => process::exit(0),

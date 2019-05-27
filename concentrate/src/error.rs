@@ -14,6 +14,11 @@ quick_error! {
             from()
             description(err.description())
         }
+        /// Invalid arguments.
+        CmdLine(err: String) {
+            from()
+            description(err)
+        }
     }
 }
 

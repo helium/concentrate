@@ -4,6 +4,7 @@ use loragw;
 use messages;
 use protobuf::{parse_from_bytes, Message};
 use std::{
+    error::Error,
     fmt,
     io::ErrorKind,
     net::{SocketAddr, UdpSocket},
@@ -57,8 +58,16 @@ pub fn serve(
         match socket.recv(&mut tx_req_buf) {
             Ok(sz) => {
                 log::debug!("Read {} bytes {:?}", sz, &tx_req_buf[..sz]);
-                let tx_pkt = parse_tx_req(&tx_req_buf)?;
-                concentrator.transmit(tx_pkt)?;
+                match parse_from_bytes::<messages::TxPacket>(&tx_req_buf[..sz]) {
+                    Ok(tx_pkt) => {
+                        log::debug!("received tx req {:?}", tx_pkt);
+                        let tx_pkt = loragw::TxPacket::LoRa(tx_pkt.into());
+                        concentrator.transmit(tx_pkt).unwrap_or_else(|e| {
+                            log::error!("transmit failed with '{}'", e.description())
+                        });
+                    }
+                    Err(e) => log::error!("{:?}", e),
+                }
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
             Err(e) => return Err(e.into()),
@@ -83,8 +92,82 @@ pub fn listen(print_level: u8, publish_port: u16) -> error::Result {
     }
 }
 
-fn parse_tx_req(_buf: &[u8]) -> error::Result<loragw::TxPacket> {
-    unimplemented!()
+pub fn send(
+    listen_port: u16,
+    freq: u32,
+    radio: u8,
+    power: i8,
+    spreading: u8,
+    coderate: u8,
+    bandwidth: u32,
+    payload: Option<String>,
+) -> error::Result {
+    // unimplemented!()
+    let tx_pkt = messages::TxPacket {
+        freq: freq,
+        radio: match radio {
+            0 => messages::Radio::R0,
+            1 => messages::Radio::R1,
+            e => return Err(error::Error::CmdLine(format!("{} is not a valid radio", e))),
+        },
+        power: i32::from(power),
+        bandwidth: match bandwidth {
+            7800 => messages::Bandwidth::BW7_8kHz,
+            15600 => messages::Bandwidth::BW15_6kHz,
+            31200 => messages::Bandwidth::BW31_2kHz,
+            62500 => messages::Bandwidth::BW62_5kHz,
+            125_000 => messages::Bandwidth::BW125kHz,
+            250_000 => messages::Bandwidth::BW250kHz,
+            500_000 => messages::Bandwidth::BW500kHz,
+            e => {
+                return Err(error::Error::CmdLine(format!(
+                    "{} is not a valid bandwidth",
+                    e
+                )));
+            }
+        },
+        spreading: match spreading {
+            7 => messages::Spreading::SF7,
+            8 => messages::Spreading::SF8,
+            9 => messages::Spreading::SF9,
+            10 => messages::Spreading::SF10,
+            11 => messages::Spreading::SF11,
+            12 => messages::Spreading::SF12,
+            e => {
+                return Err(error::Error::CmdLine(format!(
+                    "{} is not a valid spreading factor",
+                    e
+                )));
+            }
+        },
+        coderate: match coderate {
+            5 => messages::Coderate::CR4_5,
+            6 => messages::Coderate::CR4_6,
+            7 => messages::Coderate::CR4_7,
+            8 => messages::Coderate::CR4_8,
+            e => {
+                return Err(error::Error::CmdLine(format!(
+                    "4/{} is not a valid coderate",
+                    e
+                )));
+            }
+        },
+        invert_polarity: false,
+        omit_crc: false,
+        implicit_header: false,
+        payload: payload.unwrap_or_default().into_bytes(),
+        ..Default::default()
+    };
+    log::debug!("requesting to transmit {:#?}", tx_pkt);
+    let socket = UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0], 0)))?;
+    let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
+    let mut tx_buf = Vec::new();
+    tx_pkt
+        .write_to_vec(&mut tx_buf)
+        .expect("error serializing TxPacket");
+    log::debug!("encoded TxPacket into {} bytes", tx_buf.len());
+    socket.send_to(&tx_buf, listen_addr)?;
+    Ok(())
 }
 
 fn config(concentrator: &loragw::Concentrator) -> error::Result {

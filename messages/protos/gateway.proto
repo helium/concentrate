@@ -1,31 +1,36 @@
 syntax = "proto3";
 
+enum Radio {
+    R0 = 0;
+    R1 = 1;
+}
+
 enum Spreading {
     UNDEFINED = 0;
-    SF7 = 7;
-    SF8 = 8;
-    SF9 = 9;
-    SF10 = 10;
-    SF11 = 11;
-    SF12 = 12;
+    SF7 = 1;
+    SF8 = 2;
+    SF9 = 3;
+    SF10 = 4;
+    SF11 = 5;
+    SF12 = 6;
 }
 
 enum Bandwidth {
     UNDEFINED = 0;
-    BW7_8kHz = 7800;
-    BW15_6kHz = 15600;
-    BW31_2kHz = 31200;
-    BW62_5kHz = 62500;
-    BW125kHz = 125000;
-    BW250kHz = 250000;
-    BW500kHz = 500000;
+    BW7_8kHz = 1;
+    BW15_6kHz = 2;
+    BW31_2kHz = 3;
+    BW62_5kHz = 4;
+    BW125kHz = 5;
+    BW250kHz = 6;
+    BW500kHz = 7;
 }
 enum Coderate {
     UNDEFINED = 0;
-    CR4_5 = 5;
-    CR4_6 = 6;
-    CR4_7 = 7;
-    CR4_8 = 8;
+    CR4_5 = 1;
+    CR4_6 = 2;
+    CR4_7 = 3;
+    CR4_8 = 4;
 }
 
 message RxPacket {
@@ -38,7 +43,7 @@ message RxPacket {
     // 1uS-resolution timestamp derived from concentrator's internal counter.
     uint64 timestamp = 4;
     // RF chain this packet was received on.
-    uint32 radio = 5;
+    Radio radio = 5;
     // Modulation bandwidth.
     Bandwidth bandwidth = 6;
     // Spreading factor of this packet.
@@ -54,5 +59,24 @@ message RxPacket {
 }
 
 message TxPacket {
-    int32 dummy = 1;
+    // Center frequency to transmit on.
+    uint32 freq = 1;
+    // Which radio to transmit on.
+    Radio radio = 2;
+    // TX power (in dBm).
+    int32 power = 3;
+    // Modulation bandwidth.
+    Bandwidth bandwidth = 4;
+    // Spreading factor to use with this packet.
+    Spreading spreading = 5;
+    // Error-correcting-code of the packet.
+    Coderate coderate = 6;
+    // Invert signal polarity for orthogonal downlinks.
+    bool invert_polarity = 7;
+    // Do not send a CRC in the packet.
+    bool omit_crc = 8;
+    // Enable implicit header mode.
+    bool implicit_header = 9;
+    // Arbitrary user-defined payload to transmit.
+    bytes payload = 10;
 }
