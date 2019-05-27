@@ -2,14 +2,23 @@ use crate::error;
 use log;
 use loragw;
 use messages;
-use protobuf::Message;
+use protobuf::{parse_from_bytes, Message};
 use std::{
+    fmt,
     io::ErrorKind,
     net::{SocketAddr, UdpSocket},
     time,
 };
 
-pub fn go(
+fn print_pkt<T: fmt::Debug>(print_level: u8, pkt: &T) {
+    if print_level > 1 {
+        println!("{:#?}\n", pkt);
+    } else if print_level == 1 {
+        println!("{:?}\n", pkt);
+    }
+}
+
+pub fn serve(
     polling_interval: u64,
     print_level: u8,
     listen_port: u16,
@@ -33,11 +42,7 @@ pub fn go(
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
-                if print_level > 1 {
-                    println!("{:#?}\n", pkt);
-                } else if print_level == 1 {
-                    println!("{:?}\n", pkt);
-                }
+                print_pkt(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     let proto_pkt: messages::RxPacket = pkt.into();
                     proto_pkt
@@ -57,6 +62,23 @@ pub fn go(
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
             Err(e) => return Err(e.into()),
+        }
+    }
+}
+
+pub fn listen(print_level: u8, publish_port: u16) -> error::Result {
+    let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
+    log::debug!("listening for published packets on {}", publish_addr);
+    let socket = UdpSocket::bind(publish_addr)?;
+
+    let mut udp_read_buf = [0; 1024];
+
+    loop {
+        let (sz, src) = socket.recv_from(&mut udp_read_buf)?;
+        log::debug!("read {} bytes from {}", sz, src);
+        match parse_from_bytes::<messages::RxPacket>(&udp_read_buf[..sz]) {
+            Ok(rx_pkt) => print_pkt(print_level, &rx_pkt),
+            Err(e) => log::error!("{:?}", e),
         }
     }
 }

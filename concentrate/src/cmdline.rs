@@ -1,6 +1,19 @@
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
+pub enum Cmd {
+    /// Operate as a server between concentrator hardware and UDP clients.
+    #[structopt(name = "serve")]
+    Serve,
+
+    /// Operate as a consumer of another instance running as the
+    /// server. This mode is primarily meant for debugging and
+    /// printing [de]serialized packets.
+    #[structopt(name = "listen")]
+    Listen,
+}
+
+#[derive(StructOpt)]
 pub struct Args {
     /// Polling interval. How often to poll concentrator's FIFO for received packets.
     #[structopt(
@@ -32,4 +45,7 @@ pub struct Args {
         default_value = "31338"
     )]
     pub listen_port: u16,
+
+    #[structopt(subcommand)]
+    pub cmd: Cmd,
 }
