@@ -6,7 +6,7 @@ use structopt::StructOpt;
 mod error;
 
 fn main() {
-    Builder::from_env(Env::new().filter("GW_LOG").write_style("GW_LOG_STYLE")).init();
+    Builder::from_env(Env::new().filter("CONCENTRATE_LOG").write_style("CONCENTRATE_LOG_STYLE")).init();
     let args = cmdline::Args::from_args();
     match app::go(
         args.interval,

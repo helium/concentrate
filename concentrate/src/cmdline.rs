@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt)]
 pub struct Args {
     /// Polling interval. How often to poll concentrator's FIFO for received packets.
     #[structopt(

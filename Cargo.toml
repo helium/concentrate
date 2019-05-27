@@ -1,6 +1,6 @@
 [workspace]
 members = [
-"gateway",
+"concentrate",
 "loragw",
 "loragw-sys",
 "messages",
