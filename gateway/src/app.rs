@@ -39,7 +39,7 @@ pub fn go(
                     println!("{:?}\n", pkt);
                 }
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
-                    let proto_pkt = protorxpacket_from_rxpacket(pkt);
+                    let proto_pkt: messages::RxPacket = pkt.into();
                     proto_pkt
                         .write_to_vec(&mut rx_buf)
                         .expect("error serializing RxPacket");
@@ -63,53 +63,6 @@ pub fn go(
 
 fn parse_tx_req(_buf: &[u8]) -> error::Result<loragw::TxPacket> {
     unimplemented!()
-}
-
-fn protorxpacket_from_rxpacket(pkt: loragw::RxPacketLoRa) -> messages::RxPacket {
-    use loragw::*;
-    messages::RxPacket {
-        freq: pkt.freq,
-        if_chain: pkt.if_chain.into(),
-        crc_check: match pkt.crc_check {
-            CRCCheck::Fail => false,
-            _ => true,
-        },
-        timestamp: pkt.timestamp.as_micros() as u64,
-        radio: match pkt.radio {
-            Radio::R0 => 0,
-            Radio::R1 => 1,
-        },
-        bandwidth: match pkt.bandwidth {
-            Bandwidth::BW7_8kHz => messages::Bandwidth::BW7_8kHz,
-            Bandwidth::BW15_6kHz => messages::Bandwidth::BW15_6kHz,
-            Bandwidth::BW31_2kHz => messages::Bandwidth::BW31_2kHz,
-            Bandwidth::BW62_5kHz => messages::Bandwidth::BW62_5kHz,
-            Bandwidth::BW125kHz => messages::Bandwidth::BW125kHz,
-            Bandwidth::BW250kHz => messages::Bandwidth::BW250kHz,
-            Bandwidth::BW500kHz => messages::Bandwidth::BW500kHz,
-            _ => messages::Bandwidth::UNDEFINED,
-        },
-        spreading: match pkt.spreading {
-            Spreading::SF7 => messages::Spreading::SF7,
-            Spreading::SF8 => messages::Spreading::SF8,
-            Spreading::SF9 => messages::Spreading::SF9,
-            Spreading::SF10 => messages::Spreading::SF10,
-            Spreading::SF11 => messages::Spreading::SF11,
-            Spreading::SF12 => messages::Spreading::SF12,
-            _ => messages::Spreading::UNDEFINED,
-        },
-        coderate: match pkt.coderate {
-            Coderate::Cr4_5 => messages::Coderate::CR4_5,
-            Coderate::Cr4_6 => messages::Coderate::CR4_6,
-            Coderate::Cr4_7 => messages::Coderate::CR4_7,
-            Coderate::Cr4_8 => messages::Coderate::CR4_8,
-            _ => messages::Coderate::UNDEFINED,
-        },
-        rssi: pkt.rssi,
-        snr: pkt.snr,
-        payload: pkt.payload,
-        ..Default::default()
-    }
 }
 
 fn config(concentrator: &loragw::Concentrator) -> error::Result {

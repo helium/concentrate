@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 protobuf = "2.6.0"
+loragw = { path = "../loragw" }
 
 [build-dependencies]
 protobuf-codegen-pure = "2.6.0"
