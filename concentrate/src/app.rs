@@ -104,7 +104,7 @@ pub fn send(
 ) -> error::Result {
     // unimplemented!()
     let tx_pkt = messages::TxPacket {
-        freq: freq,
+        freq,
         radio: match radio {
             0 => messages::Radio::R0,
             1 => messages::Radio::R1,

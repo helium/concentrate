@@ -3,6 +3,7 @@ mod app;
 mod cmdline;
 use std::process;
 use structopt::StructOpt;
+mod cfg;
 mod error;
 
 fn main() {
