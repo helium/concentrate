@@ -5,7 +5,7 @@ authors = ["Jay Kickliter <jay@kickliter.com>"]
 edition = "2018"
 
 [dependencies]
-llg = { package = "loragw-sys", path = "../loragw-sys" }
+llg = { package = "libloragw-sys", path = "../libloragw-sys" }
 log = "0.4.6"
 quick-error = "1.2.2"
 
