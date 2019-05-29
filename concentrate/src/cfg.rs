@@ -99,7 +99,7 @@ mod tests {
                     freq: 911_500_000,
                     rssi_offset: -166.0,
                     type_: "SX1257".to_string(),
-                    tx_enable: false,
+                    tx_enable: true,
                 },
                 Radio {
                     id: 1,
