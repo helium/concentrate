@@ -27,20 +27,22 @@ pub fn serve(
     listen_port: u16,
     publish_port: u16,
 ) -> error::Result {
-    let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
-    let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
-    assert_ne!(listen_addr, publish_addr);
-    log::debug!("listening for TX packets on {}", listen_addr);
-    log::debug!("publishing received packets to {}", publish_addr);
-    let socket = UdpSocket::bind(listen_addr)?;
+    let (socket, publish_addr) = {
+        let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
+        let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
+        assert_ne!(listen_addr, publish_addr);
+        log::debug!("listening for TX packets on {}", listen_addr);
+        log::debug!("publishing received packets to {}", publish_addr);
+        (UdpSocket::bind(listen_addr)?, publish_addr)
+    };
+
     socket.set_read_timeout(Some(time::Duration::from_millis(polling_interval)))?;
+    let mut tx_req_buf = [0; 1024];
+    let mut rx_buf = Vec::new();
 
     let concentrator = loragw::Concentrator::open()?;
     config(&concentrator, cfg)?;
     concentrator.start()?;
-
-    let mut tx_req_buf = [0; 1024];
-    let mut rx_buf = Vec::new();
 
     loop {
         while let Some(packets) = concentrator.receive()? {
@@ -57,6 +59,7 @@ pub fn serve(
                 }
             }
         }
+
         match socket.recv(&mut tx_req_buf) {
             Ok(sz) => {
                 log::debug!("Read {} bytes {:?}", sz, &tx_req_buf[..sz]);
