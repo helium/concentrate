@@ -12,7 +12,7 @@ use std::{
     time,
 };
 
-fn print_pkt<T: fmt::Debug>(print_level: u8, pkt: &T) {
+fn print_at_level<T: fmt::Debug>(print_level: u8, pkt: &T) {
     if print_level > 1 {
         println!("{:#?}\n", pkt);
     } else if print_level == 1 {
@@ -47,7 +47,7 @@ pub fn serve(
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
-                print_pkt(print_level, &pkt);
+                print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     let proto_pkt: messages::RxPacket = pkt.into();
                     proto_pkt
@@ -91,7 +91,7 @@ pub fn listen(print_level: u8, publish_port: u16) -> error::Result {
         let (sz, src) = socket.recv_from(&mut udp_read_buf)?;
         log::debug!("read {} bytes from {}", sz, src);
         match parse_from_bytes::<messages::RxPacket>(&udp_read_buf[..sz]) {
-            Ok(rx_pkt) => print_pkt(print_level, &rx_pkt),
+            Ok(rx_pkt) => print_at_level(print_level, &rx_pkt),
             Err(e) => log::error!("{:?}", e),
         }
     }
@@ -108,7 +108,6 @@ pub fn send(
     bandwidth: u32,
     payload: Option<String>,
 ) -> error::Result {
-    // unimplemented!()
     let tx_pkt = messages::TxPacket {
         freq,
         radio: match radio {
