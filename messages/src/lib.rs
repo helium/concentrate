@@ -1,6 +1,8 @@
+extern crate loragw;
+extern crate protobuf;
+
 mod gateway;
 pub use gateway::*;
-use loragw;
 
 impl From<loragw::Spreading> for Spreading {
     fn from(other: loragw::Spreading) -> Spreading {

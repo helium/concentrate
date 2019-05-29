@@ -1,5 +1,5 @@
-use bindgen;
-use cc;
+extern crate bindgen;
+extern crate cc;
 
 fn main() {
     // Build our extracted, modified, and vendored `libloragw`.

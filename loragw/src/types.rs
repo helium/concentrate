@@ -1,4 +1,5 @@
-use super::error;
+use crate::error;
+use crate::llg;
 use std::convert::TryFrom;
 use std::fmt;
 use std::time;
@@ -570,7 +571,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
         match other {
             TxPacket::LoRa(other) => {
                 if other.payload.len() > 256 {
-                    log::error!("attempt to send {} byte payload", other.payload.len());
+                    error!("attempt to send {} byte payload", other.payload.len());
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();
@@ -600,7 +601,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
             }
             TxPacket::FSK(other) => {
                 if other.payload.len() > 256 {
-                    log::error!("attempt to send {} byte payload", other.payload.len());
+                    error!("attempt to send {} byte payload", other.payload.len());
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();

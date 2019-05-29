@@ -1,4 +1,4 @@
-use protobuf_codegen_pure;
+extern crate protobuf_codegen_pure;
 
 fn main() {
     protobuf_codegen_pure::run(protobuf_codegen_pure::Args {
