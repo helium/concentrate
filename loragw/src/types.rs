@@ -17,6 +17,20 @@ pub enum RadioType {
     SX1276 = 4,
 }
 
+impl TryFrom<&str> for RadioType {
+    type Error = error::Error;
+    fn try_from(s: &str) -> Result<Self, error::Error> {
+        Ok(match s {
+            "None" => RadioType::None,
+            "SX1255" => RadioType::SX1255,
+            "SX1257" => RadioType::SX1257,
+            "SX1272" => RadioType::SX1272,
+            "SX1276" => RadioType::SX1276,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}
+
 /// Spreading factor.
 #[derive(Debug, Clone, Copy)]
 #[allow(missing_docs)]
@@ -197,6 +211,8 @@ pub struct LBTConf {
 /// RF chain configuration.
 #[derive(Debug, Clone)]
 pub struct RxRFConf {
+    /// The radio we are configuring.
+    pub radio: Radio,
     /// Enable this RF chain.
     pub enable: bool,
     /// Tune this chain to this frequency.

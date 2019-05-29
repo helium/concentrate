@@ -1,10 +1,14 @@
+use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
 pub enum Cmd {
     /// Operate as a server between concentrator hardware and UDP clients.
     #[structopt(name = "serve")]
-    Serve,
+    Serve {
+        #[structopt(short = "c", long = "config", parse(from_os_str))]
+        cfg_file: Option<PathBuf>,
+    },
 
     /// Operate as a consumer of another instance running as the
     /// server. This mode is primarily meant for debugging and

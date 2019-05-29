@@ -1,9 +1,10 @@
-use crate::error;
+use crate::{cfg, error};
 use log;
 use loragw;
 use messages;
 use protobuf::{parse_from_bytes, Message};
 use std::{
+    convert::{TryFrom, TryInto},
     error::Error,
     fmt,
     io::ErrorKind,
@@ -20,6 +21,7 @@ fn print_pkt<T: fmt::Debug>(print_level: u8, pkt: &T) {
 }
 
 pub fn serve(
+    cfg: Option<&str>,
     polling_interval: u64,
     print_level: u8,
     listen_port: u16,
@@ -34,7 +36,7 @@ pub fn serve(
     socket.set_read_timeout(Some(time::Duration::from_millis(polling_interval)))?;
 
     let concentrator = loragw::Concentrator::open()?;
-    config(&concentrator)?;
+    config(&concentrator, cfg)?;
     concentrator.start()?;
 
     let mut tx_req_buf = [0; 1024];
@@ -92,6 +94,7 @@ pub fn listen(print_level: u8, publish_port: u16) -> error::Result {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn send(
     listen_port: u16,
     freq: u32,
@@ -108,7 +111,7 @@ pub fn send(
         radio: match radio {
             0 => messages::Radio::R0,
             1 => messages::Radio::R1,
-            e => return Err(error::Error::CmdLine(format!("{} is not a valid radio", e))),
+            e => return Err(error::Error::Generic(format!("{} is not a valid radio", e))),
         },
         power: i32::from(power),
         bandwidth: match bandwidth {
@@ -120,7 +123,7 @@ pub fn send(
             250_000 => messages::Bandwidth::BW250kHz,
             500_000 => messages::Bandwidth::BW500kHz,
             e => {
-                return Err(error::Error::CmdLine(format!(
+                return Err(error::Error::Generic(format!(
                     "{} is not a valid bandwidth",
                     e
                 )));
@@ -134,7 +137,7 @@ pub fn send(
             11 => messages::Spreading::SF11,
             12 => messages::Spreading::SF12,
             e => {
-                return Err(error::Error::CmdLine(format!(
+                return Err(error::Error::Generic(format!(
                     "{} is not a valid spreading factor",
                     e
                 )));
@@ -146,7 +149,7 @@ pub fn send(
             7 => messages::Coderate::CR4_7,
             8 => messages::Coderate::CR4_8,
             e => {
-                return Err(error::Error::CmdLine(format!(
+                return Err(error::Error::Generic(format!(
                     "4/{} is not a valid coderate",
                     e
                 )));
@@ -170,122 +173,23 @@ pub fn send(
     Ok(())
 }
 
-fn config(concentrator: &loragw::Concentrator) -> error::Result {
-    let board_conf = loragw::BoardConf {
-        lorawan_public: false,
-        clksrc: loragw::Radio::R1,
-    };
-    concentrator.config_board(&board_conf)?;
+fn config(concentrator: &loragw::Concentrator, cfg: Option<&str>) -> error::Result {
+    let cfg = cfg::Config::from_str_or_default(cfg)?;
+    log::debug!("configuring concentrator with {:?}", cfg);
 
-    concentrator.config_rx_rf(
-        0,
-        &loragw::RxRFConf {
-            enable: true,
-            freq: 911_500_000,
-            rssi_offset: -162.0,
-            type_: loragw::RadioType::SX1257,
-            tx_enable: true,
-            tx_notch_freq: 126_000,
-        },
-    )?;
+    concentrator.config_board(&cfg.board.try_into()?)?;
 
-    concentrator.config_rx_rf(
-        1,
-        &loragw::RxRFConf {
-            enable: true,
-            freq: 903_500_000,
-            rssi_offset: -162.0,
-            type_: loragw::RadioType::SX1257,
-            tx_enable: false,
-            tx_notch_freq: 0,
-        },
-    )?;
+    if let Some(radios) = cfg.radios {
+        for c in radios {
+            concentrator.config_rx_rf(&loragw::RxRFConf::try_from(c)?)?;
+        }
+    }
 
-    // chan_multiSF_0
-    concentrator.config_channel(
-        0,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R0,
-            freq: -400_000,
-        },
-    )?;
-
-    // chan_multiSF_1
-    concentrator.config_channel(
-        1,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R0,
-            freq: -200_000,
-        },
-    )?;
-
-    // chan_multiSF_2
-    concentrator.config_channel(
-        2,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R0,
-            freq: 0,
-        },
-    )?;
-
-    // chan_multiSF_3
-    concentrator.config_channel(
-        3,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R0,
-            freq: 200_000,
-        },
-    )?;
-
-    // "chan_multiSF_4"
-    concentrator.config_channel(
-        4,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R1,
-            freq: -400_000,
-        },
-    )?;
-
-    // chan_multiSF_5
-    concentrator.config_channel(
-        5,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R1,
-            freq: -200_000,
-        },
-    )?;
-
-    // chan_multiSF_6
-    concentrator.config_channel(
-        6,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R1,
-            freq: 0,
-        },
-    )?;
-
-    // chan_multiSF_7
-    concentrator.config_channel(
-        7,
-        &loragw::ChannelConf::Multirate {
-            radio: loragw::Radio::R1,
-            freq: 200_000,
-        },
-    )?;
-
-    // LoRa STD
-    concentrator.config_channel(
-        8,
-        &loragw::ChannelConf::Fixed {
-            radio: loragw::Radio::R0,
-            freq: 300_000,
-            bandwidth: loragw::Bandwidth::BW500kHz,
-            spreading: loragw::Spreading::SF8,
-        },
-    )?;
-
-    // [G]FSK
-    concentrator.config_channel(9, &loragw::ChannelConf::Disable)?;
+    if let Some(multirate_channels) = cfg.multirate_channels {
+        for (i, c) in multirate_channels.iter().enumerate() {
+            concentrator.config_channel(i as u8, &loragw::ChannelConf::try_from(c)?)?;
+        }
+    }
 
     Ok(())
 }

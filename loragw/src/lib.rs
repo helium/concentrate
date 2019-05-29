@@ -43,9 +43,9 @@ impl Concentrator {
     }
 
     /// Configure an RF chain.
-    pub fn config_rx_rf(&self, chain: u8, conf: &RxRFConf) -> Result {
-        log::trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxrf_setconf(chain, conf.into()) })?;
+    pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
+        log::trace!("{:?}", conf);
+        into_result(unsafe { llg::lgw_rxrf_setconf(conf.radio as u8, conf.into()) })?;
         Ok(())
     }
 

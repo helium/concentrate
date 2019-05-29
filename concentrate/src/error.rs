@@ -1,4 +1,5 @@
 use quick_error::quick_error;
+use toml;
 
 quick_error! {
     /// A common error type for this crate.
@@ -14,8 +15,13 @@ quick_error! {
             from()
             description(err.description())
         }
-        /// Invalid arguments.
-        CmdLine(err: String) {
+        /// Configuration file error.
+        Config(err: toml::de::Error) {
+            from()
+            description(err.description())
+        }
+        /// Catch-all error.
+        Generic(err: String) {
             from()
             description(err)
         }
