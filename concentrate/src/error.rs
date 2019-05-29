@@ -4,7 +4,7 @@ use toml;
 quick_error! {
     /// A common error type for this crate.
     #[derive(Debug)]
-    pub enum Error {
+    pub enum AppError {
         /// Concentrator-specific error.
         Concentrator (err: loragw::Error) {
             from()
@@ -29,4 +29,4 @@ quick_error! {
 }
 
 /// A common result type for this crate.
-pub type Result<T = ()> = ::std::result::Result<T, Error>;
+pub type AppResult<T = ()> = ::std::result::Result<T, AppError>;

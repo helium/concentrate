@@ -5,8 +5,9 @@ use std::{fs, process};
 use structopt::StructOpt;
 mod cfg;
 mod error;
+use error::AppResult;
 
-fn go(args: cmdline::Args) -> error::Result {
+fn go(args: cmdline::Args) -> AppResult {
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {

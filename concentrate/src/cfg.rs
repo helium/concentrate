@@ -1,4 +1,4 @@
-use crate::error;
+use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use toml;
@@ -14,11 +14,11 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from_str_or_default(cfg: Option<&str>) -> error::Result<Self> {
+    pub fn from_str_or_default(cfg: Option<&str>) -> AppResult<Self> {
         Self::from_str(cfg.unwrap_or(DEFAULT_CFG_TOML))
     }
 
-    pub fn from_str(cfg: &str) -> error::Result<Self> {
+    pub fn from_str(cfg: &str) -> AppResult<Self> {
         Ok(toml::from_str(cfg)?)
     }
 }
@@ -30,8 +30,8 @@ pub struct Board {
 }
 
 impl TryFrom<Board> for loragw::BoardConf {
-    type Error = error::Error;
-    fn try_from(other: Board) -> error::Result<loragw::BoardConf> {
+    type Error = AppError;
+    fn try_from(other: Board) -> AppResult<loragw::BoardConf> {
         Ok(Self {
             lorawan_public: other.lorawan_public,
             clksrc: loragw::Radio::try_from(other.clksrc)?,
@@ -50,8 +50,8 @@ pub struct Radio {
 }
 
 impl TryFrom<Radio> for loragw::RxRFConf {
-    type Error = error::Error;
-    fn try_from(other: Radio) -> error::Result<Self> {
+    type Error = AppError;
+    fn try_from(other: Radio) -> AppResult<Self> {
         Ok(loragw::RxRFConf {
             radio: loragw::Radio::try_from(other.id)?,
             enable: true,
@@ -72,8 +72,8 @@ pub struct MultirateLoraChannel {
 }
 
 impl TryFrom<&MultirateLoraChannel> for loragw::ChannelConf {
-    type Error = error::Error;
-    fn try_from(other: &MultirateLoraChannel) -> error::Result<loragw::ChannelConf> {
+    type Error = AppError;
+    fn try_from(other: &MultirateLoraChannel) -> AppResult<loragw::ChannelConf> {
         Ok(loragw::ChannelConf::Multirate {
             radio: loragw::Radio::try_from(other.radio)?,
             freq: other.if_,

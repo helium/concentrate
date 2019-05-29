@@ -1,4 +1,7 @@
-use crate::{cfg, error};
+use crate::{
+    cfg,
+    error::{AppError, AppResult},
+};
 use log;
 use loragw;
 use messages;
@@ -26,7 +29,7 @@ pub fn serve(
     print_level: u8,
     listen_port: u16,
     publish_port: u16,
-) -> error::Result {
+) -> AppResult {
     let (socket, publish_addr) = {
         let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
         let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
@@ -80,7 +83,7 @@ pub fn serve(
     }
 }
 
-pub fn listen(print_level: u8, publish_port: u16) -> error::Result {
+pub fn listen(print_level: u8, publish_port: u16) -> AppResult {
     let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
     log::debug!("listening for published packets on {}", publish_addr);
     let socket = UdpSocket::bind(publish_addr)?;
@@ -107,13 +110,13 @@ pub fn send(
     coderate: u8,
     bandwidth: u32,
     payload: Option<String>,
-) -> error::Result {
+) -> AppResult {
     let tx_pkt = messages::TxPacket {
         freq,
         radio: match radio {
             0 => messages::Radio::R0,
             1 => messages::Radio::R1,
-            e => return Err(error::Error::Generic(format!("{} is not a valid radio", e))),
+            e => return Err(AppError::Generic(format!("{} is not a valid radio", e))),
         },
         power: i32::from(power),
         bandwidth: match bandwidth {
@@ -125,10 +128,7 @@ pub fn send(
             250_000 => messages::Bandwidth::BW250kHz,
             500_000 => messages::Bandwidth::BW500kHz,
             e => {
-                return Err(error::Error::Generic(format!(
-                    "{} is not a valid bandwidth",
-                    e
-                )));
+                return Err(AppError::Generic(format!("{} is not a valid bandwidth", e)));
             }
         },
         spreading: match spreading {
@@ -139,7 +139,7 @@ pub fn send(
             11 => messages::Spreading::SF11,
             12 => messages::Spreading::SF12,
             e => {
-                return Err(error::Error::Generic(format!(
+                return Err(AppError::Generic(format!(
                     "{} is not a valid spreading factor",
                     e
                 )));
@@ -151,7 +151,7 @@ pub fn send(
             7 => messages::Coderate::CR4_7,
             8 => messages::Coderate::CR4_8,
             e => {
-                return Err(error::Error::Generic(format!(
+                return Err(AppError::Generic(format!(
                     "4/{} is not a valid coderate",
                     e
                 )));
@@ -175,7 +175,7 @@ pub fn send(
     Ok(())
 }
 
-fn config(concentrator: &loragw::Concentrator, cfg: Option<&str>) -> error::Result {
+fn config(concentrator: &loragw::Concentrator, cfg: Option<&str>) -> AppResult {
     let cfg = cfg::Config::from_str_or_default(cfg)?;
     log::debug!("configuring concentrator with {:?}", cfg);
 
