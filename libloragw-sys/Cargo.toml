@@ -5,5 +5,4 @@ authors = ["Jay Kickliter <jay@kickliter.com>"]
 build = "build.rs"
 
 [build-dependencies]
-bindgen = "0.49.0"
 cc = "1.0.37"

@@ -1,6 +1,8 @@
 extern crate protobuf_codegen_pure;
 
 fn main() {
+    println!("cargo:rerun-if-changed=protos/gateway.proto");
+
     protobuf_codegen_pure::run(protobuf_codegen_pure::Args {
         out_dir: "src",
         input: &["protos/gateway.proto"],

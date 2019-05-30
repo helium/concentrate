@@ -2,6 +2,9 @@
 name = "messages"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
+readme = "README.md"
+homepage = "https://github.com/helium/concentrate"
+repository = "https://github.com/helium/concentrate"
 
 [dependencies]
 protobuf = "2.5.0"
