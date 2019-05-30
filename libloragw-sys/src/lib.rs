@@ -4,10 +4,10 @@
 
 use std::{fmt, slice};
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+include!("bindings.rs");
 
-// We need to manually `impl Debug` due the non-`Debug` 256 byte array in
-// the following structs.
+// We need to manually `impl Debug` due the non-`Debug` 256 byte array
+// in the following structs.
 
 impl fmt::Debug for lgw_pkt_rx_s {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
