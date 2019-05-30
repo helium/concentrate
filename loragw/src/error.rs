@@ -1,5 +1,3 @@
-use quick_error::quick_error;
-
 /// A common result type for this crate.
 pub type Result<T = ()> = ::std::result::Result<T, Error>;
 

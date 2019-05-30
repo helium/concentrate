@@ -2,10 +2,9 @@
 name = "loragw"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
-edition = "2018"
 
 [dependencies]
-llg = { package = "libloragw-sys", path = "../libloragw-sys" }
+libloragw-sys = { path = "../libloragw-sys" }
 log = "0.4.6"
 quick-error = "1.2.2"
 

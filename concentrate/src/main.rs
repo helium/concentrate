@@ -1,3 +1,15 @@
+extern crate env_logger;
+extern crate loragw;
+extern crate messages;
+extern crate protobuf;
+extern crate structopt;
+#[macro_use]
+extern crate log;
+extern crate serde;
+extern crate toml;
+#[macro_use]
+extern crate quick_error;
+
 use env_logger::{Builder, Env};
 mod app;
 mod cmdline;

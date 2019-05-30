@@ -2,11 +2,10 @@
 name = "messages"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
-edition = "2018"
 
 [dependencies]
-protobuf = "2.6.0"
+protobuf = "2.5.0"
 loragw = { path = "../loragw" }
 
 [build-dependencies]
-protobuf-codegen-pure = "2.6.0"
+protobuf-codegen-pure = "2.5.0"

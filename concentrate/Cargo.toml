@@ -2,15 +2,14 @@
 name = "concentrate"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
-edition = "2018"
 
 [dependencies]
 env_logger = "0.6.1"
 log = "0.4.6"
 loragw = { path = "../loragw" }
 messages = { path = "../messages" }
-protobuf = "2.6.0"
+protobuf = "2.5.0"
 quick-error = "1.2.2"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.2.15"
-toml = "0.5.1"
+toml = "=0.5.0"

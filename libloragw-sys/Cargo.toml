@@ -2,7 +2,6 @@
 name = "libloragw-sys"
 version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
-edition = "2018"
 build = "build.rs"
 
 [build-dependencies]

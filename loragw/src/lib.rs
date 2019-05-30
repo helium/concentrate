@@ -5,11 +5,19 @@
 
 #![deny(missing_docs)]
 
+#[macro_use]
+extern crate quick_error;
+extern crate libloragw_sys;
+#[macro_use]
+extern crate log;
+#[cfg(test)]
+#[cfg_attr(test, macro_use)]
+extern crate lazy_static;
+
 mod error;
 mod types;
 pub use error::*;
-use llg;
-use log;
+use libloragw_sys as llg;
 use std::convert::{TryFrom, TryInto};
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -26,10 +34,10 @@ pub struct Concentrator;
 impl Concentrator {
     /// Open the spidev-connected concentrator.
     pub fn open() -> Result<Self> {
-        log::trace!("opening concentrator");
+        trace!("opening concentrator");
         // We can only 'open' one instance
         if GW_IS_OPEN.compare_and_swap(false, true, Ordering::Acquire) {
-            log::error!("concentrator busy");
+            error!("concentrator busy");
             return Err(Error::Busy);
         }
         Ok(Concentrator {})
@@ -37,28 +45,28 @@ impl Concentrator {
 
     /// Configure the gateway board.
     pub fn config_board(&self, conf: &BoardConf) -> Result {
-        log::trace!("conf: {:?}", conf);
+        trace!("conf: {:?}", conf);
         into_result(unsafe { llg::lgw_board_setconf(conf.into()) })?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
-        log::trace!("{:?}", conf);
+        trace!("{:?}", conf);
         into_result(unsafe { llg::lgw_rxrf_setconf(conf.radio as u8, conf.into()) })?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
-        log::trace!("chain: {}, conf: {:?}", chain, conf);
+        trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxif_setconf(chain, conf.into()) })?;
         Ok(())
     }
 
     /// Configure the Tx gain LUT.
     pub fn config_tx_gain(&self, lut: &mut TxGainLUT) -> Result {
-        log::trace!("lut: {:?}", lut);
+        trace!("lut: {:?}", lut);
         into_result(unsafe {
             llg::lgw_txgain_setconf(lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
         })?;
@@ -67,14 +75,14 @@ impl Concentrator {
 
     /// according to previously set parameters.
     pub fn start(&self) -> Result {
-        log::trace!("starting");
+        trace!("starting");
         into_result(unsafe { llg::lgw_start() })?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&self) -> Result {
-        log::trace!("stopping");
+        trace!("stopping");
         into_result(unsafe { llg::lgw_stop() })?;
         Ok(())
     }
@@ -82,12 +90,12 @@ impl Concentrator {
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
     pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
-        log::trace!("receive");
+        trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len =
             into_result(unsafe { llg::lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr()) })?;
         if len > 0 {
-            log::debug!("read {} packets out of concentrator", len);
+            debug!("read {} packets out of concentrator", len);
             let mut out = Vec::new();
             for tmp in tmp_buf[..len].iter() {
                 out.push(RxPacket::try_from(tmp)?);
@@ -100,7 +108,7 @@ impl Concentrator {
 
     /// Transmit `packet` over the air.
     pub fn transmit(&self, packet: TxPacket) -> Result {
-        log::debug!("transmitting {:?}", packet);
+        debug!("transmitting {:?}", packet);
         into_result(unsafe { llg::lgw_send(packet.try_into()?) })?;
         Ok(())
     }
@@ -115,7 +123,6 @@ impl ops::Drop for Concentrator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use lazy_static::lazy_static;
     use std::sync::Mutex;
 
     lazy_static! {

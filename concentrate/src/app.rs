@@ -2,9 +2,7 @@ use crate::{
     cfg,
     error::{AppError, AppResult},
 };
-use log;
 use loragw;
-use messages;
 use protobuf::{parse_from_bytes, Message};
 use std::{
     convert::{TryFrom, TryInto},
@@ -34,8 +32,8 @@ pub fn serve(
         let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
         let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
         assert_ne!(listen_addr, publish_addr);
-        log::debug!("listening for TX packets on {}", listen_addr);
-        log::debug!("publishing received packets to {}", publish_addr);
+        debug!("listening for TX packets on {}", listen_addr);
+        debug!("publishing received packets to {}", publish_addr);
         (UdpSocket::bind(listen_addr)?, publish_addr)
     };
 
@@ -56,7 +54,7 @@ pub fn serve(
                     proto_pkt
                         .write_to_vec(&mut rx_buf)
                         .expect("error serializing RxPacket");
-                    log::debug!("encoded RxPacket into {} bytes", rx_buf.len());
+                    debug!("encoded RxPacket into {} bytes", rx_buf.len());
                     socket.send_to(&rx_buf, publish_addr)?;
                     rx_buf.truncate(0);
                 }
@@ -65,16 +63,16 @@ pub fn serve(
 
         match socket.recv(&mut tx_req_buf) {
             Ok(sz) => {
-                log::debug!("Read {} bytes {:?}", sz, &tx_req_buf[..sz]);
+                debug!("Read {} bytes {:?}", sz, &tx_req_buf[..sz]);
                 match parse_from_bytes::<messages::TxPacket>(&tx_req_buf[..sz]) {
                     Ok(tx_pkt) => {
-                        log::debug!("received tx req {:?}", tx_pkt);
+                        debug!("received tx req {:?}", tx_pkt);
                         let tx_pkt = loragw::TxPacket::LoRa(tx_pkt.into());
                         concentrator.transmit(tx_pkt).unwrap_or_else(|e| {
-                            log::error!("transmit failed with '{}'", e.description())
+                            error!("transmit failed with '{}'", e.description())
                         });
                     }
-                    Err(e) => log::error!("{:?}", e),
+                    Err(e) => error!("{:?}", e),
                 }
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
@@ -85,17 +83,17 @@ pub fn serve(
 
 pub fn listen(print_level: u8, publish_port: u16) -> AppResult {
     let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
-    log::debug!("listening for published packets on {}", publish_addr);
+    debug!("listening for published packets on {}", publish_addr);
     let socket = UdpSocket::bind(publish_addr)?;
 
     let mut udp_read_buf = [0; 1024];
 
     loop {
         let (sz, src) = socket.recv_from(&mut udp_read_buf)?;
-        log::debug!("read {} bytes from {}", sz, src);
+        debug!("read {} bytes from {}", sz, src);
         match parse_from_bytes::<messages::RxPacket>(&udp_read_buf[..sz]) {
             Ok(rx_pkt) => print_at_level(print_level, &rx_pkt),
-            Err(e) => log::error!("{:?}", e),
+            Err(e) => error!("{:?}", e),
         }
     }
 }
@@ -163,21 +161,21 @@ pub fn send(
         payload: payload.unwrap_or_default().into_bytes(),
         ..Default::default()
     };
-    log::debug!("requesting to transmit {:#?}", tx_pkt);
+    debug!("requesting to transmit {:#?}", tx_pkt);
     let socket = UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0], 0)))?;
     let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
     let mut tx_buf = Vec::new();
     tx_pkt
         .write_to_vec(&mut tx_buf)
         .expect("error serializing TxPacket");
-    log::debug!("encoded TxPacket into {} bytes", tx_buf.len());
+    debug!("encoded TxPacket into {} bytes", tx_buf.len());
     socket.send_to(&tx_buf, listen_addr)?;
     Ok(())
 }
 
 fn config(concentrator: &loragw::Concentrator, cfg: Option<&str>) -> AppResult {
     let cfg = cfg::Config::from_str_or_default(cfg)?;
-    log::debug!("configuring concentrator with {:?}", cfg);
+    debug!("configuring concentrator with {:?}", cfg);
 
     concentrator.config_board(&cfg.board.try_into()?)?;
 
