@@ -10,6 +10,9 @@ extern crate quick_error;
 extern crate libloragw_sys;
 #[macro_use]
 extern crate log;
+#[cfg(test)]
+#[cfg_attr(test, macro_use)]
+extern crate lazy_static;
 
 mod error;
 mod types;
@@ -120,7 +123,6 @@ impl ops::Drop for Concentrator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use lazy_static::lazy_static;
     use std::sync::Mutex;
 
     lazy_static! {
