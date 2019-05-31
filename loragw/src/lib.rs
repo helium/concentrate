@@ -44,28 +44,28 @@ impl Concentrator {
     }
 
     /// Configure the gateway board.
-    pub fn config_board(&self, conf: &BoardConf) -> Result {
+    pub fn config_board(&mut self, conf: &BoardConf) -> Result {
         trace!("conf: {:?}", conf);
         into_result(unsafe { llg::lgw_board_setconf(conf.into()) })?;
         Ok(())
     }
 
     /// Configure an RF chain.
-    pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
+    pub fn config_rx_rf(&mut self, conf: &RxRFConf) -> Result {
         trace!("{:?}", conf);
         into_result(unsafe { llg::lgw_rxrf_setconf(conf.radio as u8, conf.into()) })?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
-    pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
+    pub fn config_channel(&mut self, chain: u8, conf: &ChannelConf) -> Result {
         trace!("chain: {}, conf: {:?}", chain, conf);
         into_result(unsafe { llg::lgw_rxif_setconf(chain, conf.into()) })?;
         Ok(())
     }
 
     /// Configure the Tx gain LUT.
-    pub fn config_tx_gain(&self, lut: &mut TxGainLUT) -> Result {
+    pub fn config_tx_gain(&mut self, lut: &mut TxGainLUT) -> Result {
         trace!("lut: {:?}", lut);
         into_result(unsafe {
             llg::lgw_txgain_setconf(lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
@@ -74,14 +74,14 @@ impl Concentrator {
     }
 
     /// according to previously set parameters.
-    pub fn start(&self) -> Result {
+    pub fn start(&mut self) -> Result {
         trace!("starting");
         into_result(unsafe { llg::lgw_start() })?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
-    pub fn stop(&self) -> Result {
+    pub fn stop(&mut self) -> Result {
         trace!("stopping");
         into_result(unsafe { llg::lgw_stop() })?;
         Ok(())
@@ -89,7 +89,7 @@ impl Concentrator {
 
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
-    pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
+    pub fn receive(&mut self) -> Result<Option<Vec<RxPacket>>> {
         trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len =
@@ -107,7 +107,7 @@ impl Concentrator {
     }
 
     /// Transmit `packet` over the air.
-    pub fn transmit(&self, packet: TxPacket) -> Result {
+    pub fn transmit(&mut self, packet: TxPacket) -> Result {
         debug!("transmitting {:?}", packet);
         into_result(unsafe { llg::lgw_send(packet.try_into()?) })?;
         Ok(())

@@ -41,8 +41,8 @@ pub fn serve(
     let mut tx_req_buf = [0; 1024];
     let mut rx_buf = Vec::new();
 
-    let concentrator = loragw::Concentrator::open()?;
-    config(&concentrator, cfg)?;
+    let mut concentrator = loragw::Concentrator::open()?;
+    config(&mut concentrator, cfg)?;
     concentrator.start()?;
 
     loop {
@@ -173,7 +173,7 @@ pub fn send(
     Ok(())
 }
 
-fn config(concentrator: &loragw::Concentrator, cfg: Option<&str>) -> AppResult {
+fn config(concentrator: &mut loragw::Concentrator, cfg: Option<&str>) -> AppResult {
     let cfg = cfg::Config::from_str_or_default(cfg)?;
     debug!("configuring concentrator with {:?}", cfg);
 
