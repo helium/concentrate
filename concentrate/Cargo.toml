@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 
 [dependencies]
+colored = "1.8"
 env_logger = "0.6.1"
 log = "0.4.6"
 loragw = { path = "../loragw" }

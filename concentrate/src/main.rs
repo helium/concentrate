@@ -1,23 +1,26 @@
+extern crate colored;
 extern crate env_logger;
+#[macro_use]
+extern crate log;
 extern crate loragw;
 extern crate messages;
 extern crate protobuf;
-extern crate structopt;
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate toml;
 #[macro_use]
 extern crate quick_error;
+extern crate serde;
+extern crate structopt;
+extern crate toml;
 
-use env_logger::{Builder, Env};
 mod app;
+mod cfg;
 mod cmdline;
+mod error;
+
+use colored::Colorize;
+use env_logger::{Builder, Env};
+use error::AppResult;
 use std::{fs, process};
 use structopt::StructOpt;
-mod cfg;
-mod error;
-use error::AppResult;
 
 fn go(args: cmdline::Args) -> AppResult {
     match args.cmd {
@@ -67,7 +70,7 @@ fn main() {
     match go(args) {
         Ok(()) => process::exit(0),
         Err(e) => {
-            eprintln!("ERROR: {}", e);
+            eprintln!("{} {}", "error:".red().bold(), e);
             process::exit(1);
         }
     }
