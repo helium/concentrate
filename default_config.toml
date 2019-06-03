@@ -6,14 +6,14 @@ clksrc = 1
 id = 0
 type = 'SX1257'
 freq = 911_500_000
-rssi_offset = -166.0
+rssi_offset = -169.0
 tx_enable = true
 
 [[radios]]
 id = 1
 type = 'SX1257'
 freq = 903_500_000
-rssi_offset = -166.0
+rssi_offset = -169.0
 tx_enable = false
 
 [[multirate_channels]]
