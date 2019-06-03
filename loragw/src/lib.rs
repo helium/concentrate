@@ -14,6 +14,7 @@ extern crate log;
 #[cfg_attr(test, macro_use)]
 extern crate lazy_static;
 
+#[macro_use]
 mod error;
 mod types;
 pub use error::*;
@@ -46,44 +47,46 @@ impl Concentrator {
     /// Configure the gateway board.
     pub fn config_board(&mut self, conf: &BoardConf) -> Result {
         trace!("conf: {:?}", conf);
-        into_result(unsafe { llg::lgw_board_setconf(conf.into()) })?;
+        unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&mut self, conf: &RxRFConf) -> Result {
         trace!("{:?}", conf);
-        into_result(unsafe { llg::lgw_rxrf_setconf(conf.radio as u8, conf.into()) })?;
+        unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&mut self, chain: u8, conf: &ChannelConf) -> Result {
         trace!("chain: {}, conf: {:?}", chain, conf);
-        into_result(unsafe { llg::lgw_rxif_setconf(chain, conf.into()) })?;
+        unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
         Ok(())
     }
 
     /// Configure the Tx gain LUT.
     pub fn config_tx_gain(&mut self, lut: &mut TxGainLUT) -> Result {
         trace!("lut: {:?}", lut);
-        into_result(unsafe {
-            llg::lgw_txgain_setconf(lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s)
-        })?;
+        unsafe {
+            hal_call!(lgw_txgain_setconf(
+                lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
+            ))
+        }?;
         Ok(())
     }
 
     /// according to previously set parameters.
     pub fn start(&mut self) -> Result {
         trace!("starting");
-        into_result(unsafe { llg::lgw_start() })?;
+        unsafe { hal_call!(lgw_start()) }?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&mut self) -> Result {
         trace!("stopping");
-        into_result(unsafe { llg::lgw_stop() })?;
+        unsafe { hal_call!(lgw_stop()) }?;
         Ok(())
     }
 
@@ -92,8 +95,7 @@ impl Concentrator {
     pub fn receive(&mut self) -> Result<Option<Vec<RxPacket>>> {
         trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
-        let len =
-            into_result(unsafe { llg::lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr()) })?;
+        let len = unsafe { hal_call!(lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr())) }?;
         if len > 0 {
             debug!("read {} packets out of concentrator", len);
             let mut out = Vec::new();
@@ -109,7 +111,7 @@ impl Concentrator {
     /// Transmit `packet` over the air.
     pub fn transmit(&mut self, packet: TxPacket) -> Result {
         debug!("transmitting {:?}", packet);
-        into_result(unsafe { llg::lgw_send(packet.try_into()?) })?;
+        unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
 }

@@ -28,11 +28,18 @@ quick_error! {
     }
 }
 
-/// Converts `libloragw` return codes into a Result.
-pub(crate) fn into_result(code: ::std::os::raw::c_int) -> Result<usize> {
-    match code {
-        -1 => Err(Error::HAL),
-        val if val >= 0 => Ok(val as usize),
-        _ => panic!("unexpected return code: {}", code),
+/// Wraps a `libloragw-sys` function call and:
+/// - wraps the return code in a `Result`
+/// - logs name of FFI function on error
+macro_rules! hal_call{
+    ( $fn:ident ( $($arg:expr),* ) ) => {
+        match $crate::libloragw_sys::$fn ( $($arg),* ) {
+            -1 => {
+                error!("HAL call {} returned an error", stringify!($fn));
+                Err($crate::error::Error::HAL)
+            }
+            val if val >= 0 => Ok(val as usize),
+            invalid => panic!("HAL call {} returned invalid value {}", stringify!($fn), invalid),
+        }
     }
 }
