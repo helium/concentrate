@@ -25,3 +25,8 @@ Feature enhancements:
 
 * [#4](https://github.com/helium/concentrate/pull/4):
   Improved error reporting on failed FFI calls.
+
+Bug fixes:
+
+* [#5](https://github.com/helium/concentrate/pull/5):
+  Update RSSI offset per RAK2245/2247 spec.
