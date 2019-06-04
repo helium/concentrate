@@ -12,7 +12,7 @@ The generated bindings (`src/bindings.rs`) have to manually generated
 if the vendored code (`vendor/libloragw`) changes:
 
 ```
-bindgen vendor/libloragw/loragw_hal.h \
+bindgen wrap.h \
     --with-derive-default \
     --whitelist-function "lgw_board_setconf" \
     --whitelist-function "lgw_lbt_setconf" \
@@ -28,5 +28,15 @@ bindgen vendor/libloragw/loragw_hal.h \
     --whitelist-function "lgw_get_trigcnt" \
     --whitelist-function "lgw_version_info" \
     --whitelist-function "lgw_time_on_air" \
+    --whitelist-function "lgw_gps_enable" \
+    --whitelist-function "lgw_gps_disable" \
+    --whitelist-function "lgw_parse_nmea" \
+    --whitelist-function "lgw_parse_ubx" \
+    --whitelist-function "lgw_gps_get" \
+    --whitelist-function "lgw_gps_sync" \
+    --whitelist-function "lgw_cnt2utc" \
+    --whitelist-function "lgw_utc2cnt" \
+    --whitelist-function "lgw_cnt2gps" \
+    --whitelist-function "lgw_gps2cnt" \
     -o src/bindings.rs
 ```
