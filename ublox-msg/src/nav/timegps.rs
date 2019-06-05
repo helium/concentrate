@@ -1,4 +1,4 @@
-use crate::number::*;
+use crate::primitive::*;
 use nom::{le_i16, le_i32, le_i8, le_u32, le_u8};
 
 /// This message reports the precise GPS time of the most recent

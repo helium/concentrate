@@ -1,6 +1,5 @@
-#![allow(missing_docs)]
-
 //! u-blox number formats.
+#![allow(missing_docs)]
 
 pub type CH = u8;
 pub type I1 = i8;
