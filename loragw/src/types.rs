@@ -634,7 +634,8 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
 }
 
 /// Structure containing all gains of Tx chain.
-#[derive(Debug, Clone)]
+#[repr(C)]
+#[derive(Debug, Clone, Default)]
 pub struct TxGain {
     /// Control of the digital gain of SX1301 (2 bits).
     pub dig_gain: u8,
@@ -649,7 +650,8 @@ pub struct TxGain {
 }
 
 /// Tx gain look-up-table.
-#[derive(Debug, Clone)]
+#[repr(C)]
+#[derive(Debug, Clone, Default)]
 pub struct TxGainLUT {
     /// Array of Tx gain struct.
     pub lut: [TxGain; 16],

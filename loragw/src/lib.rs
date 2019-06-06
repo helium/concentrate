@@ -66,11 +66,22 @@ impl Concentrator {
     }
 
     /// Configure the Tx gain LUT.
-    pub fn config_tx_gain(&mut self, lut: &mut TxGainLUT) -> Result {
-        trace!("lut: {:?}", lut);
+    pub fn config_tx_gain(&mut self, gains: &[TxGain]) -> Result {
+        if gains.is_empty() || gains.len() > 16 {
+            error!(
+                "gain table must contain 1 to 16 entries, {} provided",
+                gains.len()
+            );
+            return Err(Error::Size);
+        }
+        trace!("gains: {:?}", gains);
+        let mut lut = TxGainLUT::default();
+        lut.lut[..gains.len()].clone_from_slice(gains);
+        lut.size = gains.len() as u8;
+        debug!("gains: {:?}", lut);
         unsafe {
             hal_call!(lgw_txgain_setconf(
-                lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
+                &mut lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
             ))
         }?;
         Ok(())
