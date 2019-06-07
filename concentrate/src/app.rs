@@ -191,5 +191,13 @@ fn config(concentrator: &mut loragw::Concentrator, cfg: Option<&str>) -> AppResu
         }
     }
 
+    if let Some(gains) = cfg.tx_gains {
+        let gains: Vec<loragw::TxGain> = gains
+            .iter()
+            .map(|g| loragw::TxGain::from(g.clone()))
+            .collect();
+        concentrator.config_tx_gain(gains.as_slice())?
+    }
+
     Ok(())
 }
