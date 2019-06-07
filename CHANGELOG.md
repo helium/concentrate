@@ -25,6 +25,8 @@ Feature enhancements:
 
 * [#8](https://github.com/helium/concentrate/pull/8):
   Update channel scheme to be outside of LoRaWan.
+* [#7](https://github.com/helium/concentrate/pull/7):
+  Add transmit gain lookup-table to configuration.
 
 0.1.1 (2019-06-03)
 ==================

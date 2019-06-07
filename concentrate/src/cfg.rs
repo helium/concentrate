@@ -11,6 +11,7 @@ pub struct Config {
     pub board: Board,
     pub radios: Option<Vec<Radio>>,
     pub multirate_channels: Option<Vec<MultirateLoraChannel>>,
+    pub tx_gains: Option<Vec<TxGain>>,
 }
 
 impl Config {
@@ -81,6 +82,30 @@ impl TryFrom<&MultirateLoraChannel> for loragw::ChannelConf {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct TxGain {
+    #[serde(rename(serialize = "dbm", deserialize = "dbm"))]
+    pub rf_power: i8,
+    #[serde(rename(serialize = "dig", deserialize = "dig"))]
+    pub dig_gain: u8,
+    #[serde(rename(serialize = "pa", deserialize = "pa"))]
+    pub pa_gain: u8,
+    #[serde(rename(serialize = "mix", deserialize = "mix"))]
+    pub mix_gain: u8,
+}
+
+impl From<TxGain> for loragw::TxGain {
+    fn from(other: TxGain) -> loragw::TxGain {
+        loragw::TxGain {
+            dig_gain: other.dig_gain,
+            pa_gain: other.pa_gain,
+            dac_gain: 3,
+            mix_gain: other.mix_gain,
+            rf_power: other.rf_power,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,6 +160,98 @@ mod tests {
                 MultirateLoraChannel {
                     radio: 0,
                     if_: 400_000,
+                },
+            ]),
+            tx_gains: Some(vec![
+                TxGain {
+                    rf_power: -11,
+                    dig_gain: 3,
+                    pa_gain: 0,
+                    mix_gain: 8,
+                },
+                TxGain {
+                    rf_power: -7,
+                    dig_gain: 3,
+                    pa_gain: 0,
+                    mix_gain: 10,
+                },
+                TxGain {
+                    rf_power: -4,
+                    dig_gain: 1,
+                    pa_gain: 0,
+                    mix_gain: 10,
+                },
+                TxGain {
+                    rf_power: -1,
+                    dig_gain: 2,
+                    pa_gain: 0,
+                    mix_gain: 14,
+                },
+                TxGain {
+                    rf_power: 3,
+                    dig_gain: 3,
+                    pa_gain: 1,
+                    mix_gain: 10,
+                },
+                TxGain {
+                    rf_power: 9,
+                    dig_gain: 2,
+                    pa_gain: 1,
+                    mix_gain: 12,
+                },
+                TxGain {
+                    rf_power: 10,
+                    dig_gain: 1,
+                    pa_gain: 1,
+                    mix_gain: 12,
+                },
+                TxGain {
+                    rf_power: 11,
+                    dig_gain: 0,
+                    pa_gain: 1,
+                    mix_gain: 12,
+                },
+                TxGain {
+                    rf_power: 12,
+                    dig_gain: 2,
+                    pa_gain: 1,
+                    mix_gain: 14,
+                },
+                TxGain {
+                    rf_power: 15,
+                    dig_gain: 1,
+                    pa_gain: 2,
+                    mix_gain: 11,
+                },
+                TxGain {
+                    rf_power: 18,
+                    dig_gain: 1,
+                    pa_gain: 2,
+                    mix_gain: 13,
+                },
+                TxGain {
+                    rf_power: 19,
+                    dig_gain: 2,
+                    pa_gain: 2,
+                    mix_gain: 15,
+                },
+                TxGain {
+                    rf_power: 22,
+                    dig_gain: 2,
+                    pa_gain: 3,
+                    mix_gain: 10,
+                },
+                TxGain {
+                    rf_power: 23,
+                    dig_gain: 1,
+                    pa_gain: 3,
+                    mix_gain: 10,
+                },
+                TxGain {
+                    rf_power: 28,
+                    dig_gain: 1,
+                    pa_gain: 3,
+                    mix_gain: 14,
                 },
             ]),
         };

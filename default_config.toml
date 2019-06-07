@@ -47,3 +47,93 @@ if = 200_000
 [[multirate_channels]]
 radio = 0
 if = 400_000
+
+[[tx_gains]]
+dbm = -11
+pa  = 0
+mix = 8
+dig = 3
+
+[[tx_gains]]
+dbm = -7
+pa  = 0
+mix = 10
+dig = 3
+
+[[tx_gains]]
+dbm = -4
+pa  = 0
+mix = 10
+dig = 1
+
+[[tx_gains]]
+dbm = -1
+pa  = 0
+mix = 14
+dig = 2
+
+[[tx_gains]]
+dbm = 3
+pa  = 1
+mix = 10
+dig = 3
+
+[[tx_gains]]
+dbm = 9
+pa  = 1
+mix = 12
+dig = 2
+
+[[tx_gains]]
+dbm = 10
+pa  = 1
+mix = 12
+dig = 1
+
+[[tx_gains]]
+dbm = 11
+pa  = 1
+mix = 12
+dig = 0
+
+[[tx_gains]]
+dbm = 12
+pa  = 1
+mix = 14
+dig = 2
+
+[[tx_gains]]
+dbm = 15
+pa  = 2
+mix = 11
+dig = 1
+
+[[tx_gains]]
+dbm = 18
+pa  = 2
+mix = 13
+dig = 1
+
+[[tx_gains]]
+dbm = 19
+pa  = 2
+mix = 15
+dig = 2
+
+[[tx_gains]]
+dbm = 22
+pa  = 3
+mix = 10
+dig = 2
+
+[[tx_gains]]
+dbm = 23
+pa  = 3
+mix = 10
+dig = 1
+
+[[tx_gains]]
+dbm = 28
+pa  = 3
+dig = 1
+mix = 14
