@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+next-release
+==================
+Feature enhancements:
+
+* [#10](https://github.com/helium/concentrate/pull/10):
+  Add implicit header flag to `send` command.
+
 0.1.2 (2019-06-07)
 ==================
 Feature enhancements:

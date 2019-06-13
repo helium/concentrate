@@ -4,6 +4,7 @@ use std::net::{SocketAddr, UdpSocket};
 
 #[allow(clippy::too_many_arguments)]
 pub fn send(
+    implicit: bool,
     listen_port: u16,
     freq: u32,
     radio: u8,
@@ -61,7 +62,7 @@ pub fn send(
         },
         invert_polarity: false,
         omit_crc: false,
-        implicit_header: false,
+        implicit_header: implicit,
         payload: payload.unwrap_or_default().into_bytes(),
         ..Default::default()
     };
