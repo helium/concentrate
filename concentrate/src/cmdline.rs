@@ -21,6 +21,10 @@ pub enum Cmd {
     /// 'serve' mode.
     #[structopt(name = "send")]
     Send {
+        /// Transmit with implicit header.
+        #[structopt(short = "i", long = "implicit")]
+        implicit: bool,
+
         /// Frequency to transmit packet on.
         #[structopt(value_name = "Hz", short = "f", long = "freq")]
         freq: u32,
