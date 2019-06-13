@@ -1,3 +1,5 @@
+#![forbid(clippy::panicking_unwrap)]
+
 extern crate colored;
 extern crate env_logger;
 #[macro_use]
