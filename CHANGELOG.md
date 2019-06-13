@@ -23,6 +23,8 @@ next-release
 ==================
 Feature enhancements:
 
+* [#11](https://github.com/helium/concentrate/pull/11):
+  Allow enginering/scientific notation for frequency arguments.
 * [#10](https://github.com/helium/concentrate/pull/10):
   Add implicit header flag to `send` command.
 

@@ -52,7 +52,7 @@ fn go(args: cmdline::Args) -> AppResult {
         } => app::send(
             implicit,
             args.listen_port,
-            freq,
+            freq as u32,
             radio,
             power,
             spreading,
