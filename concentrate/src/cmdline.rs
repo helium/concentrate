@@ -27,7 +27,7 @@ pub enum Cmd {
 
         /// Frequency to transmit packet on.
         #[structopt(value_name = "Hz", short = "f", long = "freq")]
-        freq: u32,
+        freq: f64,
 
         /// Radio [0,1] to transmit on.
         #[structopt(short = "r", long = "radio")]
