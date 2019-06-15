@@ -25,6 +25,10 @@ quick_error! {
         Data {
             description("failure to convert hardware val to symbolic val")
         }
+        /// Invalid input.
+        Other (err: String) {
+            description(err)
+        }
     }
 }
 

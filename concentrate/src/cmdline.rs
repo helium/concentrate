@@ -1,5 +1,10 @@
 use std::path::PathBuf;
+use structopt::clap::ArgGroup;
 use structopt::StructOpt;
+
+fn chan_or_freq() -> ArgGroup<'static> {
+    ArgGroup::with_name("chan_or_freq").required(true)
+}
 
 #[derive(StructOpt)]
 pub enum Cmd {
@@ -20,14 +25,24 @@ pub enum Cmd {
     /// 'listen', requires another instance running in
     /// 'serve' mode.
     #[structopt(name = "send")]
+    #[structopt(raw(group = "chan_or_freq()"))]
     Send {
         /// Transmit with implicit header.
         #[structopt(short = "i", long = "implicit")]
         implicit: bool,
 
         /// Frequency to transmit packet on.
-        #[structopt(value_name = "Hz", short = "f", long = "freq")]
-        freq: f64,
+        #[structopt(value_name = "Hz", short = "f", long = "freq", group = "chan_or_freq")]
+        freq: Option<f64>,
+
+        /// Channel to transmit packet on [0,7].
+        #[structopt(
+            value_name = "channel",
+            short = "c",
+            long = "channel",
+            group = "chan_or_freq"
+        )]
+        chan: Option<u32>,
 
         /// Radio [0,1] to transmit on.
         #[structopt(short = "r", long = "radio")]
@@ -47,7 +62,7 @@ pub enum Cmd {
         spreading: u8,
 
         /// Coderate [5,6,7,8]. Actual coderate is 4/[VALUE].
-        #[structopt(short = "c", long = "coderate", default_value = "5")]
+        #[structopt(long = "coderate", default_value = "5")]
         coderate: u8,
 
         /// Bandwidth [7800,15600,31200,62500,125000,250000,500000]

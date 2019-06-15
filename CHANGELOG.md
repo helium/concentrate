@@ -23,6 +23,8 @@ next-release
 ==================
 Feature enhancements:
 
+* [#12](https://github.com/helium/concentrate/pull/12):
+  Allow client to send packets on channels instead of absolute frequencies.
 * [#11](https://github.com/helium/concentrate/pull/11):
   Allow enginering/scientific notation for frequency arguments.
 * [#10](https://github.com/helium/concentrate/pull/10):

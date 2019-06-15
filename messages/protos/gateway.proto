@@ -25,6 +25,7 @@ enum Bandwidth {
     BW250kHz = 6;
     BW500kHz = 7;
 }
+
 enum Coderate {
     UNDEFINED = 0;
     CR4_5 = 1;
@@ -59,8 +60,6 @@ message RxPacket {
 }
 
 message TxPacket {
-    // Center frequency to transmit on.
-    uint32 freq = 1;
     // Which radio to transmit on.
     Radio radio = 2;
     // TX power (in dBm).
@@ -79,4 +78,9 @@ message TxPacket {
     bool implicit_header = 9;
     // Arbitrary user-defined payload to transmit.
     bytes payload = 10;
+    // Center frequency or channel to transmit on.
+    oneof freq_or_chan {
+        uint32 chan = 11;
+        uint32 freq = 12;
+    }
 }

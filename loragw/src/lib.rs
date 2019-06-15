@@ -30,7 +30,10 @@ pub use types::*;
 static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
 /// A LoRa concentrator.
-pub struct Concentrator;
+pub struct Concentrator {
+    radios: [Option<llg::lgw_conf_rxrf_s>; 2],
+    channels: [Option<llg::lgw_conf_rxif_s>; 8],
+}
 
 impl Concentrator {
     /// Open the spidev-connected concentrator.
@@ -41,7 +44,10 @@ impl Concentrator {
             error!("concentrator busy");
             return Err(Error::Busy);
         }
-        Ok(Concentrator {})
+        Ok(Concentrator {
+            radios: [None; 2],
+            channels: [None; 8],
+        })
     }
 
     /// Configure the gateway board.
@@ -54,14 +60,22 @@ impl Concentrator {
     /// Configure an RF chain.
     pub fn config_rx_rf(&mut self, conf: &RxRFConf) -> Result {
         trace!("{:?}", conf);
-        unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
+        let radio = conf.radio as u8;
+        let conf = llg::lgw_conf_rxrf_s::from(conf);
+        self.radios[usize::from(radio)] = Some(conf);
+        unsafe { hal_call!(lgw_rxrf_setconf(radio, conf)) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&mut self, chain: u8, conf: &ChannelConf) -> Result {
         trace!("chain: {}, conf: {:?}", chain, conf);
-        unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
+        if usize::from(chain) > self.channels.len() {
+            return Err(Error::Other(format!("invalid channel: {}", chain)));
+        }
+        let conf = llg::lgw_conf_rxif_s::from(conf);
+        self.channels[usize::from(chain)] = Some(conf);
+        unsafe { hal_call!(lgw_rxif_setconf(chain, conf)) }?;
         Ok(())
     }
 
@@ -124,6 +138,25 @@ impl Concentrator {
         debug!("transmitting {:?}", packet);
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
+    }
+
+    /// Returns center frequency of `chan`.
+    pub fn channel_freq(&self, chan: u8) -> Result<Option<u32>> {
+        let chan = usize::from(chan);
+        if chan >= self.channels.len() {
+            return Err(Error::Other(format!("invalid channel: {}", chan)));
+        }
+
+        if let Some(rxif) = self.channels[chan] {
+            if let Some(rxrf) = self.radios[usize::from(rxif.rf_chain)] {
+                dbg!(rxif);
+                dbg!(rxrf);
+                let f_offset = rxif.freq_hz;
+                let f_center = rxrf.freq_hz;
+                return Ok(Some((f_center as i32 + f_offset) as u32));
+            }
+        };
+        Ok(None)
     }
 }
 

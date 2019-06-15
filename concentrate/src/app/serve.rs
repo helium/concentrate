@@ -9,6 +9,27 @@ use std::{
     time,
 };
 
+struct MsgAndFreq(messages::TxPacket, u32);
+
+impl From<MsgAndFreq> for loragw::TxPacketLoRa {
+    fn from(MsgAndFreq(msg, freq): MsgAndFreq) -> loragw::TxPacketLoRa {
+        loragw::TxPacketLoRa {
+            freq,
+            mode: loragw::TxMode::Immediate,
+            radio: msg.radio.into(),
+            power: msg.power as i8,
+            bandwidth: msg.bandwidth.into(),
+            spreading: msg.spreading.into(),
+            coderate: msg.coderate.into(),
+            invert_polarity: msg.invert_polarity,
+            preamble: None,
+            omit_crc: msg.omit_crc,
+            implicit_header: msg.implicit_header,
+            payload: msg.payload,
+        }
+    }
+}
+
 pub fn serve(
     cfg: Option<&str>,
     polling_interval: u64,
@@ -55,7 +76,27 @@ pub fn serve(
                 match parse_from_bytes::<messages::TxPacket>(&tx_req_buf[..sz]) {
                     Ok(tx_pkt) => {
                         debug!("received tx req {:?}", tx_pkt);
-                        let tx_pkt = loragw::TxPacket::LoRa(tx_pkt.into());
+                        let freq = match tx_pkt.freq_or_chan {
+                            Some(messages::TxPacket_oneof_freq_or_chan::freq(freq)) => freq,
+                            Some(messages::TxPacket_oneof_freq_or_chan::chan(chan)) => {
+                                match concentrator.channel_freq(chan as u8) {
+                                    Ok(Some(freq)) => freq,
+                                    Ok(None) => {
+                                        error!("channel {} is valid but not configured", chan);
+                                        continue;
+                                    }
+                                    Err(e) => {
+                                        error!("{}", e.description());
+                                        continue;
+                                    }
+                                }
+                            }
+                            None => {
+                                error!("tx req missing freq or chan");
+                                continue;
+                            }
+                        };
+                        let tx_pkt = loragw::TxPacket::LoRa(MsgAndFreq(tx_pkt, freq).into());
                         concentrator.transmit(tx_pkt).unwrap_or_else(|e| {
                             error!("transmit failed with '{}'", e.description())
                         });

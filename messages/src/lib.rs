@@ -125,22 +125,3 @@ impl From<loragw::RxPacketLoRa> for RxPacket {
         }
     }
 }
-
-impl From<TxPacket> for loragw::TxPacketLoRa {
-    fn from(other: TxPacket) -> loragw::TxPacketLoRa {
-        loragw::TxPacketLoRa {
-            freq: other.freq,
-            mode: loragw::TxMode::Immediate,
-            radio: other.radio.into(),
-            power: other.power as i8,
-            bandwidth: other.bandwidth.into(),
-            spreading: other.spreading.into(),
-            coderate: other.coderate.into(),
-            invert_polarity: other.invert_polarity,
-            preamble: None,
-            omit_crc: other.omit_crc,
-            implicit_header: other.implicit_header,
-            payload: other.payload,
-        }
-    }
-}

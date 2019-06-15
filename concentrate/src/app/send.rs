@@ -6,7 +6,8 @@ use std::net::{SocketAddr, UdpSocket};
 pub fn send(
     implicit: bool,
     listen_port: u16,
-    freq: u32,
+    chan: Option<u32>,
+    freq: Option<f64>,
     radio: u8,
     power: i8,
     spreading: u8,
@@ -14,8 +15,14 @@ pub fn send(
     bandwidth: u32,
     payload: Option<String>,
 ) -> AppResult {
+    let chan_or_freq = match (chan, freq) {
+        (Some(chan), None) => messages::TxPacket_oneof_freq_or_chan::chan(chan),
+        (None, Some(freq)) => messages::TxPacket_oneof_freq_or_chan::freq(freq as u32),
+        _ => panic!("argument parsing failed to notice the lack of a required option"),
+    };
+
     let tx_pkt = messages::TxPacket {
-        freq,
+        freq_or_chan: Some(chan_or_freq),
         radio: match radio {
             0 => messages::Radio::R0,
             1 => messages::Radio::R1,

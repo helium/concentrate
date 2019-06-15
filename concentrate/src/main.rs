@@ -42,6 +42,7 @@ fn go(args: cmdline::Args) -> AppResult {
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
         cmdline::Cmd::Send {
             implicit,
+            chan,
             freq,
             radio,
             power,
@@ -52,7 +53,8 @@ fn go(args: cmdline::Args) -> AppResult {
         } => app::send(
             implicit,
             args.listen_port,
-            freq as u32,
+            chan,
+            freq,
             radio,
             power,
             spreading,
