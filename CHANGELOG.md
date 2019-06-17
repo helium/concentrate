@@ -19,7 +19,7 @@ Bug fixes:
   A bugfix.
 -->
 
-next-release
+0.1.3 (2019-06-17)
 ==================
 Feature enhancements:
 
