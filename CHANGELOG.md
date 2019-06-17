@@ -28,6 +28,11 @@ Feature enhancements:
 * [#10](https://github.com/helium/concentrate/pull/10):
   Add implicit header flag to `send` command.
 
+Bug fixes:
+
+* [#13](https://github.com/helium/concentrate/pull/13):
+  Lower SPI clock speed as it might be contributing to TX errors.
+
 0.1.2 (2019-06-07)
 ==================
 Feature enhancements:
