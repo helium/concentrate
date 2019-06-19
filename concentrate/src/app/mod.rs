@@ -1,4 +1,7 @@
+use crate::error::AppResult;
+use protobuf::Message;
 use std::fmt;
+use std::net::{SocketAddr, UdpSocket};
 
 mod listen;
 mod send;
@@ -14,4 +17,12 @@ fn print_at_level<T: fmt::Debug>(print_level: u8, pkt: &T) {
     } else if print_level == 1 {
         println!("{:?}\n", pkt);
     }
+}
+
+fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: SocketAddr) -> AppResult {
+    let mut enc_buf = Vec::new();
+    msg.write_to_vec(&mut enc_buf)
+        .expect("error serializing response");
+    socket.send_to(&enc_buf, addr)?;
+    Ok(())
 }

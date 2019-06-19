@@ -126,8 +126,8 @@ impl From<loragw::RxPacketLoRa> for RxPacket {
     }
 }
 
-impl From<TxPacket> for loragw::TxPacketLoRa {
-    fn from(other: TxPacket) -> loragw::TxPacketLoRa {
+impl From<TxReq> for loragw::TxPacketLoRa {
+    fn from(other: TxReq) -> loragw::TxPacketLoRa {
         loragw::TxPacketLoRa {
             freq: other.freq,
             mode: loragw::TxMode::Immediate,
