@@ -5,7 +5,6 @@ authors = ["Jay Kickliter <jay@kickliter.com>"]
 
 [dependencies]
 colored = "1.8"
-env_logger = "0.6.1"
 log = "0.4.6"
 loragw = { path = "../loragw" }
 messages = { path = "../messages" }
@@ -14,3 +13,16 @@ quick-error = "1.2.2"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.2.15"
 toml = "=0.5.0"
+
+[dependencies.syslog]
+version = "4"
+optional = true
+
+[dependencies.env_logger]
+version = "0.6.1"
+optional = true
+
+[features]
+default = ["log_sys"]
+log_env = ["env_logger"]
+log_sys = ["syslog"]

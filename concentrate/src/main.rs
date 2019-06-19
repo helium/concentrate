@@ -1,6 +1,7 @@
 #![forbid(clippy::panicking_unwrap)]
 
 extern crate colored;
+#[cfg(feature = "log_env")]
 extern crate env_logger;
 #[macro_use]
 extern crate log;
@@ -11,6 +12,8 @@ extern crate protobuf;
 extern crate quick_error;
 extern crate serde;
 extern crate structopt;
+#[cfg(feature = "log_sys")]
+extern crate syslog;
 extern crate toml;
 
 mod app;
@@ -19,10 +22,29 @@ mod cmdline;
 mod error;
 
 use colored::Colorize;
-use env_logger::{Builder, Env};
 use error::AppResult;
 use std::{fs, process};
 use structopt::StructOpt;
+
+#[cfg(feature = "log_env")]
+fn init_logging() {
+    use env_logger::{Builder, Env};
+    Builder::from_env(
+        Env::new()
+            .filter("CONCENTRATE_LOG")
+            .write_style("CONCENTRATE_LOG_STYLE"),
+    )
+    .init();
+}
+
+#[cfg(feature = "log_sys")]
+fn init_logging() {
+    use syslog::*;
+    init_unix(Facility::LOG_USER, log::LevelFilter::max()).unwrap();
+}
+
+#[cfg(not(any(feature = "log_env", feature = "log_sys")))]
+fn init_logging() {}
 
 fn go(args: cmdline::Args) -> AppResult {
     match args.cmd {
@@ -66,12 +88,7 @@ fn go(args: cmdline::Args) -> AppResult {
 }
 
 fn main() {
-    Builder::from_env(
-        Env::new()
-            .filter("CONCENTRATE_LOG")
-            .write_style("CONCENTRATE_LOG_STYLE"),
-    )
-    .init();
+    init_logging();
     let args = cmdline::Args::from_args();
     match go(args) {
         Ok(()) => process::exit(0),
