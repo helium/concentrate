@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+next-release
+==================
+Feature enhancements:
+
+* [#14](https://github.com/helium/concentrate/pull/14):
+  Switch to synchronous (req/resp) network interface.
+
 0.1.3 (2019-06-17)
 ==================
 Feature enhancements:

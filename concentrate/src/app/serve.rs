@@ -1,33 +1,33 @@
+use super::{msg_send, print_at_level};
 use crate::{cfg, error::AppResult};
 use loragw;
-use protobuf::{parse_from_bytes, Message};
+use messages::*;
+use protobuf::parse_from_bytes;
 use std::{
     convert::{TryFrom, TryInto},
-    error::Error,
     io::ErrorKind,
     net::{SocketAddr, UdpSocket},
-    time,
+    time::Duration,
 };
 
 pub fn serve(
     cfg: Option<&str>,
     polling_interval: u64,
     print_level: u8,
-    listen_port: u16,
-    publish_port: u16,
+    req_port: u16,
+    resp_port: u16,
 ) -> AppResult {
-    let (socket, publish_addr) = {
-        let publish_addr = SocketAddr::from(([127, 0, 0, 1], publish_port));
-        let listen_addr = SocketAddr::from(([127, 0, 0, 1], listen_port));
-        assert_ne!(listen_addr, publish_addr);
-        debug!("listening for TX packets on {}", listen_addr);
-        debug!("publishing received packets to {}", publish_addr);
-        (UdpSocket::bind(listen_addr)?, publish_addr)
+    let (socket, resp_addr) = {
+        let resp_addr = SocketAddr::from(([127, 0, 0, 1], resp_port));
+        let req_addr = SocketAddr::from(([127, 0, 0, 1], req_port));
+        assert_ne!(req_addr, resp_addr);
+        debug!("req port: {}", req_addr);
+        debug!("resp port: {}", resp_addr);
+        (UdpSocket::bind(req_addr)?, resp_addr)
     };
 
-    socket.set_read_timeout(Some(time::Duration::from_millis(polling_interval)))?;
-    let mut tx_req_buf = [0; 1024];
-    let mut rx_buf = Vec::new();
+    socket.set_read_timeout(Some(Duration::from_millis(polling_interval)))?;
+    let mut req_buf = [0; 1024];
 
     let mut concentrator = loragw::Concentrator::open()?;
     config(&mut concentrator, cfg)?;
@@ -36,32 +36,65 @@ pub fn serve(
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
-                super::print_at_level(print_level, &pkt);
+                print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
-                    let proto_pkt: messages::RxPacket = pkt.into();
-                    proto_pkt
-                        .write_to_vec(&mut rx_buf)
-                        .expect("error serializing RxPacket");
-                    debug!("encoded RxPacket into {} bytes", rx_buf.len());
-                    socket.send_to(&rx_buf, publish_addr)?;
-                    rx_buf.truncate(0);
+                    let resp = Resp {
+                        id: 0,
+                        kind: Some(Resp_oneof_kind::rx_packet(pkt.into())),
+                        ..Default::default()
+                    };
+                    msg_send(resp, &socket, resp_addr)?;
                 }
             }
         }
 
-        match socket.recv(&mut tx_req_buf) {
+        match socket.recv(&mut req_buf) {
             Ok(sz) => {
-                debug!("Read {} bytes {:?}", sz, &tx_req_buf[..sz]);
-                match parse_from_bytes::<messages::TxPacket>(&tx_req_buf[..sz]) {
-                    Ok(tx_pkt) => {
-                        debug!("received tx req {:?}", tx_pkt);
-                        let tx_pkt = loragw::TxPacket::LoRa(tx_pkt.into());
-                        concentrator.transmit(tx_pkt).unwrap_or_else(|e| {
-                            error!("transmit failed with '{}'", e.description())
-                        });
+                let resp = match parse_from_bytes::<Req>(&req_buf[..sz]) {
+                    Ok(req) => match req {
+                        // Valid TX request
+                        Req {
+                            id,
+                            kind: Some(Req_oneof_kind::tx(req)),
+                            ..
+                        } => match concentrator.transmit(loragw::TxPacket::LoRa(req.into())) {
+                            Ok(()) => Resp {
+                                id,
+                                kind: Some(Resp_oneof_kind::tx(TxResp {
+                                    success: true,
+                                    ..Default::default()
+                                })),
+                                ..Default::default()
+                            },
+                            Err(_) => Resp {
+                                id,
+                                kind: Some(Resp_oneof_kind::tx(TxResp {
+                                    success: false,
+                                    ..Default::default()
+                                })),
+                                ..Default::default()
+                            },
+                        },
+                        // Invalid request
+                        Req { id, kind: None, .. } => {
+                            error!("request {} empty", id);
+                            Resp {
+                                id,
+                                kind: None,
+                                ..Default::default()
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        error!("parse Req error {:?} from {:x?}", e, &req_buf[..sz]);
+                        Resp {
+                            id: 0,
+                            kind: Some(Resp_oneof_kind::parse_err(Vec::from(&req_buf[..sz]))),
+                            ..Default::default()
+                        }
                     }
-                    Err(e) => error!("{:?}", e),
-                }
+                };
+                msg_send(resp, &socket, resp_addr)?;
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
             Err(e) => return Err(e.into()),

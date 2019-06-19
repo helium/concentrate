@@ -50,8 +50,10 @@ fn go(args: cmdline::Args) -> AppResult {
             bandwidth,
             payload,
         } => app::send(
-            implicit,
+            args.print_level,
             args.listen_port,
+            args.publish_port,
+            implicit,
             freq as u32,
             radio,
             power,
