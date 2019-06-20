@@ -35,7 +35,6 @@ pub struct Concentrator;
 impl Concentrator {
     /// Open the spidev-connected concentrator.
     pub fn open() -> Result<Self> {
-        trace!("opening concentrator");
         // We can only 'open' one instance
         if GW_IS_OPEN.compare_and_swap(false, true, Ordering::Acquire) {
             error!("concentrator busy");
@@ -46,21 +45,21 @@ impl Concentrator {
 
     /// Configure the gateway board.
     pub fn config_board(&mut self, conf: &BoardConf) -> Result {
-        trace!("conf: {:?}", conf);
+        debug!("conf: {:?}", conf);
         unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&mut self, conf: &RxRFConf) -> Result {
-        trace!("{:?}", conf);
+        debug!("{:?}", conf);
         unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&mut self, chain: u8, conf: &ChannelConf) -> Result {
-        trace!("chain: {}, conf: {:?}", chain, conf);
+        debug!("chain: {}, conf: {:?}", chain, conf);
         unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
         Ok(())
     }
@@ -74,11 +73,10 @@ impl Concentrator {
             );
             return Err(Error::Size);
         }
-        trace!("gains: {:?}", gains);
+        debug!("gains: {:?}", gains);
         let mut lut = TxGainLUT::default();
         lut.lut[..gains.len()].clone_from_slice(gains);
         lut.size = gains.len() as u8;
-        debug!("gains: {:?}", lut);
         unsafe {
             hal_call!(lgw_txgain_setconf(
                 &mut lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
@@ -89,14 +87,14 @@ impl Concentrator {
 
     /// according to previously set parameters.
     pub fn start(&mut self) -> Result {
-        trace!("starting");
+        info!("starting concentrator");
         unsafe { hal_call!(lgw_start()) }?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&mut self) -> Result {
-        trace!("stopping");
+        info!("stopping concentrator");
         unsafe { hal_call!(lgw_stop()) }?;
         Ok(())
     }
@@ -104,11 +102,9 @@ impl Concentrator {
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
     pub fn receive(&mut self) -> Result<Option<Vec<RxPacket>>> {
-        trace!("receive");
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len = unsafe { hal_call!(lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr())) }?;
         if len > 0 {
-            debug!("read {} packets out of concentrator", len);
             let mut out = Vec::new();
             for tmp in tmp_buf[..len].iter() {
                 out.push(RxPacket::try_from(tmp)?);
@@ -121,7 +117,6 @@ impl Concentrator {
 
     /// Transmit `packet` over the air.
     pub fn transmit(&mut self, packet: TxPacket) -> Result {
-        debug!("transmitting {:?}", packet);
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
@@ -129,6 +124,7 @@ impl Concentrator {
 
 impl ops::Drop for Concentrator {
     fn drop(&mut self) {
+        info!("closing concentrator");
         GW_IS_OPEN.store(false, Ordering::Release);
     }
 }

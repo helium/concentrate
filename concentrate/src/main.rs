@@ -40,7 +40,7 @@ fn init_logging() {
 #[cfg(feature = "log_sys")]
 fn init_logging() {
     use syslog::*;
-    init_unix(Facility::LOG_USER, log::LevelFilter::max()).unwrap();
+    init_unix(Facility::LOG_USER, log::LevelFilter::Debug).unwrap();
 }
 
 #[cfg(not(any(feature = "log_env", feature = "log_sys")))]
