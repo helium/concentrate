@@ -19,6 +19,14 @@ Bug fixes:
   A bugfix.
 -->
 
+
+next-release
+==================
+Feature enhancements:
+
+* [#15](https://github.com/helium/concentrate/pull/15):
+  Add `syslog` logging backend.
+
 0.1.4 (2019-06-19)
 ==================
 Feature enhancements:
