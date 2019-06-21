@@ -38,6 +38,7 @@ pub fn serve(
             for pkt in packets {
                 print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
+                    debug!("received {:?}", pkt);
                     let resp = Resp {
                         id: 0,
                         kind: Some(Resp_oneof_kind::rx_packet(pkt.into())),
@@ -57,24 +58,28 @@ pub fn serve(
                             id,
                             kind: Some(Req_oneof_kind::tx(req)),
                             ..
-                        } => match concentrator.transmit(loragw::TxPacket::LoRa(req.into())) {
-                            Ok(()) => Resp {
-                                id,
-                                kind: Some(Resp_oneof_kind::tx(TxResp {
-                                    success: true,
+                        } => {
+                            let pkt = req.into();
+                            debug!("transmitting {:?}", pkt);
+                            match concentrator.transmit(loragw::TxPacket::LoRa(pkt)) {
+                                Ok(()) => Resp {
+                                    id,
+                                    kind: Some(Resp_oneof_kind::tx(TxResp {
+                                        success: true,
+                                        ..Default::default()
+                                    })),
                                     ..Default::default()
-                                })),
-                                ..Default::default()
-                            },
-                            Err(_) => Resp {
-                                id,
-                                kind: Some(Resp_oneof_kind::tx(TxResp {
-                                    success: false,
+                                },
+                                Err(_) => Resp {
+                                    id,
+                                    kind: Some(Resp_oneof_kind::tx(TxResp {
+                                        success: false,
+                                        ..Default::default()
+                                    })),
                                     ..Default::default()
-                                })),
-                                ..Default::default()
-                            },
-                        },
+                                },
+                            }
+                        }
                         // Invalid request
                         Req { id, kind: None, .. } => {
                             error!("request {} empty", id);
