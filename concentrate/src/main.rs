@@ -10,6 +10,8 @@ extern crate messages;
 extern crate protobuf;
 #[macro_use]
 extern crate quick_error;
+#[cfg(any(feature = "log_env", feature = "log_sys"))]
+extern crate log_panics;
 extern crate serde;
 extern crate structopt;
 #[cfg(feature = "log_sys")]
@@ -35,12 +37,14 @@ fn init_logging() {
             .write_style("CONCENTRATE_LOG_STYLE"),
     )
     .init();
+    log_panics::init();
 }
 
 #[cfg(feature = "log_sys")]
 fn init_logging() {
     use syslog::*;
     init_unix(Facility::LOG_USER, log::LevelFilter::Debug).unwrap();
+    log_panics::init();
 }
 
 #[cfg(not(any(feature = "log_env", feature = "log_sys")))]

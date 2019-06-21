@@ -22,7 +22,11 @@ optional = true
 version = "0.6.1"
 optional = true
 
+[dependencies.log-panics]
+version = "2.0.0"
+optional = true
+
 [features]
 default = ["log_sys"]
-log_env = ["env_logger"]
-log_sys = ["syslog"]
+log_env = ["env_logger", "log-panics"]
+log_sys = ["syslog", "log-panics"]
