@@ -20,6 +20,13 @@ Bug fixes:
 -->
 
 
+next-release
+==================
+Feature enhancements:
+
+* [#16](https://github.com/helium/concentrate/pull/16):
+  Update reset line to use `/dev/gpio` symlink for portability.
+
 0.1.5 (2019-06-21)
 ==================
 Feature enhancements:
