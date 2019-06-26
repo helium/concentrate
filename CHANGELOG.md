@@ -19,6 +19,12 @@ Bug fixes:
   A bugfix.
 -->
 
+0.1.7 (2019-06-26)
+==================
+Bug fixes:
+
+* [#17](https://github.com/helium/concentrate/pull/17):
+  Add lockfile to allow building with outdated Buildroot.
 
 0.1.6 (2019-06-25)
 ==================
