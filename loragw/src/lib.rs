@@ -19,7 +19,9 @@ mod error;
 mod types;
 pub use error::*;
 use libloragw_sys as llg;
+use std::cell::Cell;
 use std::convert::{TryFrom, TryInto};
+use std::marker::PhantomData;
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
 pub use types::*;
@@ -30,7 +32,13 @@ pub use types::*;
 static GW_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
 /// A LoRa concentrator.
-pub struct Concentrator;
+pub struct Concentrator {
+    /// Used to prevent `self` from auto implementing `Sync`.
+    ///
+    /// This is necessary because the `libloragw` makes liberal use of
+    /// globals and is not thread-safe.
+    _prevent_sync: PhantomData<Cell<()>>,
+}
 
 impl Concentrator {
     /// Open the spidev-connected concentrator.
@@ -40,32 +48,34 @@ impl Concentrator {
             error!("concentrator busy");
             return Err(Error::Busy);
         }
-        Ok(Concentrator {})
+        Ok(Concentrator {
+            _prevent_sync: PhantomData,
+        })
     }
 
     /// Configure the gateway board.
-    pub fn config_board(&mut self, conf: &BoardConf) -> Result {
+    pub fn config_board(&self, conf: &BoardConf) -> Result {
         debug!("conf: {:?}", conf);
         unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
-    pub fn config_rx_rf(&mut self, conf: &RxRFConf) -> Result {
+    pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
         debug!("{:?}", conf);
         unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
-    pub fn config_channel(&mut self, chain: u8, conf: &ChannelConf) -> Result {
+    pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
         debug!("chain: {}, conf: {:?}", chain, conf);
         unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
         Ok(())
     }
 
     /// Configure the Tx gain LUT.
-    pub fn config_tx_gain(&mut self, gains: &[TxGain]) -> Result {
+    pub fn config_tx_gain(&self, gains: &[TxGain]) -> Result {
         if gains.is_empty() || gains.len() > 16 {
             error!(
                 "gain table must contain 1 to 16 entries, {} provided",
@@ -86,14 +96,14 @@ impl Concentrator {
     }
 
     /// according to previously set parameters.
-    pub fn start(&mut self) -> Result {
+    pub fn start(&self) -> Result {
         info!("starting concentrator");
         unsafe { hal_call!(lgw_start()) }?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
-    pub fn stop(&mut self) -> Result {
+    pub fn stop(&self) -> Result {
         info!("stopping concentrator");
         unsafe { hal_call!(lgw_stop()) }?;
         Ok(())
@@ -101,7 +111,7 @@ impl Concentrator {
 
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
-    pub fn receive(&mut self) -> Result<Option<Vec<RxPacket>>> {
+    pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
         let mut tmp_buf: [llg::lgw_pkt_rx_s; 16] = [Default::default(); 16];
         let len = unsafe { hal_call!(lgw_receive(tmp_buf.len() as u8, tmp_buf.as_mut_ptr())) }?;
         if len > 0 {
@@ -116,7 +126,7 @@ impl Concentrator {
     }
 
     /// Transmit `packet` over the air.
-    pub fn transmit(&mut self, packet: TxPacket) -> Result {
+    pub fn transmit(&self, packet: TxPacket) -> Result {
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }

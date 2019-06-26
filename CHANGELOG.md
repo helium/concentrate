@@ -19,6 +19,14 @@ Bug fixes:
   A bugfix.
 -->
 
+
+next-release
+==================
+Bug fixes:
+
+* [#18](https://github.com/helium/concentrate/pull/18):
+  Make calls to `libloragw-sys` threadsafe.
+
 0.1.7 (2019-06-26)
 ==================
 Bug fixes:
