@@ -17,6 +17,7 @@ extern crate structopt;
 #[cfg(feature = "log_sys")]
 extern crate syslog;
 extern crate toml;
+extern crate labrador_ldpc;
 
 mod app;
 mod cfg;

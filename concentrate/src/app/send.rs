@@ -8,6 +8,7 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::Duration,
 };
+use crate::labrador_ldpc::LDPCCode;
 
 #[allow(clippy::too_many_arguments)]
 pub fn send(
@@ -23,6 +24,27 @@ pub fn send(
     bandwidth: u32,
     payload: Option<String>,
 ) -> AppResult {
+
+    let code = match spreading {
+        7 => LDPCCode::TC128,
+        8 => LDPCCode::TC128,
+        9 => LDPCCode::TC128,
+        10 => LDPCCode::TC128,
+        11 => LDPCCode::TC128,
+        12 => LDPCCode::TC128,
+        e => {
+            return Err(AppError::Generic(format!(
+                "{} is not a valid spreading factor",
+                e
+            )));
+        }
+    };
+
+    let mut txcode = vec![0u8; code.n()/8];
+    
+    debug!("origional payload {:#?}", payload);
+    code.copy_encode(&payload.unwrap_or_default().into_bytes(), &mut txcode);
+
     let tx_req = msg::TxReq {
         freq,
         radio: match radio {
@@ -72,7 +94,7 @@ pub fn send(
         invert_polarity: false,
         omit_crc: false,
         implicit_header: implicit,
-        payload: payload.unwrap_or_default().into_bytes(),
+        payload: txcode,
         ..Default::default()
     };
     debug!("requesting to transmit {:#?}", tx_req);
