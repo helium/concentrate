@@ -1,5 +1,6 @@
 use crate::error;
-use crate::llg;
+use crate::libloragw_sys as llg;
+use error::*;
 use std::convert::TryFrom;
 use std::fmt;
 use std::time;
@@ -20,7 +21,7 @@ pub enum RadioType {
 
 impl TryFrom<&str> for RadioType {
     type Error = error::Error;
-    fn try_from(s: &str) -> Result<Self, error::Error> {
+    fn try_from(s: &str) -> Result<Self> {
         Ok(match s {
             "None" => RadioType::None,
             "SX1255" => RadioType::SX1255,
@@ -48,7 +49,7 @@ pub enum Spreading {
 
 impl TryFrom<u32> for Spreading {
     type Error = error::Error;
-    fn try_from(other: u32) -> Result<Self, error::Error> {
+    fn try_from(other: u32) -> Result<Self> {
         Ok(match other {
             0x00 => Spreading::Undefined,
             0x02 => Spreading::SF7,
@@ -86,7 +87,7 @@ pub enum Bandwidth {
 
 impl TryFrom<u32> for Bandwidth {
     type Error = error::Error;
-    fn try_from(other: u32) -> Result<Self, error::Error> {
+    fn try_from(other: u32) -> Result<Self> {
         Ok(match other {
             0 => Bandwidth::Undefined,
             0x01 => Bandwidth::BW500kHz,
@@ -118,7 +119,7 @@ pub enum Coderate {
 
 impl TryFrom<u32> for Coderate {
     type Error = error::Error;
-    fn try_from(other: u32) -> Result<Self, error::Error> {
+    fn try_from(other: u32) -> Result<Self> {
         Ok(match other {
             0 => Coderate::Undefined,
             0x01 => Coderate::Cr4_5,
@@ -158,7 +159,7 @@ pub enum Radio {
 
 impl TryFrom<u32> for Radio {
     type Error = error::Error;
-    fn try_from(other: u32) -> Result<Self, error::Error> {
+    fn try_from(other: u32) -> Result<Self> {
         match other {
             0 => Ok(Radio::R0),
             1 => Ok(Radio::R1),
@@ -357,7 +358,7 @@ pub enum CRCCheck {
 
 impl TryFrom<u32> for CRCCheck {
     type Error = error::Error;
-    fn try_from(other: u32) -> Result<Self, Self::Error> {
+    fn try_from(other: u32) -> Result<Self> {
         Ok(match other {
             0x01 => CRCCheck::NoCRC,
             0x11 => CRCCheck::Fail,
@@ -438,7 +439,7 @@ pub enum RxPacket {
 
 impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
     type Error = error::Error;
-    fn try_from(other: &llg::lgw_pkt_rx_s) -> Result<Self, Self::Error> {
+    fn try_from(other: &llg::lgw_pkt_rx_s) -> Result<Self> {
         Ok(match other.modulation {
             MOD_LORA => RxPacket::LoRa(RxPacketLoRa {
                 freq: other.freq_hz,
@@ -567,7 +568,7 @@ pub struct TxPacketFSK {
 impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
     type Error = error::Error;
 
-    fn try_from(other: TxPacket) -> Result<Self, error::Error> {
+    fn try_from(other: TxPacket) -> Result<Self> {
         match other {
             TxPacket::LoRa(other) => {
                 if other.payload.len() > 256 {
@@ -675,7 +676,7 @@ pub enum TxStatus {
 
 impl TryFrom<u8> for TxStatus {
     type Error = error::Error;
-    fn try_from(other: u8) -> Result<Self, error::Error> {
+    fn try_from(other: u8) -> Result<Self> {
         Ok(match other {
             1 => TxStatus::Off,
             2 => TxStatus::Free,
@@ -700,7 +701,7 @@ pub enum RxStatus {
 
 impl TryFrom<u8> for RxStatus {
     type Error = error::Error;
-    fn try_from(other: u8) -> Result<Self, error::Error> {
+    fn try_from(other: u8) -> Result<Self> {
         Ok(match other {
             1 => RxStatus::Off,
             2 => RxStatus::On,
