@@ -1,6 +1,7 @@
 [workspace]
 members = [
 "concentrate",
+"gps",
 "libloragw-sys",
 "loragw",
 "messages",
