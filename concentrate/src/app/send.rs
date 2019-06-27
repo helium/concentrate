@@ -1,5 +1,6 @@
 use super::{msg_send, print_at_level};
 use crate::error::{AppError, AppResult};
+use crate::labrador_ldpc::LDPCCode;
 use messages as msg;
 use protobuf::parse_from_bytes;
 use std::{
@@ -8,7 +9,6 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::Duration,
 };
-use crate::labrador_ldpc::LDPCCode;
 
 #[allow(clippy::too_many_arguments)]
 pub fn send(
@@ -24,7 +24,6 @@ pub fn send(
     bandwidth: u32,
     payload: Option<String>,
 ) -> AppResult {
-
     let code = match spreading {
         7 => LDPCCode::TC128,
         8 => LDPCCode::TC128,
@@ -40,8 +39,8 @@ pub fn send(
         }
     };
 
-    let mut txcode = vec![0u8; code.n()/8];
-    
+    let mut txcode = vec![0u8; code.n() / 8];
+
     debug!("origional payload {:#?}", payload);
     code.copy_encode(&payload.unwrap_or_default().into_bytes(), &mut txcode);
 

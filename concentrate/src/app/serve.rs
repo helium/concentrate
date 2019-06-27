@@ -1,4 +1,5 @@
 use super::{msg_send, print_at_level};
+use crate::labrador_ldpc::LDPCCode;
 use crate::{cfg, error::AppResult};
 use loragw;
 use messages::*;
@@ -9,7 +10,6 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::Duration,
 };
-use crate::labrador_ldpc::LDPCCode;
 
 pub fn serve(
     cfg: Option<&str>,
@@ -49,20 +49,20 @@ pub fn serve(
                         loragw::Spreading::SF12 => LDPCCode::TC128,
                         _ => {
                             panic!("Invalid spreading factor");
-                        }        
+                        }
                     };
                     let mut working = vec![0i8; code.decode_ms_working_len()];
                     let mut working_u8 = vec![0u8; code.decode_ms_working_u8_len()];
                     let mut rxdata = vec![0u8; code.output_len()];
                     let mut llrs = vec![0i8; code.n()];
-                    let mut output = vec![0u8; code.n()/8];
+                    let mut output = vec![0u8; code.n() / 8];
                     code.hard_to_llrs(&pkt.payload, &mut llrs);
                     code.decode_ms(&llrs, &mut rxdata, &mut working, &mut working_u8, 20);
                     debug!("ms decoded: {:?}", &rxdata);
                     code.llrs_to_hard(&llrs, &mut output);
                     pkt.payload.clear();
                     pkt.payload = output.clone();
-                    
+
                     debug!("decoded {:?}", &pkt.payload);
                     let resp = Resp {
                         id: 0,

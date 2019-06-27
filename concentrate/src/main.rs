@@ -10,6 +10,7 @@ extern crate messages;
 extern crate protobuf;
 #[macro_use]
 extern crate quick_error;
+extern crate labrador_ldpc;
 #[cfg(any(feature = "log_env", feature = "log_sys"))]
 extern crate log_panics;
 extern crate serde;
@@ -17,7 +18,6 @@ extern crate structopt;
 #[cfg(feature = "log_sys")]
 extern crate syslog;
 extern crate toml;
-extern crate labrador_ldpc;
 
 mod app;
 mod cfg;
