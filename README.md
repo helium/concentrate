@@ -12,12 +12,34 @@ You will need to download and install the ''aarch64-linux-gnu-gcc' toolchain and
 
 The included .cargo/config file will specify the linker needed to complete the build. Setup instructions by system are as follows:
 
-### Arch Linux
-
+### Linux
+Install the toolchain to your system:
+#### Arch
+Install the toolchain:
 ```zsh
 > sudo pacman -S aarch64-linux-gnu-gcc
-> rustup target add aarch64-unknown-linux-gnu
-> cargo build --target aarch64-unknown-linux-gnu
+```
+#### Ubuntu
+```zsh
+> sudo apt-get install gcc-aarch64-linux-gnu
 ```
 
 
+#### Common
+
+Add it to Rust:
+```zsh
+> rustup target add aarch64-unknown-linux-gnu
+```
+
+Now building is easy:
+```zsh
+> cargo build --target aarch64-unknown-linux-gnu [--release]
+```
+
+## Testing
+
+If you are putting the binary on an otherwise working Raspberry Pi image, you will want to kill the pre-existing concentrate service:
+```zsh
+sv d /etc/sv/concentrate
+```
