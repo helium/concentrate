@@ -51,5 +51,5 @@ sudo concentrate -p -r 192.168.1.xxx serve
 
 On the remote machine, such a local development machine, you can run the client:
 ```zsh
-concentrate -r 192.168.1.88 -p listen
+concentrate -p listen
 ```
