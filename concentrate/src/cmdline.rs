@@ -97,6 +97,15 @@ pub struct Args {
     )]
     pub listen_port: u16,
 
+    /// Remote IP for listening
+    #[structopt(
+        value_name = "REMOTE_IP",
+        short = "r",
+        long = "remote_ip",
+        default_value = ""
+    )]
+    pub remote_ip: String,
+
     #[structopt(subcommand)]
     pub cmd: Cmd,
 }

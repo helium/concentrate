@@ -6,7 +6,7 @@ use protobuf::parse_from_bytes;
 use std::{
     convert::{TryFrom, TryInto},
     io::ErrorKind,
-    net::{SocketAddr, UdpSocket},
+    net::{SocketAddr, UdpSocket, IpAddr},
     time::Duration,
 };
 
@@ -16,13 +16,23 @@ pub fn serve(
     print_level: u8,
     req_port: u16,
     resp_port: u16,
+    ip: Option<IpAddr>,
 ) -> AppResult {
     let (socket, resp_addr) = {
-        let resp_addr = SocketAddr::from(([127, 0, 0, 1], resp_port));
-        let req_addr = SocketAddr::from(([127, 0, 0, 1], req_port));
+        let resp_addr;
+        let req_addr;
+
+        if let Some(remote_ip) = ip {
+             resp_addr = SocketAddr::from((remote_ip, resp_port));
+             req_addr = SocketAddr::from(([0, 0, 0, 0], req_port));
+        } else {
+            resp_addr = SocketAddr::from(([127, 0, 0, 1], resp_port));
+            req_addr = SocketAddr::from(([127, 0, 0, 1], req_port));
+        }
+
         assert_ne!(req_addr, resp_addr);
-        debug!("req port: {}", req_addr);
-        debug!("resp port: {}", resp_addr);
+        debug!("req port: {}\r\n", req_addr);
+        debug!("resp port: {}\r\n", resp_addr);
         (UdpSocket::bind(req_addr)?, resp_addr)
     };
 
@@ -102,7 +112,9 @@ pub fn serve(
                 msg_send(resp, &socket, resp_addr)?;
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
-            Err(e) => return Err(e.into()),
+            Err(e) => {
+                return Err(e.into())
+            },
         }
     }
 }

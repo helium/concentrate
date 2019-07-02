@@ -27,6 +27,8 @@ use colored::Colorize;
 use error::AppResult;
 use std::{fs, process};
 use structopt::StructOpt;
+use std::str::FromStr;
+use std::net::IpAddr;
 
 #[cfg(feature = "log_env")]
 fn init_logging() {
@@ -51,18 +53,25 @@ fn init_logging() {
 fn init_logging() {}
 
 fn go(args: cmdline::Args) -> AppResult {
+    
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {
                 Some(path) => Some(fs::read_to_string(path)?),
                 None => None,
             };
+            let remote_ip = match IpAddr::from_str(&args.remote_ip){
+                Ok(ip) => Some(ip),
+                _ => None,
+            };
+
             app::serve(
                 cfg.as_ref().map(std::convert::AsRef::as_ref),
                 args.interval,
                 args.print_level,
                 args.listen_port,
                 args.publish_port,
+                remote_ip,
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),

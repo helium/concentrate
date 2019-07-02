@@ -4,7 +4,8 @@ use protobuf::parse_from_bytes;
 use std::net::{SocketAddr, UdpSocket};
 
 pub fn listen(print_level: u8, resp_port: u16) -> AppResult {
-    let resp_addr = SocketAddr::from(([127, 0, 0, 1], resp_port));
+    let resp_addr = SocketAddr::from(([0, 0, 0, 0], resp_port));
+
     debug!("listening for responses on {}", resp_addr);
     let socket = UdpSocket::bind(resp_addr)?;
 
