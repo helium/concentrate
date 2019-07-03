@@ -31,8 +31,8 @@ pub fn serve(
         }
 
         assert_ne!(req_addr, resp_addr);
-        debug!("req port: {}\r\n", req_addr);
-        debug!("resp port: {}\r\n", resp_addr);
+        debug!("req port: {}", req_addr);
+        debug!("resp port: {}", resp_addr);
         (UdpSocket::bind(req_addr)?, resp_addr)
     };
 
