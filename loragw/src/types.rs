@@ -1,6 +1,6 @@
 use crate::error;
 use crate::llg;
-use std::{convert::TryFrom, fmt, time};
+use std::{convert::TryFrom, ffi::CString, fmt, time};
 
 const MOD_LORA: u8 = 0x10;
 const MOD_FSK: u8 = 0x20;
@@ -14,6 +14,7 @@ pub enum RadioType {
     SX1257 = 2,
     SX1272 = 3,
     SX1276 = 4,
+    SX1250 = 5,
 }
 
 impl TryFrom<&str> for RadioType {
@@ -25,6 +26,7 @@ impl TryFrom<&str> for RadioType {
             "SX1257" => RadioType::SX1257,
             "SX1272" => RadioType::SX1272,
             "SX1276" => RadioType::SX1276,
+            "SX1250" => RadioType::SX1250,
             _ => return Err(error::Error::Data),
         })
     }
@@ -34,13 +36,15 @@ impl TryFrom<&str> for RadioType {
 #[derive(Debug, Clone, Copy)]
 #[allow(missing_docs)]
 pub enum Spreading {
-    Undefined = 0x00,
-    SF7 = 0x02,
-    SF8 = 0x04,
-    SF9 = 0x08,
-    SF10 = 0x10,
-    SF11 = 0x20,
-    SF12 = 0x40,
+    Undefined = 0,
+    SF5 = 5,
+    SF6 = 6,
+    SF7 = 7,
+    SF8 = 8,
+    SF9 = 9,
+    SF10 = 10,
+    SF11 = 11,
+    SF12 = 12,
     Multi = 0x7E,
 }
 
@@ -48,13 +52,15 @@ impl TryFrom<u32> for Spreading {
     type Error = error::Error;
     fn try_from(other: u32) -> Result<Self, error::Error> {
         Ok(match other {
-            0x00 => Spreading::Undefined,
-            0x02 => Spreading::SF7,
-            0x04 => Spreading::SF8,
-            0x08 => Spreading::SF9,
-            0x10 => Spreading::SF10,
-            0x20 => Spreading::SF11,
-            0x40 => Spreading::SF12,
+            0 => Spreading::Undefined,
+            5 => Spreading::SF5,
+            6 => Spreading::SF6,
+            7 => Spreading::SF7,
+            8 => Spreading::SF8,
+            9 => Spreading::SF9,
+            10 => Spreading::SF10,
+            11 => Spreading::SF11,
+            12 => Spreading::SF12,
             0x7E => Spreading::Multi,
             _ => return Err(error::Error::Data),
         })
@@ -172,6 +178,8 @@ pub struct BoardConf {
     pub lorawan_public: bool,
     /// Index of RF chain which provides clock to concentrator.
     pub clksrc: Radio,
+    /// Path to SPI device.
+    pub spidev_path: CString,
 }
 
 impl From<&BoardConf> for llg::lgw_conf_board_s {
@@ -179,6 +187,13 @@ impl From<&BoardConf> for llg::lgw_conf_board_s {
         llg::lgw_conf_board_s {
             lorawan_public: other.lorawan_public,
             clksrc: other.clksrc as u8,
+            full_duplex: false,
+            spidev_path: {
+                let mut path = [0; 64];
+                let other_path = other.spidev_path.as_bytes_with_nul();
+                path[..other_path.len()].copy_from_slice(other_path);
+                path
+            },
         }
     }
 }
@@ -234,7 +249,6 @@ impl From<&RxRFConf> for llg::lgw_conf_rxrf_s {
             rssi_offset: other.rssi_offset,
             type_: other.type_ as u32,
             tx_enable: other.tx_enable,
-            tx_notch_freq: other.tx_notch_freq,
         }
     }
 }
@@ -447,7 +461,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
                 bandwidth: Bandwidth::try_from(u32::from(other.bandwidth))?,
                 spreading: Spreading::try_from(other.datarate)?,
                 coderate: Coderate::try_from(u32::from(other.coderate))?,
-                rssi: other.rssi,
+                rssi: other.rssis,
                 snr: other.snr,
                 snr_min: other.snr_min,
                 snr_max: other.snr_max,
@@ -461,7 +475,7 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
                 timestamp: time::Duration::from_micros(u64::from(other.count_us)),
                 radio: Radio::try_from(u32::from(other.rf_chain))?,
                 datarate: other.datarate,
-                rssi: other.rssi,
+                rssi: other.rssis,
                 crc: other.crc,
                 payload: other.payload[..other.size as usize].to_vec(),
             }),
@@ -586,6 +600,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
                         invert_pol: other.invert_polarity,
                         f_dev: 0,
                         preamble: other.preamble.unwrap_or(0),
+
                         no_crc: other.omit_crc,
                         no_header: other.implicit_header,
                         size: other.payload.len() as u16,
@@ -635,6 +650,8 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
 #[repr(C)]
 #[derive(Debug, Clone, Default)]
 pub struct TxGain {
+    /// Measured TX power at the board connector (in dBm).
+    pub rf_power: i8,
     /// Control of the digital gain of SX1301 (2 bits).
     pub dig_gain: u8,
     /// Control of the external PA (SX1301 I/O) (2 bits).
@@ -643,8 +660,12 @@ pub struct TxGain {
     pub dac_gain: u8,
     /// control of the radio mixer (4 bits).
     pub mix_gain: u8,
-    /// Measured TX power at the board connector (in dBm).
-    pub rf_power: i8,
+    /// (sx125x) calibrated I offset.
+    pub offset_i: i8,
+    /// (sx125x) calibrated Q offset.
+    pub offset_q: i8,
+    /// 6 bits, (sx1250) control the radio power index to be used for configuration.
+    pub pwr_id: u8,
 }
 
 /// Tx gain look-up-table.
