@@ -89,6 +89,8 @@ impl Concentrator {
         lut.size = gains.len() as u8;
         unsafe {
             hal_call!(lgw_txgain_setconf(
+                // TODO: de-hardcode
+                0,
                 &mut lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
             ))
         }?;
