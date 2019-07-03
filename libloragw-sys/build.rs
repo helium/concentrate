@@ -1,19 +1,29 @@
 extern crate cc;
 
 fn main() {
-    // Build our extracted, modified, and vendored `libloragw`.
-    //
-    // The origial source can be found at
-    // https://github.com/Lora-net/lora_gateway
+    // Build `libtinymt32` (mersenne twister) which `libloragw` depends on.
     cc::Build::new()
-        .file("vendor/libloragw/loragw_aux.c")
-        .file("vendor/libloragw/loragw_fpga.c")
-        .file("vendor/libloragw/loragw_gps.c")
-        .file("vendor/libloragw/loragw_hal.c")
-        .file("vendor/libloragw/loragw_lbt.c")
-        .file("vendor/libloragw/loragw_radio.c")
-        .file("vendor/libloragw/loragw_reg.c")
-        .file("vendor/libloragw/loragw_spi.native.c")
+        .include("vendor/tinymt32")
+        .file("vendor/tinymt32/tinymt32.c")
+        .static_flag(true)
+        .compile("tinymt32");
+
+    // Build our extracted, modified, and vendored `libloragw`.
+    cc::Build::new()
+        .include("vendor/libloragw")
+        .include("vendor/libloragw/inc")
+        .include("vendor/tinymt32")
+        .file("vendor/libloragw/src/loragw_aux.c")
+        .file("vendor/libloragw/src/loragw_cal.c")
+        .file("vendor/libloragw/src/loragw_debug.c")
+        .file("vendor/libloragw/src/loragw_hal.c")
+        .file("vendor/libloragw/src/loragw_i2c.c")
+        .file("vendor/libloragw/src/loragw_reg.c")
+        .file("vendor/libloragw/src/loragw_spi.c")
+        .file("vendor/libloragw/src/loragw_stts751.c")
+        .file("vendor/libloragw/src/loragw_sx1250.c")
+        .file("vendor/libloragw/src/loragw_sx125x.c")
+        .file("vendor/libloragw/src/loragw_sx1302.c")
         .static_flag(true)
         .compile("loragw");
 }

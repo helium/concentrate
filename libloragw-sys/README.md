@@ -15,7 +15,6 @@ if the vendored code (`vendor/libloragw`) changes:
 bindgen vendor/libloragw/loragw_hal.h \
     --with-derive-default \
     --whitelist-function "lgw_board_setconf" \
-    --whitelist-function "lgw_lbt_setconf" \
     --whitelist-function "lgw_rxrf_setconf" \
     --whitelist-function "lgw_rxif_setconf" \
     --whitelist-function "lgw_txgain_setconf" \

@@ -11,22 +11,24 @@ include!("bindings.rs");
 
 impl fmt::Debug for lgw_pkt_rx_s {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("lgw_pkt_tx_s")
+        fmt.debug_struct("lgw_pkt_rx_s")
             .field("freq_hz", &self.freq_hz)
+            .field("freq_offset", &self.freq_offset)
             .field("if_chain", &self.if_chain)
             .field("status", &self.status)
             .field("count_us", &self.count_us)
             .field("rf_chain", &self.rf_chain)
+            .field("modem_id", &self.modem_id)
             .field("modulation", &self.modulation)
             .field("bandwidth", &self.bandwidth)
             .field("datarate", &self.datarate)
             .field("coderate", &self.coderate)
-            .field("rssi", &self.rssi)
+            .field("rssic", &self.rssic)
+            .field("rssis", &self.rssis)
             .field("snr", &self.snr)
             .field("snr_min", &self.snr_min)
             .field("snr_max", &self.snr_max)
             .field("crc", &self.crc)
-            .field("size", &self.size)
             .field("payload", unsafe {
                 &slice::from_raw_parts(&self.payload as *const u8, self.size as usize)
             })
