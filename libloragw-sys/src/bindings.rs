@@ -6,28 +6,33 @@ pub type __uint16_t = ::std::os::raw::c_ushort;
 pub type __int32_t = ::std::os::raw::c_int;
 pub type __uint32_t = ::std::os::raw::c_uint;
 pub type __uint64_t = ::std::os::raw::c_ulong;
-pub const lgw_radio_type_e_LGW_RADIO_TYPE_NONE: lgw_radio_type_e = 0;
-pub const lgw_radio_type_e_LGW_RADIO_TYPE_SX1255: lgw_radio_type_e = 1;
-pub const lgw_radio_type_e_LGW_RADIO_TYPE_SX1257: lgw_radio_type_e = 2;
-pub const lgw_radio_type_e_LGW_RADIO_TYPE_SX1272: lgw_radio_type_e = 3;
-pub const lgw_radio_type_e_LGW_RADIO_TYPE_SX1276: lgw_radio_type_e = 4;
-#[doc = "@enum lgw_radio_type_e"]
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_NONE: lgw_radio_type_t = 0;
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_SX1255: lgw_radio_type_t = 1;
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_SX1257: lgw_radio_type_t = 2;
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_SX1272: lgw_radio_type_t = 3;
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_SX1276: lgw_radio_type_t = 4;
+pub const lgw_radio_type_t_LGW_RADIO_TYPE_SX1250: lgw_radio_type_t = 5;
+#[doc = "@enum lgw_radio_type_t"]
 #[doc = "@brief Radio types that can be found on the LoRa Gateway"]
-pub type lgw_radio_type_e = u32;
+pub type lgw_radio_type_t = u32;
 #[doc = "@struct lgw_conf_board_s"]
 #[doc = "@brief Configuration structure for board specificities"]
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct lgw_conf_board_s {
     pub lorawan_public: bool,
     #[doc = "> Enable ONLY for *public* networks using the LoRa MAC protocol"]
     pub clksrc: u8,
+    #[doc = "> Index of RF chain which provides clock to concentrator"]
+    pub full_duplex: bool,
+    #[doc = "> Indicates if the gateway operates in full duplex mode or not"]
+    pub spidev_path: [::std::os::raw::c_char; 64usize],
 }
 #[test]
 fn bindgen_test_layout_lgw_conf_board_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_conf_board_s>(),
-        2usize,
+        67usize,
         concat!("Size of: ", stringify!(lgw_conf_board_s))
     );
     assert_eq!(
@@ -55,124 +60,103 @@ fn bindgen_test_layout_lgw_conf_board_s() {
             stringify!(clksrc)
         )
     );
-}
-#[doc = "@struct lgw_conf_lbt_chan_s"]
-#[doc = "@brief Configuration structure for LBT channels"]
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct lgw_conf_lbt_chan_s {
-    pub freq_hz: u32,
-    pub scan_time_us: u16,
-}
-#[test]
-fn bindgen_test_layout_lgw_conf_lbt_chan_s() {
     assert_eq!(
-        ::std::mem::size_of::<lgw_conf_lbt_chan_s>(),
-        8usize,
-        concat!("Size of: ", stringify!(lgw_conf_lbt_chan_s))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<lgw_conf_lbt_chan_s>(),
-        4usize,
-        concat!("Alignment of ", stringify!(lgw_conf_lbt_chan_s))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_chan_s>())).freq_hz as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(lgw_conf_lbt_chan_s),
-            "::",
-            stringify!(freq_hz)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<lgw_conf_lbt_chan_s>())).scan_time_us as *const _ as usize
-        },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(lgw_conf_lbt_chan_s),
-            "::",
-            stringify!(scan_time_us)
-        )
-    );
-}
-#[doc = "@struct lgw_conf_lbt_s"]
-#[doc = "@brief Configuration structure for LBT specificities"]
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct lgw_conf_lbt_s {
-    pub enable: bool,
-    #[doc = "> enable or disable LBT"]
-    pub rssi_target: i8,
-    #[doc = "> RSSI threshold to detect if channel is busy or not (dBm)"]
-    pub nb_channel: u8,
-    #[doc = "> number of LBT channels"]
-    pub channels: [lgw_conf_lbt_chan_s; 8usize],
-    pub rssi_offset: i8,
-}
-#[test]
-fn bindgen_test_layout_lgw_conf_lbt_s() {
-    assert_eq!(
-        ::std::mem::size_of::<lgw_conf_lbt_s>(),
-        72usize,
-        concat!("Size of: ", stringify!(lgw_conf_lbt_s))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<lgw_conf_lbt_s>(),
-        4usize,
-        concat!("Alignment of ", stringify!(lgw_conf_lbt_s))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_s>())).enable as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(lgw_conf_lbt_s),
-            "::",
-            stringify!(enable)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_s>())).rssi_target as *const _ as usize },
-        1usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(lgw_conf_lbt_s),
-            "::",
-            stringify!(rssi_target)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_s>())).nb_channel as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_conf_board_s>())).full_duplex as *const _ as usize },
         2usize,
         concat!(
             "Offset of field: ",
-            stringify!(lgw_conf_lbt_s),
+            stringify!(lgw_conf_board_s),
             "::",
-            stringify!(nb_channel)
+            stringify!(full_duplex)
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_s>())).channels as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_conf_board_s>())).spidev_path as *const _ as usize },
+        3usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_board_s),
+            "::",
+            stringify!(spidev_path)
+        )
+    );
+}
+impl Default for lgw_conf_board_s {
+    fn default() -> Self {
+        unsafe { ::std::mem::zeroed() }
+    }
+}
+#[doc = "@struct lgw_rssi_tcomp_s"]
+#[doc = "@brief Structure containing all coefficients necessary to compute the offset to be applied on RSSI for current temperature"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct lgw_rssi_tcomp_s {
+    pub coeff_a: f32,
+    pub coeff_b: f32,
+    pub coeff_c: f32,
+    pub coeff_d: f32,
+    pub coeff_e: f32,
+}
+#[test]
+fn bindgen_test_layout_lgw_rssi_tcomp_s() {
+    assert_eq!(
+        ::std::mem::size_of::<lgw_rssi_tcomp_s>(),
+        20usize,
+        concat!("Size of: ", stringify!(lgw_rssi_tcomp_s))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<lgw_rssi_tcomp_s>(),
+        4usize,
+        concat!("Alignment of ", stringify!(lgw_rssi_tcomp_s))
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_rssi_tcomp_s>())).coeff_a as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_rssi_tcomp_s),
+            "::",
+            stringify!(coeff_a)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_rssi_tcomp_s>())).coeff_b as *const _ as usize },
         4usize,
         concat!(
             "Offset of field: ",
-            stringify!(lgw_conf_lbt_s),
+            stringify!(lgw_rssi_tcomp_s),
             "::",
-            stringify!(channels)
+            stringify!(coeff_b)
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_lbt_s>())).rssi_offset as *const _ as usize },
-        68usize,
+        unsafe { &(*(::std::ptr::null::<lgw_rssi_tcomp_s>())).coeff_c as *const _ as usize },
+        8usize,
         concat!(
             "Offset of field: ",
-            stringify!(lgw_conf_lbt_s),
+            stringify!(lgw_rssi_tcomp_s),
             "::",
-            stringify!(rssi_offset)
+            stringify!(coeff_c)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_rssi_tcomp_s>())).coeff_d as *const _ as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_rssi_tcomp_s),
+            "::",
+            stringify!(coeff_d)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_rssi_tcomp_s>())).coeff_e as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_rssi_tcomp_s),
+            "::",
+            stringify!(coeff_e)
         )
     );
 }
@@ -187,17 +171,17 @@ pub struct lgw_conf_rxrf_s {
     #[doc = "> center frequency of the radio in Hz"]
     pub rssi_offset: f32,
     #[doc = "> Board-specific RSSI correction factor"]
-    pub type_: lgw_radio_type_e,
+    pub rssi_tcomp: lgw_rssi_tcomp_s,
+    #[doc = "> Board-specific RSSI temperature compensation coefficients"]
+    pub type_: lgw_radio_type_t,
     #[doc = "> Radio type for that RF chain (SX1255, SX1257....)"]
     pub tx_enable: bool,
-    #[doc = "> enable or disable TX on that RF chain"]
-    pub tx_notch_freq: u32,
 }
 #[test]
 fn bindgen_test_layout_lgw_conf_rxrf_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_conf_rxrf_s>(),
-        24usize,
+        40usize,
         concat!("Size of: ", stringify!(lgw_conf_rxrf_s))
     );
     assert_eq!(
@@ -236,8 +220,18 @@ fn bindgen_test_layout_lgw_conf_rxrf_s() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_rxrf_s>())).type_ as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_conf_rxrf_s>())).rssi_tcomp as *const _ as usize },
         12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_rxrf_s),
+            "::",
+            stringify!(rssi_tcomp)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_conf_rxrf_s>())).type_ as *const _ as usize },
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_conf_rxrf_s),
@@ -247,22 +241,12 @@ fn bindgen_test_layout_lgw_conf_rxrf_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_conf_rxrf_s>())).tx_enable as *const _ as usize },
-        16usize,
+        36usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_conf_rxrf_s),
             "::",
             stringify!(tx_enable)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_conf_rxrf_s>())).tx_notch_freq as *const _ as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(lgw_conf_rxrf_s),
-            "::",
-            stringify!(tx_notch_freq)
         )
     );
 }
@@ -289,12 +273,20 @@ pub struct lgw_conf_rxif_s {
     pub sync_word_size: u8,
     #[doc = "> size of FSK sync word (number of bytes, 0 for default)"]
     pub sync_word: u64,
+    #[doc = "> FSK sync word (ALIGN RIGHT, eg. 0xC194C1)"]
+    pub implicit_hdr: bool,
+    #[doc = "> LoRa Service implicit header"]
+    pub implicit_payload_length: u8,
+    #[doc = "> LoRa Service implicit header payload length (number of bytes, 0 for default)"]
+    pub implicit_crc_en: bool,
+    #[doc = "> LoRa Service implicit header CRC enable"]
+    pub implicit_coderate: u8,
 }
 #[test]
 fn bindgen_test_layout_lgw_conf_rxif_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_conf_rxif_s>(),
-        32usize,
+        40usize,
         concat!("Size of: ", stringify!(lgw_conf_rxif_s))
     );
     assert_eq!(
@@ -372,6 +364,50 @@ fn bindgen_test_layout_lgw_conf_rxif_s() {
             stringify!(sync_word)
         )
     );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_conf_rxif_s>())).implicit_hdr as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_rxif_s),
+            "::",
+            stringify!(implicit_hdr)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<lgw_conf_rxif_s>())).implicit_payload_length as *const _ as usize
+        },
+        33usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_rxif_s),
+            "::",
+            stringify!(implicit_payload_length)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_conf_rxif_s>())).implicit_crc_en as *const _ as usize },
+        34usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_rxif_s),
+            "::",
+            stringify!(implicit_crc_en)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            &(*(::std::ptr::null::<lgw_conf_rxif_s>())).implicit_coderate as *const _ as usize
+        },
+        35usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_conf_rxif_s),
+            "::",
+            stringify!(implicit_coderate)
+        )
+    );
 }
 #[doc = "@struct lgw_pkt_rx_s"]
 #[doc = "@brief Structure containing the metadata of a packet that was received and a pointer to the payload"]
@@ -380,6 +416,7 @@ fn bindgen_test_layout_lgw_conf_rxif_s() {
 pub struct lgw_pkt_rx_s {
     pub freq_hz: u32,
     #[doc = "> central frequency of the IF chain"]
+    pub freq_offset: i32,
     pub if_chain: u8,
     #[doc = "> by which IF chain was packet received"]
     pub status: u8,
@@ -388,6 +425,7 @@ pub struct lgw_pkt_rx_s {
     #[doc = "> internal concentrator counter for timestamping, 1 microsecond resolution"]
     pub rf_chain: u8,
     #[doc = "> through which RF chain the packet was received"]
+    pub modem_id: u8,
     pub modulation: u8,
     #[doc = "> modulation used by the packet"]
     pub bandwidth: u8,
@@ -396,8 +434,10 @@ pub struct lgw_pkt_rx_s {
     #[doc = "> RX datarate of the packet (SF for LoRa)"]
     pub coderate: u8,
     #[doc = "> error-correcting code of the packet (LoRa only)"]
-    pub rssi: f32,
-    #[doc = "> average packet RSSI in dB"]
+    pub rssic: f32,
+    #[doc = "> average RSSI of the channel in dB"]
+    pub rssis: f32,
+    #[doc = "> average RSSI of the signal in dB"]
     pub snr: f32,
     #[doc = "> average packet SNR, in dB (LoRa only)"]
     pub snr_min: f32,
@@ -414,7 +454,7 @@ pub struct lgw_pkt_rx_s {
 fn bindgen_test_layout_lgw_pkt_rx_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_pkt_rx_s>(),
-        300usize,
+        308usize,
         concat!("Size of: ", stringify!(lgw_pkt_rx_s))
     );
     assert_eq!(
@@ -433,8 +473,18 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).if_chain as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).freq_offset as *const _ as usize },
         4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_pkt_rx_s),
+            "::",
+            stringify!(freq_offset)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).if_chain as *const _ as usize },
+        8usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -444,7 +494,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).status as *const _ as usize },
-        5usize,
+        9usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -454,7 +504,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).count_us as *const _ as usize },
-        8usize,
+        12usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -464,7 +514,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).rf_chain as *const _ as usize },
-        12usize,
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -473,8 +523,18 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
         )
     );
     assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).modem_id as *const _ as usize },
+        17usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_pkt_rx_s),
+            "::",
+            stringify!(modem_id)
+        )
+    );
+    assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).modulation as *const _ as usize },
-        13usize,
+        18usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -484,7 +544,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).bandwidth as *const _ as usize },
-        14usize,
+        19usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -494,7 +554,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).datarate as *const _ as usize },
-        16usize,
+        20usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -504,7 +564,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).coderate as *const _ as usize },
-        20usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -513,18 +573,28 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).rssi as *const _ as usize },
-        24usize,
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).rssic as *const _ as usize },
+        28usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
             "::",
-            stringify!(rssi)
+            stringify!(rssic)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).rssis as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_pkt_rx_s),
+            "::",
+            stringify!(rssis)
         )
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).snr as *const _ as usize },
-        28usize,
+        36usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -534,7 +604,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).snr_min as *const _ as usize },
-        32usize,
+        40usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -544,7 +614,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).snr_max as *const _ as usize },
-        36usize,
+        44usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -554,7 +624,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).crc as *const _ as usize },
-        40usize,
+        48usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -564,7 +634,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).size as *const _ as usize },
-        42usize,
+        50usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -574,7 +644,7 @@ fn bindgen_test_layout_lgw_pkt_rx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_rx_s>())).payload as *const _ as usize },
-        44usize,
+        52usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_rx_s),
@@ -605,6 +675,8 @@ pub struct lgw_pkt_tx_s {
     #[doc = "> TX power, in dBm"]
     pub modulation: u8,
     #[doc = "> modulation to use for the packet"]
+    pub freq_offset: i8,
+    #[doc = "> frequency offset from Radio Tx frequency (CW mode)"]
     pub bandwidth: u8,
     #[doc = "> modulation bandwidth (LoRa only)"]
     pub datarate: u32,
@@ -629,7 +701,7 @@ pub struct lgw_pkt_tx_s {
 fn bindgen_test_layout_lgw_pkt_tx_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_pkt_tx_s>(),
-        288usize,
+        292usize,
         concat!("Size of: ", stringify!(lgw_pkt_tx_s))
     );
     assert_eq!(
@@ -698,8 +770,18 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).bandwidth as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).freq_offset as *const _ as usize },
         15usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_pkt_tx_s),
+            "::",
+            stringify!(freq_offset)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).bandwidth as *const _ as usize },
+        16usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -709,7 +791,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).datarate as *const _ as usize },
-        16usize,
+        20usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -719,7 +801,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).coderate as *const _ as usize },
-        20usize,
+        24usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -729,7 +811,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).invert_pol as *const _ as usize },
-        21usize,
+        25usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -739,7 +821,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).f_dev as *const _ as usize },
-        22usize,
+        26usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -749,7 +831,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).preamble as *const _ as usize },
-        24usize,
+        28usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -759,7 +841,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).no_crc as *const _ as usize },
-        26usize,
+        30usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -769,7 +851,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).no_header as *const _ as usize },
-        27usize,
+        31usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -779,7 +861,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).size as *const _ as usize },
-        28usize,
+        32usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -789,7 +871,7 @@ fn bindgen_test_layout_lgw_pkt_tx_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_pkt_tx_s>())).payload as *const _ as usize },
-        30usize,
+        34usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_pkt_tx_s),
@@ -808,21 +890,28 @@ impl Default for lgw_pkt_tx_s {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct lgw_tx_gain_s {
-    pub dig_gain: u8,
-    #[doc = "> 2 bits, control of the digital gain of SX1301"]
-    pub pa_gain: u8,
-    #[doc = "> 2 bits, control of the external PA (SX1301 I/O)"]
-    pub dac_gain: u8,
-    #[doc = "> 2 bits, control of the radio DAC"]
-    pub mix_gain: u8,
-    #[doc = "> 4 bits, control of the radio mixer"]
     pub rf_power: i8,
+    #[doc = "> measured TX power at the board connector, in dBm"]
+    pub dig_gain: u8,
+    #[doc = "> (sx125x) 2 bits: control of the digital gain of SX1302"]
+    pub pa_gain: u8,
+    #[doc = "> (sx125x) 2 bits: control of the external PA (SX1302 I/O)"]
+    #[doc = "(sx1250) 1 bits: enable/disable the external PA (SX1302 I/O)"]
+    pub dac_gain: u8,
+    #[doc = "> (sx125x) 2 bits: control of the radio DAC"]
+    pub mix_gain: u8,
+    #[doc = "> (sx125x) 4 bits: control of the radio mixer"]
+    pub offset_i: i8,
+    #[doc = "> (sx125x) calibrated I offset"]
+    pub offset_q: i8,
+    #[doc = "> (sx125x) calibrated Q offset"]
+    pub pwr_idx: u8,
 }
 #[test]
 fn bindgen_test_layout_lgw_tx_gain_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_tx_gain_s>(),
-        5usize,
+        8usize,
         concat!("Size of: ", stringify!(lgw_tx_gain_s))
     );
     assert_eq!(
@@ -831,8 +920,18 @@ fn bindgen_test_layout_lgw_tx_gain_s() {
         concat!("Alignment of ", stringify!(lgw_tx_gain_s))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).dig_gain as *const _ as usize },
+        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).rf_power as *const _ as usize },
         0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_tx_gain_s),
+            "::",
+            stringify!(rf_power)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).dig_gain as *const _ as usize },
+        1usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_s),
@@ -842,7 +941,7 @@ fn bindgen_test_layout_lgw_tx_gain_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).pa_gain as *const _ as usize },
-        1usize,
+        2usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_s),
@@ -852,7 +951,7 @@ fn bindgen_test_layout_lgw_tx_gain_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).dac_gain as *const _ as usize },
-        2usize,
+        3usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_s),
@@ -862,7 +961,7 @@ fn bindgen_test_layout_lgw_tx_gain_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).mix_gain as *const _ as usize },
-        3usize,
+        4usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_s),
@@ -871,13 +970,33 @@ fn bindgen_test_layout_lgw_tx_gain_s() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).rf_power as *const _ as usize },
-        4usize,
+        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).offset_i as *const _ as usize },
+        5usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_s),
             "::",
-            stringify!(rf_power)
+            stringify!(offset_i)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).offset_q as *const _ as usize },
+        6usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_tx_gain_s),
+            "::",
+            stringify!(offset_q)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::std::ptr::null::<lgw_tx_gain_s>())).pwr_idx as *const _ as usize },
+        7usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(lgw_tx_gain_s),
+            "::",
+            stringify!(pwr_idx)
         )
     );
 }
@@ -894,7 +1013,7 @@ pub struct lgw_tx_gain_lut_s {
 fn bindgen_test_layout_lgw_tx_gain_lut_s() {
     assert_eq!(
         ::std::mem::size_of::<lgw_tx_gain_lut_s>(),
-        81usize,
+        129usize,
         concat!("Size of: ", stringify!(lgw_tx_gain_lut_s))
     );
     assert_eq!(
@@ -914,7 +1033,7 @@ fn bindgen_test_layout_lgw_tx_gain_lut_s() {
     );
     assert_eq!(
         unsafe { &(*(::std::ptr::null::<lgw_tx_gain_lut_s>())).size as *const _ as usize },
-        80usize,
+        128usize,
         concat!(
             "Offset of field: ",
             stringify!(lgw_tx_gain_lut_s),
@@ -927,33 +1046,27 @@ extern "C" {
     #[doc = "@brief Configure the gateway board"]
     #[doc = "@param conf structure containing the configuration parameters"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_board_setconf(conf: lgw_conf_board_s) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = "@brief Configure the gateway lbt function"]
-    #[doc = "@param conf structure containing the configuration parameters"]
-    #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_lbt_setconf(conf: lgw_conf_lbt_s) -> ::std::os::raw::c_int;
+    pub fn lgw_board_setconf(conf: *mut lgw_conf_board_s) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Configure an RF chain (must configure before start)"]
     #[doc = "@param rf_chain number of the RF chain to configure [0, LGW_RF_CHAIN_NB - 1]"]
     #[doc = "@param conf structure containing the configuration parameters"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_rxrf_setconf(rf_chain: u8, conf: lgw_conf_rxrf_s) -> ::std::os::raw::c_int;
+    pub fn lgw_rxrf_setconf(rf_chain: u8, conf: *mut lgw_conf_rxrf_s) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Configure an IF chain + modem (must configure before start)"]
     #[doc = "@param if_chain number of the IF chain + modem to configure [0, LGW_IF_CHAIN_NB - 1]"]
     #[doc = "@param conf structure containing the configuration parameters"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_rxif_setconf(if_chain: u8, conf: lgw_conf_rxif_s) -> ::std::os::raw::c_int;
+    pub fn lgw_rxif_setconf(if_chain: u8, conf: *mut lgw_conf_rxif_s) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Configure the Tx gain LUT"]
     #[doc = "@param pointer to structure defining the LUT"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_txgain_setconf(conf: *mut lgw_tx_gain_lut_s) -> ::std::os::raw::c_int;
+    pub fn lgw_txgain_setconf(rf_chain: u8, conf: *mut lgw_tx_gain_lut_s) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Connect to the LoRa concentrator, reset it and configure it according to previously set parameters"]
@@ -994,19 +1107,19 @@ extern "C" {
     #[doc = "trigger signal. Because there is no way to anticipate the triggering event and"]
     #[doc = "start the analog circuitry beforehand, that delay must be taken into account in"]
     #[doc = "the protocol."]
-    pub fn lgw_send(pkt_data: lgw_pkt_tx_s) -> ::std::os::raw::c_int;
+    pub fn lgw_send(pkt_data: *mut lgw_pkt_tx_s) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Give the the status of different part of the LoRa concentrator"]
     #[doc = "@param select is used to select what status we want to know"]
     #[doc = "@param code is used to return the status code"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_status(select: u8, code: *mut u8) -> ::std::os::raw::c_int;
+    pub fn lgw_status(rf_chain: u8, select: u8, code: *mut u8) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Abort a currently scheduled or ongoing TX"]
     #[doc = "@return LGW_HAL_ERROR id the operation failed, LGW_HAL_SUCCESS else"]
-    pub fn lgw_abort_tx() -> ::std::os::raw::c_int;
+    pub fn lgw_abort_tx(rf_chain: u8) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = "@brief Return value of internal counter when latest event (eg GPS pulse) was captured"]
@@ -1027,10 +1140,7 @@ extern "C" {
 }
 extern "C" {
     #[doc = "@brief Connect LoRa concentrator by opening SPI link"]
-    #[doc = "@param spi_only indicates if we only want to create the SPI connexion to the"]
-    #[doc = "concentrator, or if we also want to reset it and configure the FPGA (if present)"]
-    #[doc = "@param tx_notch_filter TX notch filter frequency to be set in the FPGA (only"]
-    #[doc = "used with SX1301AP2 reference design)."]
+    #[doc = "@param spidev_path path to the SPI device to be used to connect to the SX1302"]
     #[doc = "@return status of register operation (LGW_REG_SUCCESS/LGW_REG_ERROR)"]
-    pub fn lgw_connect(spi_only: bool, tx_notch_freq: u32) -> ::std::os::raw::c_int;
+    pub fn lgw_connect(spidev_path: *const ::std::os::raw::c_char) -> ::std::os::raw::c_int;
 }

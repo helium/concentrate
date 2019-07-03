@@ -1,6 +1,7 @@
 use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
+use std::ffi::CString;
 use toml;
 
 static DEFAULT_CFG_TOML: &str = include_str!("../default_config.toml");
@@ -28,6 +29,7 @@ impl Config {
 pub struct Board {
     pub lorawan_public: bool,
     pub clksrc: u32,
+    pub spidev_path: CString,
 }
 
 impl TryFrom<Board> for loragw::BoardConf {
@@ -36,6 +38,7 @@ impl TryFrom<Board> for loragw::BoardConf {
         Ok(Self {
             lorawan_public: other.lorawan_public,
             clksrc: loragw::Radio::try_from(other.clksrc)?,
+            spidev_path: other.spidev_path,
         })
     }
 }
@@ -102,6 +105,9 @@ impl From<TxGain> for loragw::TxGain {
             dac_gain: 3,
             mix_gain: other.mix_gain,
             rf_power: other.rf_power,
+            offset_i: 0,
+            offset_q: 0,
+            pwr_id: 0,
         }
     }
 }
@@ -117,20 +123,22 @@ mod tests {
             board: Board {
                 lorawan_public: false,
                 clksrc: 1,
+                spidev_path: CString::new("/dev/spidev0.0")
+                    .expect("path not representable as a C string"),
             },
             radios: Some(vec![
                 Radio {
                     id: 0,
                     freq: 916_300_000,
-                    rssi_offset: -169.0,
-                    type_: "SX1257".to_string(),
+                    rssi_offset: -207.0,
+                    type_: "SX1250".to_string(),
                     tx_enable: true,
                 },
                 Radio {
                     id: 1,
                     freq: 917_100_000,
-                    rssi_offset: -169.0,
-                    type_: "SX1257".to_string(),
+                    rssi_offset: -207.0,
+                    type_: "SX1250".to_string(),
                     tx_enable: false,
                 },
             ]),

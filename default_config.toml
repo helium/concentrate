@@ -1,19 +1,20 @@
 [board]
 lorawan_public = false
 clksrc = 1
+spidev_path = "/dev/spidev0.0"
 
 [[radios]]
 id = 0
-type = 'SX1257'
+type = 'SX1250'
 freq = 916_300_000
-rssi_offset = -169.0
+rssi_offset = -207.0
 tx_enable = true
 
 [[radios]]
 id = 1
-type = 'SX1257'
+type = 'SX1250'
 freq = 917_100_000
-rssi_offset = -169.0
+rssi_offset = -207.0
 tx_enable = false
 
 [[multirate_channels]]

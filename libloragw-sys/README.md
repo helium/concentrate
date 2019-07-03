@@ -12,13 +12,12 @@ The generated bindings (`src/bindings.rs`) have to manually generated
 if the vendored code (`vendor/libloragw`) changes:
 
 ```
-bindgen vendor/libloragw/bindgen.h \
+bindgen vendor/bindgen-sx1302.h \
     --with-derive-default \
     --whitelist-function "lgw_abort_tx" \
     --whitelist-function "lgw_board_setconf" \
     --whitelist-function "lgw_connect" \
     --whitelist-function "lgw_get_trigcnt" \
-    --whitelist-function "lgw_lbt_setconf" \
     --whitelist-function "lgw_receive" \
     --whitelist-function "lgw_rxif_setconf" \
     --whitelist-function "lgw_rxrf_setconf" \
@@ -29,5 +28,8 @@ bindgen vendor/libloragw/bindgen.h \
     --whitelist-function "lgw_time_on_air" \
     --whitelist-function "lgw_txgain_setconf" \
     --whitelist-function "lgw_version_info" \
-    -o src/bindings.rs
+    -o src/bindings.rs \
+    -- \
+    -Ivendor/sx1302_hal_cfg \
+    -Ivendor/sx1302_hal/libloragw/inc
 ```
