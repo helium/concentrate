@@ -4,35 +4,30 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2013 Semtech-Cycleo
+  (C)2018 Semtech
 
 Description:
-    Host specific functions to address the LoRa concentrator registers through
-    a SPI interface.
-    Single-byte read/write and burst read/write.
-    Does not handle pagination.
-    Could be used with multiple SPI ports in parallel (explicit file descriptor)
+    TODO
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
-Maintainer: Sylvain Miermont
 */
 
 
 /* -------------------------------------------------------------------------- */
 /* --- DEPENDANCIES --------------------------------------------------------- */
 
-#include <stdint.h>        /* C99 types */
-#include <stdio.h>        /* printf fprintf */
-#include <stdlib.h>        /* malloc free */
-#include <unistd.h>        /* lseek, close */
-#include <fcntl.h>        /* open */
-#include <string.h>        /* memset */
+#include <stdint.h>     /* C99 types */
+#include <stdio.h>      /* printf fprintf */
+#include <stdlib.h>     /* malloc free */
+#include <unistd.h>     /* lseek, close */
+#include <fcntl.h>      /* open */
+#include <string.h>     /* memset */
 
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
 
 #include "loragw_spi.h"
-#include "loragw_hal.h"
+#include "loragw_aux.h"
 
 /* -------------------------------------------------------------------------- */
 /* --- PRIVATE MACROS ------------------------------------------------------- */
@@ -53,15 +48,12 @@ Maintainer: Sylvain Miermont
 
 #define READ_ACCESS     0x00
 #define WRITE_ACCESS    0x80
-#define SPI_SPEED       1000000
-#define SPI_DEV_PATH    "/dev/spidev0.0"
-//#define SPI_DEV_PATH    "/dev/spidev32766.0"
 
 /* -------------------------------------------------------------------------- */
 /* --- PUBLIC FUNCTIONS DEFINITION ------------------------------------------ */
 
 /* SPI initialization and configuration */
-int lgw_spi_open(void **spi_target_ptr) {
+int lgw_spi_open(const char * spidev_path, void **spi_target_ptr) {
     int *spi_device = NULL;
     int dev;
     int a=0, b=0;
@@ -78,9 +70,9 @@ int lgw_spi_open(void **spi_target_ptr) {
     }
 
     /* open SPI device */
-    dev = open(SPI_DEV_PATH, O_RDWR);
+    dev = open(spidev_path, O_RDWR);
     if (dev < 0) {
-        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", SPI_DEV_PATH);
+        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", spidev_path);
         return LGW_SPI_ERROR;
     }
 
@@ -161,32 +153,24 @@ int lgw_spi_close(void *spi_target) {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Simple write */
-int lgw_spi_w(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, uint8_t address, uint8_t data) {
+int lgw_spi_w(void *spi_target, uint8_t spi_mux_target, uint16_t address, uint8_t data) {
     int spi_device;
-    uint8_t out_buf[3];
+    uint8_t out_buf[4];
     uint8_t command_size;
     struct spi_ioc_transfer k;
     int a;
 
     /* check input variables */
     CHECK_NULL(spi_target);
-    if ((address & 0x80) != 0) {
-        DEBUG_MSG("WARNING: SPI address > 127\n");
-    }
 
     spi_device = *(int *)spi_target; /* must check that spi_target is not null beforehand */
 
     /* prepare frame to be sent */
-    if (spi_mux_mode == LGW_SPI_MUX_MODE1) {
-        out_buf[0] = spi_mux_target;
-        out_buf[1] = WRITE_ACCESS | (address & 0x7F);
-        out_buf[2] = data;
-        command_size = 3;
-    } else {
-        out_buf[0] = WRITE_ACCESS | (address & 0x7F);
-        out_buf[1] = data;
-        command_size = 2;
-    }
+    out_buf[0] = spi_mux_target;
+    out_buf[1] = WRITE_ACCESS | ((address >> 8) & 0x7F);
+    out_buf[2] =                ((address >> 0) & 0xFF);
+    out_buf[3] = data;
+    command_size = 4;
 
     /* I/O transaction */
     memset(&k, 0, sizeof(k)); /* clear k */
@@ -210,9 +194,9 @@ int lgw_spi_w(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, ui
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Simple read */
-int lgw_spi_r(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, uint8_t address, uint8_t *data) {
+int lgw_spi_r(void *spi_target, uint8_t spi_mux_target, uint16_t address, uint8_t *data) {
     int spi_device;
-    uint8_t out_buf[3];
+    uint8_t out_buf[5];
     uint8_t command_size;
     uint8_t in_buf[ARRAY_SIZE(out_buf)];
     struct spi_ioc_transfer k;
@@ -220,24 +204,17 @@ int lgw_spi_r(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, ui
 
     /* check input variables */
     CHECK_NULL(spi_target);
-    if ((address & 0x80) != 0) {
-        DEBUG_MSG("WARNING: SPI address > 127\n");
-    }
     CHECK_NULL(data);
 
     spi_device = *(int *)spi_target; /* must check that spi_target is not null beforehand */
 
     /* prepare frame to be sent */
-    if (spi_mux_mode == LGW_SPI_MUX_MODE1) {
-        out_buf[0] = spi_mux_target;
-        out_buf[1] = READ_ACCESS | (address & 0x7F);
-        out_buf[2] = 0x00;
-        command_size = 3;
-    } else {
-        out_buf[0] = READ_ACCESS | (address & 0x7F);
-        out_buf[1] = 0x00;
-        command_size = 2;
-    }
+    out_buf[0] = spi_mux_target;
+    out_buf[1] = READ_ACCESS | ((address >> 8) & 0x7F);
+    out_buf[2] =               ((address >> 0) & 0xFF);
+    out_buf[3] = 0x00;
+    out_buf[4] = 0x00;
+    command_size = 5;
 
     /* I/O transaction */
     memset(&k, 0, sizeof(k)); /* clear k */
@@ -261,9 +238,9 @@ int lgw_spi_r(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, ui
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Burst (multiple-byte) write */
-int lgw_spi_wb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, uint8_t address, uint8_t *data, uint16_t size) {
+int lgw_spi_wb(void *spi_target, uint8_t spi_mux_target, uint16_t address, const uint8_t *data, uint16_t size) {
     int spi_device;
-    uint8_t command[2];
+    uint8_t command[3];
     uint8_t command_size;
     struct spi_ioc_transfer k[2];
     int size_to_do, chunk_size, offset;
@@ -272,9 +249,6 @@ int lgw_spi_wb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, u
 
     /* check input parameters */
     CHECK_NULL(spi_target);
-    if ((address & 0x80) != 0) {
-        DEBUG_MSG("WARNING: SPI address > 127\n");
-    }
     CHECK_NULL(data);
     if (size == 0) {
         DEBUG_MSG("ERROR: BURST OF NULL LENGTH\n");
@@ -284,14 +258,10 @@ int lgw_spi_wb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, u
     spi_device = *(int *)spi_target; /* must check that spi_target is not null beforehand */
 
     /* prepare command byte */
-    if (spi_mux_mode == LGW_SPI_MUX_MODE1) {
-        command[0] = spi_mux_target;
-        command[1] = WRITE_ACCESS | (address & 0x7F);
-        command_size = 2;
-    } else {
-        command[0] = WRITE_ACCESS | (address & 0x7F);
-        command_size = 1;
-    }
+    command[0] = spi_mux_target;
+    command[1] = WRITE_ACCESS | ((address >> 8) & 0x7F);
+    command[2] =                ((address >> 0) & 0xFF);
+    command_size = 3;
     size_to_do = size;
 
     /* I/O transaction */
@@ -323,9 +293,9 @@ int lgw_spi_wb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, u
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Burst (multiple-byte) read */
-int lgw_spi_rb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, uint8_t address, uint8_t *data, uint16_t size) {
+int lgw_spi_rb(void *spi_target, uint8_t spi_mux_target, uint16_t address, uint8_t *data, uint16_t size) {
     int spi_device;
-    uint8_t command[2];
+    uint8_t command[4];
     uint8_t command_size;
     struct spi_ioc_transfer k[2];
     int size_to_do, chunk_size, offset;
@@ -334,9 +304,6 @@ int lgw_spi_rb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, u
 
     /* check input parameters */
     CHECK_NULL(spi_target);
-    if ((address & 0x80) != 0) {
-        DEBUG_MSG("WARNING: SPI address > 127\n");
-    }
     CHECK_NULL(data);
     if (size == 0) {
         DEBUG_MSG("ERROR: BURST OF NULL LENGTH\n");
@@ -346,14 +313,11 @@ int lgw_spi_rb(void *spi_target, uint8_t spi_mux_mode, uint8_t spi_mux_target, u
     spi_device = *(int *)spi_target; /* must check that spi_target is not null beforehand */
 
     /* prepare command byte */
-    if (spi_mux_mode == LGW_SPI_MUX_MODE1) {
-        command[0] = spi_mux_target;
-        command[1] = READ_ACCESS | (address & 0x7F);
-        command_size = 2;
-    } else {
-        command[0] = READ_ACCESS | (address & 0x7F);
-        command_size = 1;
-    }
+    command[0] = spi_mux_target;
+    command[1] = READ_ACCESS | ((address >> 8) & 0x7F);
+    command[2] =               ((address >> 0) & 0xFF);
+    command[3] = 0x00;
+    command_size = 4;
     size_to_do = size;
 
     /* I/O transaction */
