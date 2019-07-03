@@ -16,40 +16,32 @@ The included .cargo/config file will specify the linker needed to complete the b
 Install the toolchain to your system:
 #### Arch
 Install the toolchain:
-```zsh
+```sh
 > sudo pacman -S aarch64-linux-gnu-gcc
 ```
 #### Ubuntu
-```zsh
+```sh
 > sudo apt-get install gcc-aarch64-linux-gnu
 ```
-
-
 #### Common
-
 Add it to Rust:
-```zsh
+```sh
 > rustup target add aarch64-unknown-linux-gnu
 ```
-
 Now building is easy:
-```zsh
+```sh
 > cargo build --target aarch64-unknown-linux-gnu [--release]
 ```
-
 ## Testing
-
 If you are putting the binary on an otherwise working Raspberry Pi image, you will want to kill the pre-existing concentrate service:
-```zsh
+```sh
 sudo sv d /etc/sv/concentrate
 ```
-
 If you would like to run a test session with a _remote_ client, you can start a concentrate server with the following options:
-```zsh
+```sh
 sudo concentrate -p -r 192.168.1.xxx serve
 ```
-
 On the remote machine, such a local development machine, you can run the client:
-```zsh
+```sh
 concentrate -p listen
 ```
