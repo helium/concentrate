@@ -31,7 +31,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 
 #if DEBUG_AUX == 1
     #define DEBUG_MSG(str)                fprintf(stderr, str)
-    #define DEBUG_PRINTF(fmt, args...)    fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, args)
+    #define DEBUG_PRINTF(fmt, ...)        fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
     #define DEBUG_MSG(str)
     #define DEBUG_PRINTF(fmt, args...)

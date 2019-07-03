@@ -34,7 +34,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #if DEBUG_RAD == 1
     #define DEBUG_MSG(str)              fprintf(stderr, str)
-    #define DEBUG_PRINTF(fmt, args...)  fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, args)
+    #define DEBUG_PRINTF(fmt, ...)      fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
     #define CHECK_NULL(a)               if(a==NULL){fprintf(stderr,"%s:%d: ERROR: NULL POINTER AS ARGUMENT\n", __FUNCTION__, __LINE__);return LGW_REG_ERROR;}
 #else
     #define DEBUG_MSG(str)
@@ -231,7 +231,7 @@ int lgw_sx125x_reg_w(radio_reg_t idx, uint8_t data, uint8_t rf_chain) {
     /* Check that we can read what we have written */
     lgw_sx125x_reg_r(idx, &val_check, rf_chain);
     if (val_check != data) {
-        printf("ERROR: sx125x register %d write failed (w:%u r:%u)!!\n", idx, data, val_check);
+        DEBUG_PRINTF("ERROR: sx125x register %d write failed (w:%u r:%u)!!\n", idx, data, val_check);
         spi_stat = LGW_SPI_ERROR;
     }
 
