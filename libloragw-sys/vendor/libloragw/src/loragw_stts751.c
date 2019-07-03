@@ -87,29 +87,29 @@ int stts751_configure( int i2c_fd )
     /* Check Input Params */
     if( i2c_fd <= 0 )
     {
-        printf( "ERROR: invalid I2C file descriptor\n" );
+        DEBUG_PRINTF( "ERROR: invalid I2C file descriptor\n" );
         return LGW_I2C_ERROR;
     }
 
-    printf("INFO: configuring STTS751 temperature sensor...\n");
+    DEBUG_PRINTF("INFO: configuring STTS751 temperature sensor...\n");
 
     /* Get product ID */
     err = i2c_linuxdev_read( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_PROD_ID, &val );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
     switch( val )
     {
         case STTS751_0_PROD_ID:
-            printf("INFO: Product ID: STTS751-0\n");
+            DEBUG_PRINTF("INFO: Product ID: STTS751-0\n");
             break;
         case STTS751_1_PROD_ID:
-            printf("INFO: Product ID: STTS751-1\n");
+            DEBUG_PRINTF("INFO: Product ID: STTS751-1\n");
             break;
         default:
-            printf("ERROR: Product ID: UNKNOWN\n");
+            DEBUG_PRINTF("ERROR: Product ID: UNKNOWN\n");
             return LGW_I2C_ERROR;
     }
 
@@ -117,33 +117,33 @@ int stts751_configure( int i2c_fd )
     err = i2c_linuxdev_read( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_MAN_ID, &val );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
     if ( val != ST_MAN_ID )
     {
-        printf( "ERROR: Manufacturer ID: UNKNOWN\n" );
+        DEBUG_PRINTF( "ERROR: Manufacturer ID: UNKNOWN\n" );
         return LGW_I2C_ERROR;
     }
     else
     {
-        printf("INFO: Manufacturer ID: 0x%02X\n", val);
+        DEBUG_PRINTF("INFO: Manufacturer ID: 0x%02X\n", val);
     }
 
     /* Get revision number */
     err = i2c_linuxdev_read( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_REV_ID, &val );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
-    printf("INFO: Revision number: 0x%02X\n", val);
+    DEBUG_PRINTF("INFO: Revision number: 0x%02X\n", val);
 
     /* Set conversion resolution to 12 bits */
     err = i2c_linuxdev_write( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_CONF, 0x8C ); /* TODO: do not hardcode the whole byte */
     if ( err != 0 )
     {
-        printf( "ERROR: failed to write I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to write I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
 
@@ -151,7 +151,7 @@ int stts751_configure( int i2c_fd )
     err = i2c_linuxdev_write( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_RATE, 0x04 );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to write I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to write I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
 
@@ -169,7 +169,7 @@ int stts751_get_temperature( int i2c_fd, float * temperature)
     /* Check Input Params */
     if( i2c_fd <= 0 )
     {
-        printf( "ERROR: invalid I2C file descriptor\n" );
+        DEBUG_PRINTF( "ERROR: invalid I2C file descriptor\n" );
         return LGW_I2C_ERROR;
     }
 
@@ -177,7 +177,7 @@ int stts751_get_temperature( int i2c_fd, float * temperature)
     err = i2c_linuxdev_read( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_TEMP_L, &low_byte );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
 
@@ -185,7 +185,7 @@ int stts751_get_temperature( int i2c_fd, float * temperature)
     err = i2c_linuxdev_read( i2c_fd, I2C_PORT_TEMP_SENSOR, STTS751_REG_TEMP_H, &high_byte );
     if ( err != 0 )
     {
-        printf( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
+        DEBUG_PRINTF( "ERROR: failed to read I2C device 0x%02X (err=%i)\n", I2C_PORT_TEMP_SENSOR, err );
         return LGW_I2C_ERROR;
     }
 

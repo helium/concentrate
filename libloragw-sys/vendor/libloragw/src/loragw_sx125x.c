@@ -231,7 +231,7 @@ int lgw_sx125x_reg_w(radio_reg_t idx, uint8_t data, uint8_t rf_chain) {
     /* Check that we can read what we have written */
     lgw_sx125x_reg_r(idx, &val_check, rf_chain);
     if (val_check != data) {
-        printf("ERROR: sx125x register %d write failed (w:%u r:%u)!!\n", idx, data, val_check);
+        DEBUG_PRINTF("ERROR: sx125x register %d write failed (w:%u r:%u)!!\n", idx, data, val_check);
         spi_stat = LGW_SPI_ERROR;
     }
 

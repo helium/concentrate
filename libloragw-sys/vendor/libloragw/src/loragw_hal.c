@@ -324,7 +324,7 @@ uint16_t lgw_get_tx_start_delay(lgw_radio_type_t radio_type, uint8_t modulation,
     /* Compute total delay */
     tx_start_delay -= (radio_bw_delay + filter_delay + modem_delay);
 
-    printf("INFO: tx_start_delay=%u (%u, radio_bw_delay=%u, filter_delay=%u, modem_delay=%u)\n", (uint16_t)tx_start_delay, TX_START_DELAY_DEFAULT*32, radio_bw_delay, filter_delay, modem_delay);
+    DEBUG_PRINTF("INFO: tx_start_delay=%u (%u, radio_bw_delay=%u, filter_delay=%u, modem_delay=%u)\n", (uint16_t)tx_start_delay, TX_START_DELAY_DEFAULT*32, radio_bw_delay, filter_delay, modem_delay);
 
     return tx_start_delay;
 }
@@ -694,23 +694,23 @@ int lgw_start(void) {
     /* -- Start calibration */
     if ((CONTEXT_RF_CHAIN[CONTEXT_BOARD.clksrc].type == LGW_RADIO_TYPE_SX1257) ||
         (CONTEXT_RF_CHAIN[CONTEXT_BOARD.clksrc].type == LGW_RADIO_TYPE_SX1255)) {
-        printf("Loading CAL fw for sx125x\n");
+        DEBUG_PRINTF("Loading CAL fw for sx125x\n");
         if (sx1302_agc_load_firmware(cal_firmware_sx125x) != LGW_HAL_SUCCESS) {
-            printf("ERROR: Failed to load calibration fw\n");
+            DEBUG_PRINTF("ERROR: Failed to load calibration fw\n");
             return LGW_HAL_ERROR;
         }
         if (sx1302_cal_start(FW_VERSION_CAL, CONTEXT_RF_CHAIN, &CONTEXT_TX_GAIN_LUT[0]) != LGW_HAL_SUCCESS) {
-            printf("ERROR: radio calibration failed\n");
+            DEBUG_PRINTF("ERROR: radio calibration failed\n");
             sx1302_radio_reset(0, CONTEXT_RF_CHAIN[0].type);
             sx1302_radio_reset(1, CONTEXT_RF_CHAIN[1].type);
             return LGW_HAL_ERROR;
         }
     } else {
-        printf("Calibrating sx1250 radios\n");
+        DEBUG_PRINTF("Calibrating sx1250 radios\n");
         for (i = 0; i < LGW_RF_CHAIN_NB; i++) {
             if (CONTEXT_RF_CHAIN[i].enable == true) {
                 if (sx1250_calibrate(i, CONTEXT_RF_CHAIN[i].freq_hz)) {
-                    printf("ERROR: radio calibration failed\n");
+                    DEBUG_PRINTF("ERROR: radio calibration failed\n");
                     return LGW_HAL_ERROR;
                 }
             }
@@ -750,7 +750,7 @@ int lgw_start(void) {
     lgw_get_instcnt(&val);
     lgw_get_instcnt(&val2);
     if (val == val2) {
-        printf("ERROR: SX1302 timestamp counter is not running (val:%u)\n", (uint32_t)val);
+        DEBUG_PRINTF("ERROR: SX1302 timestamp counter is not running (val:%u)\n", (uint32_t)val);
         return -1;
     }
 
@@ -790,13 +790,13 @@ int lgw_start(void) {
     /* Load firmware */
     switch (CONTEXT_RF_CHAIN[CONTEXT_BOARD.clksrc].type) {
         case LGW_RADIO_TYPE_SX1250:
-            printf("Loading AGC fw for sx1250\n");
+            DEBUG_PRINTF("Loading AGC fw for sx1250\n");
             if (sx1302_agc_load_firmware(agc_firmware_sx1250) != LGW_HAL_SUCCESS) {
                 return LGW_HAL_ERROR;
             }
             break;
         case LGW_RADIO_TYPE_SX1257:
-            printf("Loading AGC fw for sx125x\n");
+            DEBUG_PRINTF("Loading AGC fw for sx125x\n");
             if (sx1302_agc_load_firmware(agc_firmware_sx125x) != LGW_HAL_SUCCESS) {
                 return LGW_HAL_ERROR;
             }
@@ -807,7 +807,7 @@ int lgw_start(void) {
     if (sx1302_agc_start(FW_VERSION_AGC, CONTEXT_RF_CHAIN[CONTEXT_BOARD.clksrc].type, SX1302_AGC_RADIO_GAIN_AUTO, SX1302_AGC_RADIO_GAIN_AUTO, (CONTEXT_BOARD.full_duplex == true) ? 1 : 0) != LGW_HAL_SUCCESS) {
         return LGW_HAL_ERROR;
     }
-    printf("Loading ARB fw\n");
+    DEBUG_PRINTF("Loading ARB fw\n");
     if (sx1302_arb_load_firmware(arb_firmware) != LGW_HAL_SUCCESS) {
         return LGW_HAL_ERROR;
     }
@@ -835,16 +835,16 @@ int lgw_start(void) {
     /* Open the file for writting */
     log_file = fopen(CONTEXT_DEBUG.log_file_name, "w+"); /* create log file, overwrite if file already exist */
     if (log_file == NULL) {
-        printf("ERROR: impossible to create log file %s\n", CONTEXT_DEBUG.log_file_name);
+        DEBUG_PRINTF("ERROR: impossible to create log file %s\n", CONTEXT_DEBUG.log_file_name);
         return LGW_HAL_ERROR;
     } else {
-        printf("INFO: %s file opened for debug log\n", CONTEXT_DEBUG.log_file_name);
+        DEBUG_PRINTF("INFO: %s file opened for debug log\n", CONTEXT_DEBUG.log_file_name);
 
         /* Create "pktlog.csv" symlink to simplify user life */
         unlink("loragw_hal.log");
         i = symlink(CONTEXT_DEBUG.log_file_name, "loragw_hal.log");
         if (i < 0) {
-            printf("ERROR: impossible to create symlink to log file %s\n", CONTEXT_DEBUG.log_file_name);
+            DEBUG_PRINTF("ERROR: impossible to create symlink to log file %s\n", CONTEXT_DEBUG.log_file_name);
         }
     }
 #endif
@@ -860,13 +860,13 @@ int lgw_start(void) {
     /* Open I2C */
     err = i2c_linuxdev_open(I2C_DEVICE, I2C_PORT_TEMP_SENSOR, &lgw_i2c_target);
     if ((err != 0) || (lgw_i2c_target <= 0)) {
-        printf("ERROR: failed to open I2C device %s (err=%i)\n", I2C_DEVICE, err);
+        DEBUG_PRINTF("ERROR: failed to open I2C device %s (err=%i)\n", I2C_DEVICE, err);
         return LGW_HAL_ERROR;
     }
 
     /* Configure the corecell temperature sensor */
     if (lgw_stts751_configure() != LGW_I2C_SUCCESS) {
-        printf("ERROR: failed to configure temperature sensor\n");
+        DEBUG_PRINTF("ERROR: failed to configure temperature sensor\n");
         return LGW_HAL_ERROR;
     }
 
@@ -898,7 +898,7 @@ int lgw_stop(void) {
     DEBUG_MSG("INFO: Closing I2C\n");
     err = i2c_linuxdev_close(lgw_i2c_target);
     if (err != 0) {
-        printf("ERROR: failed to close I2C device (err=%i)\n", err);
+        DEBUG_PRINTF("ERROR: failed to close I2C device (err=%i)\n", err);
         /* TODO: return error or not ? */
     }
 
@@ -937,12 +937,12 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
     /* Check that AGC/ARB firmwares are not corrupted */
     lgw_reg_r(SX1302_REG_AGC_MCU_CTRL_PARITY_ERROR, &val);
     if (val != 0) {
-        printf("ERROR: Parity error check failed on AGC firmware\n");
+        DEBUG_PRINTF("ERROR: Parity error check failed on AGC firmware\n");
         return LGW_HAL_ERROR;
     }
     lgw_reg_r(SX1302_REG_ARB_MCU_CTRL_PARITY_ERROR, &val);
     if (val != 0) {
-        printf("ERROR: Parity error check failed on ARB firmware\n");
+        DEBUG_PRINTF("ERROR: Parity error check failed on ARB firmware\n");
         return LGW_HAL_ERROR;
     }
 
@@ -962,9 +962,9 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
     sx1302_arb_print_debug_stats(true);
 #endif
 
-    printf("-----------------\n");
-    printf("lgw_receive()\n");
-    printf("nb_bytes received: %u (%u %u)\n", sz, buff[1], buff[0]);
+    DEBUG_PRINTF("-----------------\n");
+    DEBUG_PRINTF("lgw_receive()\n");
+    DEBUG_PRINTF("nb_bytes received: %u (%u %u)\n", sz, buff[1], buff[0]);
 
 #if 0 /* FOR TESTING: Wait for FIFO to be full: 91 packets of 22 bytes => 4095 bytes */
       /* Need to have a device sending packets with 22-bytes payload */
@@ -977,40 +977,40 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
     memset(rx_fifo, 0, sizeof rx_fifo);
     res = lgw_mem_rb(0x4000, rx_fifo, sz, true);
     if (res != LGW_REG_SUCCESS) {
-        printf("ERROR: Failed to read RX buffer, SPI error\n");
+        DEBUG_PRINTF("ERROR: Failed to read RX buffer, SPI error\n");
         return 0;
     }
 
     /* print debug info : TODO to be removed */
-    printf("RX_BUFFER: ");
+    DEBUG_PRINTF("RX_BUFFER: ");
     for (i = 0; i < sz; i++) {
-        printf("%02X ", rx_fifo[i]);
+        DEBUG_PRINTF("%02X ", rx_fifo[i]);
     }
-    printf("\n");
+    DEBUG_PRINTF("\n");
     last_addr_write = sx1302_rx_buffer_write_ptr_addr();
     last_addr_read = sx1302_rx_buffer_read_ptr_addr();
-    printf("RX_BUFFER: write_ptr 0x%04X, read_ptr 0x%04X\n", last_addr_write, last_addr_read);
+    DEBUG_PRINTF("RX_BUFFER: write_ptr 0x%04X, read_ptr 0x%04X\n", last_addr_write, last_addr_read);
 
     /* Update counter wrap status for packet timestamp conversion (27bits -> 32bits) */
     lgw_get_instcnt(&dummy);
 
     /* Get the current temperature for further RSSI compensation : TODO */
     if (lgw_stts751_get_temperature(&current_temperature) != LGW_I2C_SUCCESS) {
-        printf("ERROR: failed to get current temperature\n");
+        DEBUG_PRINTF("ERROR: failed to get current temperature\n");
         return LGW_HAL_ERROR;
     }
-    printf("INFO: current temperature is %f C\n", current_temperature);
+    DEBUG_PRINTF("INFO: current temperature is %f C\n", current_temperature);
 
     /* Parse raw data and fill messages array */
     buffer_index = 0;
     while ((nb_pkt_found <= max_pkt) && (buffer_index < sz)) {
         /* Get pkt sync words */
         if ((rx_fifo[buffer_index] != SX1302_PKT_SYNCWORD_BYTE_0) || (rx_fifo[buffer_index + 1] != SX1302_PKT_SYNCWORD_BYTE_1) ) {
-            printf("INFO: searching syncword...\n");
+            DEBUG_PRINTF("INFO: searching syncword...\n");
             buffer_index++;
             continue;
         }
-        printf("INFO: pkt syncword found at index %u\n", buffer_index);
+        DEBUG_PRINTF("INFO: pkt syncword found at index %u\n", buffer_index);
 
         /* Get payload length */
         payload_length = SX1302_PKT_PAYLOAD_LENGTH(rx_fifo, buffer_index);
@@ -1018,7 +1018,7 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
         /* Get fine timestamp metrics */
         num_ts_metrics = SX1302_PKT_NUM_TS_METRICS(rx_fifo, buffer_index + payload_length);
         if((buffer_index + SX1302_PKT_HEAD_METADATA + payload_length + SX1302_PKT_TAIL_METADATA + (2 * num_ts_metrics)) > sz) {
-            printf("WARNING: aborting truncated message (size=%u), got %u messages\n", sz, nb_pkt_found);
+            DEBUG_PRINTF("WARNING: aborting truncated message (size=%u), got %u messages\n", sz, nb_pkt_found);
             break;
         }
 
@@ -1030,7 +1030,7 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
             checksum_calc += rx_fifo[buffer_index + i];
         }
         if (checksum != checksum_calc) {
-            printf("WARNING: checksum failed (got:0x%02X calc:0x%02X)\n", checksum, checksum_calc);
+            DEBUG_PRINTF("WARNING: checksum failed (got:0x%02X calc:0x%02X)\n", checksum, checksum_calc);
             if (log_file != NULL) {
                 fprintf(log_file, "\nWARNING: checksum failed (got:0x%02X calc:0x%02X)\n", checksum, checksum_calc);
                 dbg_log_buffer_to_file(log_file, rx_fifo, sz);
@@ -1045,39 +1045,39 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
 #endif
             return 0; /* drop all packets fetched in case of checksum error */
         } else {
-            printf("Packet checksum OK (0x%02X)\n", checksum);
+            DEBUG_PRINTF("Packet checksum OK (0x%02X)\n", checksum);
         }
 
-        printf("-----------------\n");
-        printf("  modem:      %u\n", SX1302_PKT_MODEM_ID(rx_fifo, buffer_index));
-        printf("  chan:       %u\n", SX1302_PKT_CHANNEL(rx_fifo, buffer_index));
-        printf("  size:       %u\n", SX1302_PKT_PAYLOAD_LENGTH(rx_fifo, buffer_index));
-        printf("  crc_en:     %u\n", SX1302_PKT_CRC_EN(rx_fifo, buffer_index));
-        printf("  crc_err:    %u\n", SX1302_PKT_CRC_ERROR(rx_fifo, buffer_index + payload_length));
-        printf("  sync_err:   %u\n", SX1302_PKT_SYNC_ERROR(rx_fifo, buffer_index + payload_length));
-        printf("  hdr_err:    %u\n", SX1302_PKT_HEADER_ERROR(rx_fifo, buffer_index + payload_length));
-        printf("  timing_set: %u\n", SX1302_PKT_TIMING_SET(rx_fifo, buffer_index + payload_length));
-        printf("  codr:       %u\n", SX1302_PKT_CODING_RATE(rx_fifo, buffer_index));
-        printf("  datr:       %u\n", SX1302_PKT_DATARATE(rx_fifo, buffer_index));
-        printf("  num_ts:     %u\n", SX1302_PKT_NUM_TS_METRICS(rx_fifo, buffer_index + payload_length));
-        printf("-----------------\n");
+        DEBUG_PRINTF("-----------------\n");
+        DEBUG_PRINTF("  modem:      %u\n", SX1302_PKT_MODEM_ID(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  chan:       %u\n", SX1302_PKT_CHANNEL(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  size:       %u\n", SX1302_PKT_PAYLOAD_LENGTH(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  crc_en:     %u\n", SX1302_PKT_CRC_EN(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  crc_err:    %u\n", SX1302_PKT_CRC_ERROR(rx_fifo, buffer_index + payload_length));
+        DEBUG_PRINTF("  sync_err:   %u\n", SX1302_PKT_SYNC_ERROR(rx_fifo, buffer_index + payload_length));
+        DEBUG_PRINTF("  hdr_err:    %u\n", SX1302_PKT_HEADER_ERROR(rx_fifo, buffer_index + payload_length));
+        DEBUG_PRINTF("  timing_set: %u\n", SX1302_PKT_TIMING_SET(rx_fifo, buffer_index + payload_length));
+        DEBUG_PRINTF("  codr:       %u\n", SX1302_PKT_CODING_RATE(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  datr:       %u\n", SX1302_PKT_DATARATE(rx_fifo, buffer_index));
+        DEBUG_PRINTF("  num_ts:     %u\n", SX1302_PKT_NUM_TS_METRICS(rx_fifo, buffer_index + payload_length));
+        DEBUG_PRINTF("-----------------\n");
 
         /* Sanity checks */
         sanity_check = SX1302_PKT_MODEM_ID(rx_fifo, buffer_index);
         if (sanity_check > SX1302_FSK_MODEM_ID) {
-            printf("ERROR: modem_id is out of range - %u\n", sanity_check);
+            DEBUG_PRINTF("ERROR: modem_id is out of range - %u\n", sanity_check);
             rx_buffer_error = true;
         }
         if (sanity_check < SX1302_FSK_MODEM_ID) {
             sanity_check = SX1302_PKT_CHANNEL(rx_fifo, buffer_index);
             if (sanity_check > 9) {
-                printf("ERROR: channel is out of range - %u\n", sanity_check);
+                DEBUG_PRINTF("ERROR: channel is out of range - %u\n", sanity_check);
                 rx_buffer_error = true;
             }
 
             sanity_check = SX1302_PKT_DATARATE(rx_fifo, buffer_index);
             if ((sanity_check < 5) || (sanity_check > 12)) {
-                printf("ERROR: SF is out of range - %u\n", sanity_check);
+                DEBUG_PRINTF("ERROR: SF is out of range - %u\n", sanity_check);
                 rx_buffer_error = true;
             }
         }
@@ -1098,7 +1098,7 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
 
         /* we found the start of a packet, parse it */
         if ((nb_pkt_found + 1) > max_pkt) {
-            printf("WARNING: no space left, dropping packet\n");
+            DEBUG_PRINTF("WARNING: no space left, dropping packet\n");
             nb_pkt_dropped += 1;
             continue;
         }
@@ -1147,14 +1147,14 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
                     for (j = 0; j < CONTEXT_DEBUG.nb_ref_payload; j++) {
                         res = dbg_check_payload(&CONTEXT_DEBUG, log_file, p->payload, p->size, j, SX1302_PKT_DATARATE(rx_fifo, buffer_index));
                         if (res == -1) {
-                            printf("ERROR: 0x%08X payload error\n", CONTEXT_DEBUG.ref_payload[j].id);
+                            DEBUG_PRINTF("ERROR: 0x%08X payload error\n", CONTEXT_DEBUG.ref_payload[j].id);
                             if (log_file != NULL) {
                                 fprintf(log_file, "ERROR: 0x%08X payload error (pkt:%u)\n", CONTEXT_DEBUG.ref_payload[j].id, nb_pkt_found - 1);
                                 dbg_log_buffer_to_file(log_file, rx_fifo, sz);
                                 dbg_log_payload_diff_to_file(log_file, p->payload, CONTEXT_DEBUG.ref_payload[j].payload, p->size);
                             }
                         } else if (res == 1) {
-                            printf("0x%08X payload matches\n", CONTEXT_DEBUG.ref_payload[j].id);
+                            DEBUG_PRINTF("0x%08X payload matches\n", CONTEXT_DEBUG.ref_payload[j].id);
                         } else {
                             /* Do nothing */
                         }
@@ -1167,13 +1167,13 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
                         payload_crc16_read  = (uint16_t)((SX1302_PKT_CRC_PAYLOAD_7_0(rx_fifo, buffer_index + p->size) <<  0) & 0x00FF);
                         payload_crc16_read |= (uint16_t)((SX1302_PKT_CRC_PAYLOAD_15_8(rx_fifo, buffer_index + p->size) <<  8) & 0xFF00);
                         if (payload_crc16_calc != payload_crc16_read) {
-                            printf("ERROR: Payload CRC16 check failed (got:0x%04X calc:0x%04X)\n", payload_crc16_read, payload_crc16_calc);
+                            DEBUG_PRINTF("ERROR: Payload CRC16 check failed (got:0x%04X calc:0x%04X)\n", payload_crc16_read, payload_crc16_calc);
                             if (log_file != NULL) {
                                 fprintf(log_file, "ERROR: Payload CRC16 check failed (got:0x%04X calc:0x%04X) (pkt:%u)\n", payload_crc16_read, payload_crc16_calc, nb_pkt_found-1);
                                 dbg_log_buffer_to_file(log_file, rx_fifo, sz);
                             }
                         } else {
-                            printf("Payload CRC check OK (0x%04X)\n", payload_crc16_read);
+                            DEBUG_PRINTF("Payload CRC check OK (0x%04X)\n", payload_crc16_read);
                         }
                     }
                 }
@@ -1240,10 +1240,10 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
                     break;
                 default:
                     freq_offset = 0;
-                    printf("Invalid frequency offset\n");
+                    DEBUG_PRINTF("Invalid frequency offset\n");
                     break;
             }
-            printf("  f_offset: %d Hz\n", freq_offset);
+            DEBUG_PRINTF("  f_offset: %d Hz\n", freq_offset);
             p->freq_offset = freq_offset;
 
             /* determine if 'PPM mode' is on, needed for timestamp correction */
@@ -1303,10 +1303,10 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
             if (SX1302_PKT_CRC_EN(rx_fifo, buffer_index)) {
                 /* CRC enabled */
                 if (SX1302_PKT_CRC_ERROR(rx_fifo, buffer_index + p->size)) {
-                    printf("FSK: CRC ERR\n");
+                    DEBUG_PRINTF("FSK: CRC ERR\n");
                     p->status = STAT_CRC_BAD;
                 } else {
-                    printf("FSK: CRC OK\n");
+                    DEBUG_PRINTF("FSK: CRC OK\n");
                     p->status = STAT_CRC_OK;
                 }
             } else {
@@ -1357,7 +1357,7 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
         buffer_index += (SX1302_PKT_HEAD_METADATA + payload_length + SX1302_PKT_TAIL_METADATA + (2 * num_ts_metrics));
     }
 
-    printf("INFO: nb pkt found:%u dropped:%u\n", nb_pkt_found, nb_pkt_dropped);
+    DEBUG_PRINTF("INFO: nb pkt found:%u dropped:%u\n", nb_pkt_found, nb_pkt_dropped);
 
     return nb_pkt_found;
 }
@@ -1477,13 +1477,13 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             break;
         }
     }
-    printf("INFO: selecting TX Gain LUT index %u\n", pow_index);
+    DEBUG_PRINTF("INFO: selecting TX Gain LUT index %u\n", pow_index);
 
     /* loading calibrated Tx DC offsets */
     lgw_reg_w(SX1302_REG_TX_TOP_TX_RFFE_IF_I_OFFSET_I_OFFSET(pkt_data.rf_chain), CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_i);
     lgw_reg_w(SX1302_REG_TX_TOP_TX_RFFE_IF_Q_OFFSET_Q_OFFSET(pkt_data.rf_chain), CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_q);
 
-    printf("INFO: Applying IQ offset (i:%d, q:%d)\n", CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_i, CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_q);
+    DEBUG_PRINTF("INFO: Applying IQ offset (i:%d, q:%d)\n", CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_i, CONTEXT_TX_GAIN_LUT[pkt_data.rf_chain].lut[pow_index].offset_q);
 
     /* Set the power parameters to be used for TX */
     switch (CONTEXT_RF_CHAIN[pkt_data.rf_chain].type) {
@@ -1517,7 +1517,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             mod_bw = (0x01 << 7) | pkt_data.bandwidth;
             break;
         default:
-            printf("ERROR: Modulation not supported\n");
+            DEBUG_PRINTF("ERROR: Modulation not supported\n");
             return LGW_HAL_ERROR;
     }
     lgw_reg_w(SX1302_REG_TX_TOP_AGC_TX_BW_AGC_TX_BW(pkt_data.rf_chain), mod_bw);
@@ -1526,7 +1526,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
     switch (pkt_data.modulation) {
         case MOD_LORA:
             /* Set bandwidth */
-            printf("Bandwidth %dkHz\n", (int)(lgw_bw_getval(pkt_data.bandwidth) / 1E3));
+            DEBUG_PRINTF("Bandwidth %dkHz\n", (int)(lgw_bw_getval(pkt_data.bandwidth) / 1E3));
             freq_dev = lgw_bw_getval(pkt_data.bandwidth) / 2;
             fdev_reg = SX1302_FREQ_TO_REG(freq_dev);
             lgw_reg_w(SX1302_REG_TX_TOP_TX_RFFE_IF_FREQ_DEV_H_FREQ_DEV(pkt_data.rf_chain), (fdev_reg >>  8) & 0xFF);
@@ -1567,21 +1567,21 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
 
             /* Syncword */
             if ((CONTEXT_LWAN_PUBLIC == false) || (pkt_data.datarate == DR_LORA_SF5) || (pkt_data.datarate == DR_LORA_SF6)) {
-                printf("Setting LoRa syncword 0x12\n");
+                DEBUG_PRINTF("Setting LoRa syncword 0x12\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_FRAME_SYNCH_0_PEAK1_POS(pkt_data.rf_chain), 2);
                 lgw_reg_w(SX1302_REG_TX_TOP_FRAME_SYNCH_1_PEAK2_POS(pkt_data.rf_chain), 4);
             } else {
-                printf("Setting LoRa syncword 0x34\n");
+                DEBUG_PRINTF("Setting LoRa syncword 0x34\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_FRAME_SYNCH_0_PEAK1_POS(pkt_data.rf_chain), 6);
                 lgw_reg_w(SX1302_REG_TX_TOP_FRAME_SYNCH_1_PEAK2_POS(pkt_data.rf_chain), 8);
             }
 
             /* Set Fine Sync for SF5/SF6 */
             if ((pkt_data.datarate == DR_LORA_SF5) || (pkt_data.datarate == DR_LORA_SF6)) {
-                printf("Enable Fine Sync\n");
+                DEBUG_PRINTF("Enable Fine Sync\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_TXRX_CFG0_2_FINE_SYNCH_EN(pkt_data.rf_chain), 1);
             } else {
-                printf("Disable Fine Sync\n");
+                DEBUG_PRINTF("Disable Fine Sync\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_TXRX_CFG0_2_FINE_SYNCH_EN(pkt_data.rf_chain), 0);
             }
 
@@ -1591,16 +1591,16 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             /* Set PPM offset (low datarate optimization) */
             lgw_reg_w(SX1302_REG_TX_TOP_TXRX_CFG0_1_PPM_OFFSET_HDR_CTRL(pkt_data.rf_chain), 0);
             if (SET_PPM_ON(pkt_data.bandwidth, pkt_data.datarate)) {
-                printf("Low datarate optimization ENABLED\n");
+                DEBUG_PRINTF("Low datarate optimization ENABLED\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_TXRX_CFG0_1_PPM_OFFSET(pkt_data.rf_chain), 1);
             } else {
-                printf("Low datarate optimization DISABLED\n");
+                DEBUG_PRINTF("Low datarate optimization DISABLED\n");
                 lgw_reg_w(SX1302_REG_TX_TOP_TXRX_CFG0_1_PPM_OFFSET(pkt_data.rf_chain), 0);
             }
             break;
         case MOD_FSK:
             /* Set frequency deviation */
-            printf("f_dev %dkHz\n", (int)(pkt_data.f_dev));
+            DEBUG_PRINTF("f_dev %dkHz\n", (int)(pkt_data.f_dev));
             freq_dev = pkt_data.f_dev * 1e3;
             fdev_reg = SX1302_FREQ_TO_REG(freq_dev);
             lgw_reg_w(SX1302_REG_TX_TOP_TX_RFFE_IF_FREQ_DEV_H_FREQ_DEV(pkt_data.rf_chain), (fdev_reg >>  8) & 0xFF);
@@ -1653,7 +1653,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             lgw_reg_w(SX1302_REG_TX_TOP_FSK_PKT_LEN_PKT_LENGTH(pkt_data.rf_chain), pkt_data.size);
             break;
         default:
-            printf("ERROR: Modulation not supported\n");
+            DEBUG_PRINTF("ERROR: Modulation not supported\n");
             return LGW_HAL_ERROR;
     }
 
@@ -1674,7 +1674,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
     lgw_reg_w(SX1302_REG_TX_TOP_TX_CTRL_WRITE_BUFFER(pkt_data.rf_chain), 0x00);
 
     /* Trigger transmit */
-    printf("Start Tx: Freq:%u %s%u size:%u preamb:%u\n", pkt_data.freq_hz, (pkt_data.modulation == MOD_LORA) ? "SF" : "DR:", pkt_data.datarate, pkt_data.size, pkt_data.preamble);
+    DEBUG_PRINTF("Start Tx: Freq:%u %s%u size:%u preamb:%u\n", pkt_data.freq_hz, (pkt_data.modulation == MOD_LORA) ? "SF" : "DR:", pkt_data.datarate, pkt_data.size, pkt_data.preamble);
     switch (pkt_data.tx_mode) {
         case IMMEDIATE:
             lgw_reg_w(SX1302_REG_TX_TOP_TX_TRIG_TX_TRIG_IMMEDIATE(pkt_data.rf_chain), 0x00); /* reset state machine */
@@ -1682,7 +1682,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             break;
         case TIMESTAMPED:
             count_us = pkt_data.count_us * 32;
-            printf("--> programming trig delay at %u (%u)\n", pkt_data.count_us, count_us);
+            DEBUG_PRINTF("--> programming trig delay at %u (%u)\n", pkt_data.count_us, count_us);
 
             lgw_reg_w(SX1302_REG_TX_TOP_TIMER_TRIG_BYTE0_TIMER_DELAYED_TRIG(pkt_data.rf_chain), (uint8_t)((count_us >>  0) & 0x000000FF));
             lgw_reg_w(SX1302_REG_TX_TOP_TIMER_TRIG_BYTE1_TIMER_DELAYED_TRIG(pkt_data.rf_chain), (uint8_t)((count_us >>  8) & 0x000000FF));
@@ -1707,10 +1707,10 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             buff2[5] = 0x00;
             buff2[6] = 0x00;
             sx1250_read_command(0, READ_REGISTER, buff2, 7);
-            printf("reading %u\n", buff2[3]);
-            printf("reading %u\n", buff2[4]);
-            printf("reading %u\n", buff2[5]);
-            printf("reading %u\n", buff2[6]);
+            DEBUG_PRINTF("reading %u\n", buff2[3]);
+            DEBUG_PRINTF("reading %u\n", buff2[4]);
+            DEBUG_PRINTF("reading %u\n", buff2[5]);
+            DEBUG_PRINTF("reading %u\n", buff2[6]);
 
             lgw_reg_w(SX1302_REG_COMMON_CTRL0_HOST_RADIO_CTRL, 0x00);
 #endif
@@ -1721,7 +1721,7 @@ int lgw_send(struct lgw_pkt_tx_s pkt_data) {
             lgw_reg_w(SX1302_REG_TX_TOP_TX_TRIG_TX_TRIG_GPS(pkt_data.rf_chain), 0x01);
             break;
         default:
-            printf("ERROR: TX mode not supported\n");
+            DEBUG_PRINTF("ERROR: TX mode not supported\n");
             return LGW_HAL_ERROR;
     }
 

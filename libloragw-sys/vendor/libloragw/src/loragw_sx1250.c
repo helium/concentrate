@@ -158,7 +158,7 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
 
     buff[0] = 0x00;
     sx1250_read_command(rf_chain, GET_STATUS, buff, 1);
-    printf("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
+    DEBUG_PRINTF("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
 
     /* Run calibration */
     if ((freq_hz > 430E6) && (freq_hz < 440E6)) {
@@ -177,7 +177,7 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
         buff[0] = 0xE1;
         buff[1] = 0xE9;
     } else {
-        printf("ERROR: failed to calibrate sx1250 radio, frequency range not supported (%u)\n", freq_hz);
+        DEBUG_PRINTF("ERROR: failed to calibrate sx1250 radio, frequency range not supported (%u)\n", freq_hz);
         return -1;
     }
     sx1250_write_command(rf_chain, CALIBRATE_IMAGE, buff, 2);
@@ -189,9 +189,9 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
     buff[1] = 0x00;
     buff[2] = 0x00;
     sx1250_read_command(rf_chain, GET_DEVICE_ERRORS, buff, 3);
-    printf("%s: get_device_errors: 0x%02X 0x%02X 0x%02X\n", __FUNCTION__, buff[0], buff[1], buff[2]);
+    DEBUG_PRINTF("%s: get_device_errors: 0x%02X 0x%02X 0x%02X\n", __FUNCTION__, buff[0], buff[1], buff[2]);
     if (TAKE_N_BITS_FROM(buff[2], 4, 1) != 0) {
-        printf("ERROR: sx1250 Image Calibration Error\n");
+        DEBUG_PRINTF("ERROR: sx1250 Image Calibration Error\n");
         return -1;
     }
 
@@ -211,7 +211,7 @@ int sx1250_setup(uint8_t rf_chain, uint32_t freq_hz) {
 
     buff[0] = 0x00;
     sx1250_read_command(rf_chain, GET_STATUS, buff, 1);
-    printf("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
+    DEBUG_PRINTF("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
 
     /* Set Bitrate to maximum (to lower TX to FS switch time) */
     buff[0] = 0x06;
