@@ -73,19 +73,11 @@ pub enum Bandwidth {
     /// Auto bandwidth.
     Undefined = 0,
     /// 500 kHz.
-    BW500kHz = 0x01,
+    BW500kHz = 0x06,
     /// 250 kHz.
-    BW250kHz = 0x02,
+    BW250kHz = 0x05,
     /// 125 kHz.
-    BW125kHz = 0x03,
-    /// 62.5 kHz
-    BW62_5kHz = 0x04,
-    /// 31.2 kHz.
-    BW31_2kHz = 0x05,
-    /// 15.6 kHz.
-    BW15_6kHz = 0x06,
-    /// 7.8 kHz.
-    BW7_8kHz = 0x07,
+    BW125kHz = 0x04,
 }
 
 impl TryFrom<u32> for Bandwidth {
@@ -96,10 +88,6 @@ impl TryFrom<u32> for Bandwidth {
             0x01 => Bandwidth::BW500kHz,
             0x02 => Bandwidth::BW250kHz,
             0x03 => Bandwidth::BW125kHz,
-            0x04 => Bandwidth::BW62_5kHz,
-            0x05 => Bandwidth::BW31_2kHz,
-            0x06 => Bandwidth::BW15_6kHz,
-            0x07 => Bandwidth::BW7_8kHz,
             _ => return Err(error::Error::Data),
         })
     }
