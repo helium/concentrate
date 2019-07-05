@@ -1930,10 +1930,6 @@ impl ::protobuf::reflect::ProtobufValue for Spreading {
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum Bandwidth {
     UNDEFINED = 0,
-    BW7_8kHz = 1,
-    BW15_6kHz = 2,
-    BW31_2kHz = 3,
-    BW62_5kHz = 4,
     BW125kHz = 5,
     BW250kHz = 6,
     BW500kHz = 7,
@@ -1947,10 +1943,6 @@ impl ::protobuf::ProtobufEnum for Bandwidth {
     fn from_i32(value: i32) -> ::std::option::Option<Bandwidth> {
         match value {
             0 => ::std::option::Option::Some(Bandwidth::UNDEFINED),
-            1 => ::std::option::Option::Some(Bandwidth::BW7_8kHz),
-            2 => ::std::option::Option::Some(Bandwidth::BW15_6kHz),
-            3 => ::std::option::Option::Some(Bandwidth::BW31_2kHz),
-            4 => ::std::option::Option::Some(Bandwidth::BW62_5kHz),
             5 => ::std::option::Option::Some(Bandwidth::BW125kHz),
             6 => ::std::option::Option::Some(Bandwidth::BW250kHz),
             7 => ::std::option::Option::Some(Bandwidth::BW500kHz),
@@ -1961,10 +1953,6 @@ impl ::protobuf::ProtobufEnum for Bandwidth {
     fn values() -> &'static [Self] {
         static values: &'static [Bandwidth] = &[
             Bandwidth::UNDEFINED,
-            Bandwidth::BW7_8kHz,
-            Bandwidth::BW15_6kHz,
-            Bandwidth::BW31_2kHz,
-            Bandwidth::BW62_5kHz,
             Bandwidth::BW125kHz,
             Bandwidth::BW250kHz,
             Bandwidth::BW500kHz,
@@ -2090,12 +2078,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUNDEFINED\x10\0\x12\x07\n\
     \x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\x03SF9\x10\x03\x12\
     \x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\x08\n\x04SF12\x10\
-    \x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\x10\0\x12\x0c\n\x08B\
-    W7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\tBW31_2kHz\x10\x03\
-    \x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\x05\x12\x0c\n\x08B\
-    W250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\n\x08Coderate\x12\
-    \r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\x05CR4_6\x10\x02\
-    \x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\0B\0b\x06proto3\
+    \x06\x1a\0*F\n\tBandwidth\x12\r\n\tUNDEFINED\x10\0\x12\x0c\n\x08BW125kHz\
+    \x10\x05\x12\x0c\n\x08BW250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\
+    \0*G\n\x08Coderate\x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\
+    \t\n\x05CR4_6\x10\x02\x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\
+    \x1a\0B\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

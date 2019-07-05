@@ -17,10 +17,6 @@ enum Spreading {
 
 enum Bandwidth {
     UNDEFINED = 0;
-    BW7_8kHz = 1;
-    BW15_6kHz = 2;
-    BW31_2kHz = 3;
-    BW62_5kHz = 4;
     BW125kHz = 5;
     BW250kHz = 6;
     BW500kHz = 7;

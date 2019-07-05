@@ -32,10 +32,6 @@ pub fn send(
         },
         power: i32::from(power),
         bandwidth: match bandwidth {
-            7800 => msg::Bandwidth::BW7_8kHz,
-            15600 => msg::Bandwidth::BW15_6kHz,
-            31200 => msg::Bandwidth::BW31_2kHz,
-            62500 => msg::Bandwidth::BW62_5kHz,
             125_000 => msg::Bandwidth::BW125kHz,
             250_000 => msg::Bandwidth::BW250kHz,
             500_000 => msg::Bandwidth::BW500kHz,
