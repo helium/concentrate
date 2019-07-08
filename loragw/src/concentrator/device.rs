@@ -1,5 +1,5 @@
+use super::types::*;
 use crate::error::*;
-use crate::types::*;
 use libloragw_sys as llg;
 use std::{
     cell::Cell,
