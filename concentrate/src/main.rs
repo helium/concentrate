@@ -25,6 +25,8 @@ mod error;
 
 use colored::Colorize;
 use error::AppResult;
+use std::net::IpAddr;
+use std::str::FromStr;
 use std::{fs, process};
 use structopt::StructOpt;
 
@@ -57,12 +59,18 @@ fn go(args: cmdline::Args) -> AppResult {
                 Some(path) => Some(fs::read_to_string(path)?),
                 None => None,
             };
+            let remote_ip = match IpAddr::from_str(&args.remote_ip) {
+                Ok(ip) => Some(ip),
+                _ => None,
+            };
+
             app::serve(
                 cfg.as_ref().map(std::convert::AsRef::as_ref),
                 args.interval,
                 args.print_level,
                 args.listen_port,
                 args.publish_port,
+                remote_ip,
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),

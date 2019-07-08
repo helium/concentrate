@@ -27,6 +27,9 @@ Bug fixes:
 * [#18](https://github.com/helium/concentrate/pull/18):
   Make calls to `libloragw-sys` threadsafe.
 
+* [#21](https://github.com/helium/concentrate/pull/21):
+  Add `.cargo/config` for cross-compilation. Extend `serve`/`listen` to allow `serve` to run on hardware but listener to be remote; `remote-ip` cli option was added to enable this.
+
 0.1.7 (2019-06-26)
 ==================
 Bug fixes:
