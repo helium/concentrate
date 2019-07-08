@@ -18,8 +18,6 @@ extern crate lazy_static;
 mod error;
 mod concentrator;
 mod gps;
-mod types;
 pub use concentrator::*;
 pub use error::*;
 pub use gps::*;
-pub use types::*;
