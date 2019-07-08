@@ -1,5 +1,8 @@
+use super::framing::Frame;
 use crate::error::*;
+use crate::libloragw_sys;
 use std::cell::Cell;
+use std::ffi::CString;
 use std::fs::File;
 use std::marker::PhantomData;
 use std::path::Path;
@@ -24,7 +27,6 @@ impl GPS {
     where
         P: AsRef<Path>,
     {
-        use std::ffi::CString;
         use std::os::raw::c_char;
         use std::os::unix::ffi::OsStringExt;
         use std::os::unix::io::FromRawFd;
@@ -51,5 +53,30 @@ impl GPS {
         };
 
         Ok((GPS(PhantomData), tty))
+    }
+
+    /// Parse and update internal state using a GPS `Frame`.
+    pub fn parse(&self, frame: Frame) {
+        let _msg_kind = match frame {
+            Frame::Nmea(msg) => self.parse_nmea(msg),
+            Frame::Ublox(msg) => self.parse_ublox(msg),
+        };
+    }
+
+    fn parse_nmea(&self, msg: CString) -> libloragw_sys::gps_msg {
+        let msg = msg.as_bytes_with_nul();
+        unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr(), msg.len() as i32) }
+    }
+
+    fn parse_ublox(&self, msg: Vec<u8>) -> libloragw_sys::gps_msg {
+        // an output param we're going to ignore.
+        let mut msg_size = 0usize;
+        unsafe {
+            libloragw_sys::lgw_parse_ubx(
+                msg.as_ptr(),
+                msg.len() as usize,
+                &mut msg_size as *mut usize,
+            )
+        }
     }
 }
