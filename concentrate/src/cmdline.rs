@@ -16,6 +16,11 @@ pub enum Cmd {
     #[structopt(name = "listen")]
     Listen,
 
+    /// longfi. This mode is primarily meant for testing and debugging
+    /// longfi device code
+    #[structopt(name = "longfi")]
+    LongFi,
+
     /// Transmit a packet using provided string as payload. Similar to
     /// 'listen', requires another instance running in
     /// 'serve' mode.

@@ -1,5 +1,6 @@
 #![forbid(clippy::panicking_unwrap)]
 
+extern crate byteorder;
 extern crate colored;
 #[cfg(feature = "log_env")]
 extern crate env_logger;
@@ -74,6 +75,7 @@ fn go(args: cmdline::Args) -> AppResult {
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
+        cmdline::Cmd::LongFi => app::longfi(args.print_level, args.publish_port),
         cmdline::Cmd::Send {
             implicit,
             freq,
@@ -101,7 +103,7 @@ fn go(args: cmdline::Args) -> AppResult {
 }
 
 fn main() {
-    init_logging();
+    //init_logging();
     let args = cmdline::Args::from_args();
     match go(args) {
         Ok(()) => process::exit(0),
