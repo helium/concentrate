@@ -6,6 +6,7 @@ use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
 use std::ops;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
 // This is not a great solution, since another process has its
@@ -110,6 +111,13 @@ impl Concentrator {
     pub fn transmit(&self, packet: TxPacket) -> Result {
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
+    }
+
+    /// Returns value of internal counter when latest event (e.g. GPS pulse) was captured.
+    pub fn last_trigger(&self) -> Result<time::Duration> {
+        let mut cnt_us = 0u32;
+        unsafe { hal_call!(lgw_get_trigcnt(&mut cnt_us)) }?;
+        Ok(time::Duration::from_micros(u64::from(cnt_us)))
     }
 }
 
