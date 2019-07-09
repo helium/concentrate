@@ -10,7 +10,7 @@ struct LongFiPkt {
     mac: u16,
     payload: Vec<u8>,
     num_fragments: u8,
-    fragment_cnt: u8
+    fragment_cnt: u8,
 }
 
 impl core::fmt::Debug for LongFiPkt {
@@ -33,17 +33,36 @@ struct LongFiParser {
     fragmented_packets: [Option<LongFiPkt>; 256],
 }
 
-
 macro_rules! array_of_none_256 {
     () => {
-        [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None];
-    }
+        [
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None, None, None, None,
+        ];
+    };
 }
 
 impl LongFiParser {
-    fn new()-> LongFiParser {
+    fn new() -> LongFiParser {
         LongFiParser {
-            fragmented_packets: array_of_none_256!()
+            fragmented_packets: array_of_none_256!(),
         }
     }
 
@@ -51,13 +70,14 @@ impl LongFiParser {
         if let Some(message) = &msg.kind {
             if let msg::Resp_oneof_kind::rx_packet(lorapkt) = &message {
                 if lorapkt.crc_check {
-
                     // means single frament packet header
-                    if lorapkt.payload[0]==0 {
+                    if lorapkt.payload[0] == 0 {
                         let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET;
                         let mut payload: Vec<u8> = vec![0; len_copy];
-                        payload
-                            .copy_from_slice(&lorapkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy]);
+                        payload.copy_from_slice(
+                            &lorapkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
+                                ..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy],
+                        );
 
                         return Some(LongFiPkt {
                             packet_id: lorapkt.payload[0],
@@ -65,19 +85,22 @@ impl LongFiParser {
                                 | (lorapkt.payload[2] as u32) << 8
                                 | (lorapkt.payload[3] as u32) << 16
                                 | (lorapkt.payload[4] as u32) << 24,
-                            device_id: (lorapkt.payload[5] as u16) | (lorapkt.payload[6] as u16) << 8,
+                            device_id: (lorapkt.payload[5] as u16)
+                                | (lorapkt.payload[6] as u16) << 8,
                             mac: (lorapkt.payload[7] as u16) | (lorapkt.payload[8] as u16) << 8,
                             payload,
                             num_fragments: 1,
-                            fragment_cnt: 1
-                        });    
-                    } 
+                            fragment_cnt: 1,
+                        });
+                    }
                     // means multi-fragment packet header
                     else if lorapkt.payload[1] == 0 {
                         let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
                         let mut payload: Vec<u8> = vec![0; len_copy];
-                        payload
-                            .copy_from_slice(&lorapkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy]);
+                        payload.copy_from_slice(
+                            &lorapkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
+                                ..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy],
+                        );
 
                         let packet_id = lorapkt.payload[0] as usize;
 
@@ -94,8 +117,10 @@ impl LongFiParser {
                                         | (lorapkt.payload[4] as u32) << 8
                                         | (lorapkt.payload[5] as u32) << 16
                                         | (lorapkt.payload[6] as u32) << 24,
-                                    device_id: (lorapkt.payload[7] as u16) | (lorapkt.payload[8] as u16) << 8,
-                                    mac: (lorapkt.payload[9] as u16) | (lorapkt.payload[10] as u16) << 8,
+                                    device_id: (lorapkt.payload[7] as u16)
+                                        | (lorapkt.payload[8] as u16) << 8,
+                                    mac: (lorapkt.payload[9] as u16)
+                                        | (lorapkt.payload[10] as u16) << 8,
                                     payload,
                                 }
                             });
@@ -113,20 +138,23 @@ impl LongFiParser {
                         if let Some(pkt) = &mut self.fragmented_packets[packet_id] {
                             let fragment_num = lorapkt.payload[1];
                             if fragment_num == pkt.fragment_cnt {
-                                pkt.payload.extend(lorapkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET .. PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy].iter().cloned());
+                                pkt.payload.extend(
+                                    lorapkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
+                                        ..PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy]
+                                        .iter()
+                                        .cloned(),
+                                );
                                 pkt.fragment_cnt += 1;
                             }
                             if pkt.fragment_cnt == pkt.num_fragments {
                                 ret = true;
                             }
                         }
-                
+
                         if ret {
                             return self.fragmented_packets[packet_id].take();
                         }
-
                     }
-                    
                 }
             }
         }
@@ -134,13 +162,9 @@ impl LongFiParser {
     }
 }
 
-
-
 struct Router;
 impl Router {
-    pub fn receive_msg(){
-
-    }
+    pub fn receive_msg() {}
 }
 
 pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
@@ -165,4 +189,3 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
         }
     }
 }
-
