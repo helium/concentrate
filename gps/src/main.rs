@@ -3,7 +3,7 @@ use std::io::{BufReader, Read};
 extern crate loragw;
 
 fn main() {
-    let (gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600).unwrap();
+    let (mut gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600, None).unwrap();
     let rdr = BufReader::new(tty);
     let mut deframer = loragw::Deframer::new();
     for byte in rdr.bytes() {
