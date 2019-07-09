@@ -1,11 +1,10 @@
 use crate::error::AppResult;
 use messages as msg;
 use protobuf::parse_from_bytes;
-use std::io::ErrorKind;
 use std::net::SocketAddr;
 
 use longfi_hotspot::{LongFiParser, ParserResponse};
-use mio::udp::UdpSocket;
+use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use mio_extras::timer::{Timeout, Timer};
 use std::time::Duration;
@@ -41,14 +40,13 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
             let mut maybe_response = None;
             match event.token() {
                 RECV_EVENT => {
-                    if let Some(sz) = socket.recv_from(&mut read_buf)? {
-                        match parse_from_bytes::<msg::Resp>(&read_buf[..sz.0]) {
-                            Ok(rx_pkt) => {
-                                maybe_response = longfi.parse(&rx_pkt);
-                            }
-                            Err(e) => error!("{:?}", e),
+                    let sz = socket.recv(&mut read_buf)?;
+                    match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+                        Ok(rx_pkt) => {
+                            maybe_response = longfi.parse(&rx_pkt);
                         }
-                    }
+                        Err(e) => error!("{:?}", e),
+                    }  
                 }
                 PACKET_TIMEOUT => {
                     if let Some(index) = timer.poll() {
