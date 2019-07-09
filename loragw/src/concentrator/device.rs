@@ -127,6 +127,13 @@ impl Concentrator {
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
+
+    /// Returns value of internal counter when latest event (e.g. GPS pulse) was captured.
+    pub fn last_trigger(&self) -> Result<time::Duration> {
+        let mut cnt_us = 0u32;
+        unsafe { hal_call!(lgw_get_trigcnt(&mut cnt_us)) }?;
+        Ok(time::Duration::from_micros(u64::from(cnt_us)))
+    }
 }
 
 // Private functions.
