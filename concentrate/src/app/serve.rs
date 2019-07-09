@@ -5,10 +5,33 @@ use messages::*;
 use protobuf::parse_from_bytes;
 use std::{
     convert::{TryFrom, TryInto},
-    io::ErrorKind,
+    error::Error,
+    fs::File,
+    io::{BufReader, ErrorKind, Read},
     net::{IpAddr, SocketAddr, UdpSocket},
+    sync::mpsc,
+    thread,
     time::Duration,
 };
+
+fn gps_deframer(tty: File, sender: mpsc::Sender<loragw::Frame>) {
+    let mut deframer = loragw::Deframer::new();
+    let rdr = BufReader::new(tty);
+    for byte in rdr.bytes() {
+        match byte {
+            Err(e) => error!("error reading GPS TTY: {}", e.description()),
+            Ok(byte) => {
+                if let Some(msg) = deframer.push(byte) {
+                    sender
+                        .send(msg)
+                        .unwrap_or_else(|e: mpsc::SendError<loragw::Frame>| {
+                            error!("send error: {}", e)
+                        });
+                }
+            }
+        }
+    }
+}
 
 pub fn serve(
     cfg: Option<&str>,
@@ -43,7 +66,12 @@ pub fn serve(
     config(&mut concentrator, cfg)?;
     concentrator.start()?;
 
+    let (sender, receiver) = mpsc::channel();
+    let (gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600)?;
+    thread::spawn(move || gps_deframer(tty, sender));
+
     loop {
+        // Take available radio packets from the concentrator.
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
                 print_at_level(print_level, &pkt);
@@ -59,6 +87,12 @@ pub fn serve(
             }
         }
 
+        // Take available GPS frames from the deframer thread.
+        while let Ok(frame) = receiver.try_recv() {
+            gps.parse(frame);
+        }
+
+        // Receive and process client requests.
         match socket.recv(&mut req_buf) {
             Ok(sz) => {
                 let resp = match parse_from_bytes::<Req>(&req_buf[..sz]) {
