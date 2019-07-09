@@ -1,13 +1,16 @@
 use super::framing::Frame;
+use super::types::Times;
 use crate::error::*;
-use crate::libloragw_sys;
+use crate::libloragw_sys::{self, timespec, tref};
 use std::{
     cell::Cell,
     ffi::CString,
     fs::File,
     marker::PhantomData,
     path::Path,
+    ptr,
     sync::atomic::{AtomicBool, Ordering},
+    time::{Duration, SystemTime},
 };
 
 // Ensures we only have 0 or 1 GPS instances opened at a time.
@@ -18,6 +21,8 @@ static GPS_IS_OPEN: AtomicBool = AtomicBool::new(false);
 /// A serial-attached GPS.
 pub struct GPS<'a> {
     concentrator: Option<&'a crate::Concentrator>,
+    /// Time reference used for GPS <-> timestamp conversion.
+    gps_time_ref: tref,
     /// Used to prevent `self` from auto implementing `Sync`. This is
     /// necessary because the `libloragw` makes liberal use of globals
     /// and is not thread-safe.
@@ -62,6 +67,7 @@ impl<'a> GPS<'a> {
         Ok((
             GPS {
                 concentrator,
+                gps_time_ref: tref::default(),
                 _no_sync: PhantomData,
             },
             tty,
@@ -69,11 +75,35 @@ impl<'a> GPS<'a> {
     }
 
     /// Parse and update internal state using a GPS `Frame`.
-    pub fn parse(&self, frame: Frame) {
-        let _msg_kind = match frame {
+    pub fn parse(&mut self, frame: Frame) -> Result {
+        let msg_kind = match frame {
             Frame::Nmea(msg) => self.parse_nmea(msg),
             Frame::Ublox(msg) => self.parse_ublox(msg),
         };
+
+        if msg_kind == libloragw_sys::gps_msg_UBX_NAV_TIMEGPS {
+            self.sync()
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Convert concentrator timestamp counter value to UTC time.
+    ///
+    /// This function is typically used when a packet is received to
+    /// transform the internal counter-based timestamp in an absolute
+    /// timestamp with an accuracy in the order of a couple
+    /// microseconds (ns resolution).
+    pub fn systemtime_from_timestamp(&self, timestamp: Duration) -> Result<SystemTime> {
+        let mut timespec = timespec::default();
+        unsafe {
+            hal_call!(lgw_cnt2utc(
+                self.gps_time_ref,
+                timestamp.as_micros() as u32,
+                &mut timespec
+            ))?
+        };
+        Ok(SystemTime::from(timespec))
     }
 }
 
@@ -93,5 +123,41 @@ impl<'a> GPS<'a> {
                 &mut msg_size as *mut usize,
             )
         }
+    }
+
+    // Get the GPS solution (space & time).
+    fn times(&self) -> Result<Times> {
+        let mut times = Times::default();
+        unsafe {
+            hal_call!(lgw_gps_get(
+                &mut times.utc,
+                &mut times.gps,
+                ptr::null_mut(),
+                ptr::null_mut()
+            ))?
+        };
+        Ok(times)
+    }
+
+    fn sync(&mut self) -> Result {
+        let trig_cnt;
+
+        if let Some(concentrator) = self.concentrator {
+            trig_cnt = concentrator.last_trigger()?.as_micros() as u32;
+        } else {
+            return Ok(());
+        };
+
+        let times = self.times()?;
+
+        unsafe {
+            hal_call!(lgw_gps_sync(
+                &mut self.gps_time_ref,
+                trig_cnt,
+                times.utc,
+                times.gps
+            ))?
+        };
+        Ok(())
     }
 }

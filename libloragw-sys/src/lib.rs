@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::{fmt, slice};
+use std::{fmt, slice, time};
 
 include!("bindings.rs");
 
@@ -56,5 +56,17 @@ impl fmt::Debug for lgw_pkt_tx_s {
                 &slice::from_raw_parts(&self.payload as *const u8, self.size as usize)
             })
             .finish()
+    }
+}
+
+impl From<timespec> for time::Duration {
+    fn from(other: timespec) -> Self {
+        Self::from_secs(other.tv_sec as u64) + Self::from_nanos(other.tv_nsec as u64)
+    }
+}
+
+impl From<timespec> for time::SystemTime {
+    fn from(other: timespec) -> Self {
+        time::UNIX_EPOCH + time::Duration::from(other)
     }
 }

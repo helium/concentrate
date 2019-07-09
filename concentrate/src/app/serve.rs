@@ -31,7 +31,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
     concentrator.start()?;
 
     let (sender, receiver) = mpsc::channel();
-    let (gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600, Some(&concentrator))?;
+    let (mut gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600, Some(&concentrator))?;
     thread::spawn(move || gps_deframer(tty, sender));
 
     loop {
@@ -53,7 +53,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
 
         // Take available GPS frames from the deframer thread.
         while let Ok(frame) = receiver.try_recv() {
-            gps.parse(frame);
+            let _ = gps.parse(frame);
         }
 
         // Receive and process client requests.
