@@ -21,7 +21,6 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
     let mut read_buf = [0; 1024];
     let mut longfi = LongFiParser::new();
 
-    // send beacon on start
     let poll = Poll::new().expect("Error initializing poll object");
     let mut timer: Timer<usize> = Timer::default();
     let mut timeouts: [Option<Timeout>; 256] = array_of_none_256!();
@@ -30,7 +29,7 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
 
     poll.register(&socket, RECV_EVENT, Ready::readable(), PollOpt::edge())
         .unwrap();
-    //timer.set_timeout(Duration::new(1, 0), "Beacon".to_string());
+
     let mut events = Events::with_capacity(128);
     loop {
         poll.poll(&mut events, None)
