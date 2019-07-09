@@ -65,7 +65,7 @@ impl GPS {
 
     fn parse_nmea(&self, msg: CString) -> libloragw_sys::gps_msg {
         let msg = msg.as_bytes_with_nul();
-        unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr(), msg.len() as i32) }
+        unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr() as *const i8, msg.len() as i32) }
     }
 
     fn parse_ublox(&self, msg: Vec<u8>) -> libloragw_sys::gps_msg {
@@ -73,7 +73,7 @@ impl GPS {
         let mut msg_size = 0usize;
         unsafe {
             libloragw_sys::lgw_parse_ubx(
-                msg.as_ptr(),
+                msg.as_ptr() as *const i8,
                 msg.len() as usize,
                 &mut msg_size as *mut usize,
             )
