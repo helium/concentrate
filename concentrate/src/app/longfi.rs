@@ -45,7 +45,7 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
                             maybe_response = longfi.parse(&rx_pkt);
                         }
                         Err(e) => error!("{:?}", e),
-                    }  
+                    }
                 }
                 PACKET_TIMEOUT => {
                     if let Some(index) = timer.poll() {
