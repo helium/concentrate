@@ -6,6 +6,8 @@ extern crate colored;
 extern crate env_logger;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate longfi_hotspot;
 extern crate loragw;
 extern crate messages;
 extern crate protobuf;
@@ -21,7 +23,6 @@ extern crate toml;
 
 extern crate mio;
 extern crate mio_extras;
-
 
 mod app;
 mod cfg;

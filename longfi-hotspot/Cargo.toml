@@ -1,0 +1,10 @@
+[package]
+name = "longfi-hotspot"
+version = "0.1.0"
+authors = ["Louis Thiery <louis@helium.com>"]
+
+[dependencies]
+messages = { path = "../messages" }
+
+[dev-dependencies]
+lazy_static = "*"

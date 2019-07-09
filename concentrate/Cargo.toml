@@ -7,6 +7,8 @@ authors = ["Jay Kickliter <jay@kickliter.com>"]
 colored = "1.8"
 log = "0.4.6"
 loragw = { path = "../loragw" }
+longfi-hotspot = { path = "../longfi-hotspot" }
+
 messages = { path = "../messages" }
 protobuf = "2.5.0"
 quick-error = "1.2.2"
