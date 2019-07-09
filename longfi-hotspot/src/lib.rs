@@ -80,7 +80,9 @@ impl LongFiParser {
             if let msg::Resp_oneof_kind::rx_packet(lorapkt) = &message {
                 // means single frament packet header
                 if lorapkt.payload[0] == 0 {
-                    let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET;
+                    let len_copy = lorapkt.payload.len()
+                        .checked_sub(PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET)
+                        .unwrap_or(0);
                     let mut payload: Vec<u8> = vec![0; len_copy];
                     payload.copy_from_slice(
                         &lorapkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
@@ -110,7 +112,10 @@ impl LongFiParser {
                 }
                 // means multi-fragment packet header
                 else if lorapkt.payload[1] == 0 {
-                    let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
+                    let len_copy = lorapkt.payload.len()
+                        .checked_sub(PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET)
+                        .unwrap_or(0);
+      
                     let mut payload: Vec<u8> = vec![0; len_copy];
                     payload.copy_from_slice(
                         &lorapkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
@@ -149,8 +154,10 @@ impl LongFiParser {
                 else {
                     let packet_id = lorapkt.payload[0] as usize;
 
-                    let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN_FRAGMENT_PACKET;
-                    // let len_copy = lorapkt.payload.len() - PAYLOAD_BEGIN;
+                    let len_copy = lorapkt.payload.len()
+                        .checked_sub(PAYLOAD_BEGIN_FRAGMENT_PACKET)
+                        .unwrap_or(0);
+
                     // assert
                     let mut ret = false;
 
