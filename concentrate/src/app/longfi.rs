@@ -41,8 +41,8 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
                 RECV_EVENT => {
                     let sz = socket.recv(&mut read_buf)?;
                     match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
-                        Ok(rx_pkt) => {
-                            maybe_response = longfi.parse(&rx_pkt);
+                        Ok(rx) => {
+                            maybe_response = longfi.parse(&rx);
                         }
                         Err(e) => error!("{:?}", e),
                     }
@@ -57,13 +57,13 @@ pub fn longfi(print_level: u8, resp_port: u16) -> AppResult {
 
             if let Some(response) = maybe_response {
                 match response {
-                    ParserResponse::PKT(pkt) => {
+                    ParserResponse::Pkt(pkt) => {
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);
                         }
                         super::print_at_level(print_level, &pkt)
                     }
-                    ParserResponse::FRAGMENTED_PACKET_BEGIN(index) => {
+                    ParserResponse::FragmentedPacketBegin(index) => {
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                 }

@@ -52,8 +52,8 @@ pub struct LongFiParser {
 }
 
 pub enum ParserResponse {
-    PKT(LongFiPkt),
-    FRAGMENTED_PACKET_BEGIN(usize),
+    Pkt(LongFiPkt),
+    FragmentedPacketBegin(usize),
 }
 
 impl LongFiParser {
@@ -64,48 +64,48 @@ impl LongFiParser {
     }
 
     pub fn timeout(&mut self, index: usize) -> Option<ParserResponse> {
-        if let Some(mut pkt) = self.fragmented_packets[index].take() {
-            while pkt.num_fragments > pkt.fragment_cnt {
-                pkt.fragment_cnt += 1;
-                pkt.quality.push(Quality::Missed);
+        if let Some(mut Pkt) = self.fragmented_packets[index].take() {
+            while Pkt.num_fragments > Pkt.fragment_cnt {
+                Pkt.fragment_cnt += 1;
+                Pkt.quality.push(Quality::Missed);
             }
 
-            return Some(ParserResponse::PKT(pkt));
+            return Some(ParserResponse::Pkt(Pkt));
         }
         return None;
     }
 
     pub fn parse(&mut self, msg: &msg::Resp) -> Option<ParserResponse> {
         if let Some(message) = &msg.kind {
-            if let msg::Resp_oneof_kind::rx_packet(lorapkt) = &message {
+            if let msg::Resp_oneof_kind::rx_packet(loraPkt) = &message {
                 // means single frament packet header
-                if lorapkt.payload[0] == 0 {
-                    let len_copy = lorapkt
+                if loraPkt.payload[0] == 0 {
+                    let len_copy = loraPkt
                         .payload
                         .len()
                         .checked_sub(PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET)
                         .unwrap_or(0);
                     let mut payload: Vec<u8> = vec![0; len_copy];
                     payload.copy_from_slice(
-                        &lorapkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
+                        &loraPkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
                             ..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy],
                     );
 
                     let mut quality = Vec::new();
-                    if lorapkt.crc_check {
+                    if loraPkt.crc_check {
                         quality.push(Quality::CrcOk);
                     } else {
                         quality.push(Quality::CrcFail);
                     }
 
-                    return Some(ParserResponse::PKT(LongFiPkt {
-                        packet_id: lorapkt.payload[0],
-                        oui: (lorapkt.payload[1] as u32)
-                            | (lorapkt.payload[2] as u32) << 8
-                            | (lorapkt.payload[3] as u32) << 16
-                            | (lorapkt.payload[4] as u32) << 24,
-                        device_id: (lorapkt.payload[5] as u16) | (lorapkt.payload[6] as u16) << 8,
-                        mac: (lorapkt.payload[7] as u16) | (lorapkt.payload[8] as u16) << 8,
+                    return Some(ParserResponse::Pkt(LongFiPkt {
+                        packet_id: loraPkt.payload[0],
+                        oui: (loraPkt.payload[1] as u32)
+                            | (loraPkt.payload[2] as u32) << 8
+                            | (loraPkt.payload[3] as u32) << 16
+                            | (loraPkt.payload[4] as u32) << 24,
+                        device_id: (loraPkt.payload[5] as u16) | (loraPkt.payload[6] as u16) << 8,
+                        mac: (loraPkt.payload[7] as u16) | (loraPkt.payload[8] as u16) << 8,
                         payload,
                         num_fragments: 1,
                         fragment_cnt: 1,
@@ -113,8 +113,8 @@ impl LongFiParser {
                     }));
                 }
                 // means multi-fragment packet header
-                else if lorapkt.payload[1] == 0 {
-                    let len_copy = lorapkt
+                else if loraPkt.payload[1] == 0 {
+                    let len_copy = loraPkt
                         .payload
                         .len()
                         .checked_sub(PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET)
@@ -122,14 +122,14 @@ impl LongFiParser {
 
                     let mut payload: Vec<u8> = vec![0; len_copy];
                     payload.copy_from_slice(
-                        &lorapkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
+                        &loraPkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
                             ..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy],
                     );
 
-                    let packet_id = lorapkt.payload[0] as usize;
+                    let packet_id = loraPkt.payload[0] as usize;
 
                     let mut quality = Vec::new();
-                    if lorapkt.crc_check {
+                    if loraPkt.crc_check {
                         quality.push(Quality::CrcOk);
                     } else {
                         quality.push(Quality::CrcFail);
@@ -138,27 +138,27 @@ impl LongFiParser {
                     self.fragmented_packets[packet_id] = Some({
                         LongFiPkt {
                             packet_id: packet_id as u8,
-                            num_fragments: lorapkt.payload[2],
+                            num_fragments: loraPkt.payload[2],
                             fragment_cnt: 1,
-                            oui: (lorapkt.payload[3] as u32)
-                                | (lorapkt.payload[4] as u32) << 8
-                                | (lorapkt.payload[5] as u32) << 16
-                                | (lorapkt.payload[6] as u32) << 24,
-                            device_id: (lorapkt.payload[7] as u16)
-                                | (lorapkt.payload[8] as u16) << 8,
-                            mac: (lorapkt.payload[9] as u16) | (lorapkt.payload[10] as u16) << 8,
+                            oui: (loraPkt.payload[3] as u32)
+                                | (loraPkt.payload[4] as u32) << 8
+                                | (loraPkt.payload[5] as u32) << 16
+                                | (loraPkt.payload[6] as u32) << 24,
+                            device_id: (loraPkt.payload[7] as u16)
+                                | (loraPkt.payload[8] as u16) << 8,
+                            mac: (loraPkt.payload[9] as u16) | (loraPkt.payload[10] as u16) << 8,
                             payload,
                             quality,
                         }
                     });
 
-                    return Some(ParserResponse::FRAGMENTED_PACKET_BEGIN(packet_id));
+                    return Some(ParserResponse::FragmentedPacketBegin(packet_id));
                 }
                 // must be fragment
                 else {
-                    let packet_id = lorapkt.payload[0] as usize;
+                    let packet_id = loraPkt.payload[0] as usize;
 
-                    let len_copy = lorapkt
+                    let len_copy = loraPkt
                         .payload
                         .len()
                         .checked_sub(PAYLOAD_BEGIN_FRAGMENT_PACKET)
@@ -167,38 +167,38 @@ impl LongFiParser {
                     // assert
                     let mut ret = false;
 
-                    if let Some(pkt) = &mut self.fragmented_packets[packet_id] {
-                        let fragment_num = lorapkt.payload[1];
+                    if let Some(Pkt) = &mut self.fragmented_packets[packet_id] {
+                        let fragment_num = loraPkt.payload[1];
 
-                        while fragment_num > pkt.fragment_cnt {
-                            pkt.fragment_cnt += 1;
-                            pkt.quality.push(Quality::Missed);
+                        while fragment_num > Pkt.fragment_cnt {
+                            Pkt.fragment_cnt += 1;
+                            Pkt.quality.push(Quality::Missed);
                         }
 
-                        if fragment_num == pkt.fragment_cnt {
-                            if lorapkt.crc_check {
-                                pkt.quality.push(Quality::CrcOk);
+                        if fragment_num == Pkt.fragment_cnt {
+                            if loraPkt.crc_check {
+                                Pkt.quality.push(Quality::CrcOk);
                             } else {
-                                pkt.quality.push(Quality::CrcFail);
+                                Pkt.quality.push(Quality::CrcFail);
                             }
 
-                            pkt.payload.extend(
-                                lorapkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
+                            Pkt.payload.extend(
+                                loraPkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
                                     ..PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy]
                                     .iter()
                                     .cloned(),
                             );
-                            pkt.fragment_cnt += 1;
+                            Pkt.fragment_cnt += 1;
                         }
 
-                        if pkt.fragment_cnt == pkt.num_fragments {
+                        if Pkt.fragment_cnt == Pkt.num_fragments {
                             ret = true;
                         }
                     }
 
                     if ret {
-                        if let Some(pkt) = self.fragmented_packets[packet_id].take() {
-                            return Some(ParserResponse::PKT(pkt));
+                        if let Some(Pkt) = self.fragmented_packets[packet_id].take() {
+                            return Some(ParserResponse::Pkt(Pkt));
                         }
                     }
                 }
