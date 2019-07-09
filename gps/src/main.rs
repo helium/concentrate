@@ -12,7 +12,7 @@ fn main() {
                 if let Some(msg) = deframer.push(byte) {
                     println!();
                     println!("{:?}", msg);
-                    gps.parse(msg);
+                    let _ = gps.parse(msg);
                 }
             }
             Err(e) => eprintln!("read error {}", e.description()),
