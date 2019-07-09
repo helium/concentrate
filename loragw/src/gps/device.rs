@@ -1,12 +1,14 @@
 use super::framing::Frame;
 use crate::error::*;
 use crate::libloragw_sys;
-use std::cell::Cell;
-use std::ffi::CString;
-use std::fs::File;
-use std::marker::PhantomData;
-use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    cell::Cell,
+    ffi::CString,
+    fs::File,
+    marker::PhantomData,
+    path::Path,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 // Ensures we only have 0 or 1 GPS instances opened at a time.
 // This is not a great solution, since another process has its
