@@ -73,7 +73,9 @@ impl<'a> GPS<'a> {
             Frame::Ublox(msg) => self.parse_ublox(msg),
         };
     }
+}
 
+impl<'a> GPS<'a> {
     fn parse_nmea(&self, msg: CString) -> libloragw_sys::gps_msg {
         let msg = msg.as_bytes_with_nul();
         unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr(), msg.len() as i32) }
