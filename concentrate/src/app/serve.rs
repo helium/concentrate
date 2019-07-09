@@ -31,7 +31,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
     concentrator.start()?;
 
     let (sender, receiver) = mpsc::channel();
-    let (gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600)?;
+    let (gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600, Some(&concentrator))?;
     thread::spawn(move || gps_deframer(tty, sender));
 
     loop {

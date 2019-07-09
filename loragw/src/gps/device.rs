@@ -14,16 +14,21 @@ use std::sync::atomic::{AtomicBool, Ordering};
 static GPS_IS_OPEN: AtomicBool = AtomicBool::new(false);
 
 /// A serial-attached GPS.
-pub struct GPS(
+pub struct GPS<'a> {
+    concentrator: Option<&'a crate::Concentrator>,
     /// Used to prevent `self` from auto implementing `Sync`. This is
     /// necessary because the `libloragw` makes liberal use of globals
     /// and is not thread-safe.
-    PhantomData<Cell<()>>,
-);
+    _no_sync: PhantomData<Cell<()>>,
+}
 
-impl GPS {
+impl<'a> GPS<'a> {
     /// Open the serial-attached GPS.
-    pub fn open<P>(path: P, baud: u32) -> Result<(Self, File)>
+    pub fn open<P>(
+        path: P,
+        baud: u32,
+        concentrator: Option<&'a crate::Concentrator>,
+    ) -> Result<(Self, File)>
     where
         P: AsRef<Path>,
     {
@@ -52,7 +57,13 @@ impl GPS {
             File::from_raw_fd(fd)
         };
 
-        Ok((GPS(PhantomData), tty))
+        Ok((
+            GPS {
+                concentrator,
+                _no_sync: PhantomData,
+            },
+            tty,
+        ))
     }
 
     /// Parse and update internal state using a GPS `Frame`.
