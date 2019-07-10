@@ -20,7 +20,7 @@ before_script:
 
 script:
   - cargo build
-  - cargo test
+  - cargo test --all --exclude libloragw-sys
   - cargo clippy -- -W clippy::all
   - cargo run --bin concentrate -- --help
   - cargo fmt -- --check
