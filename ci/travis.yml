@@ -22,5 +22,5 @@ script:
   - cargo build
   - cargo test
   - cargo clippy -- -W clippy::all
-  - cargo run -- --help
+  - cargo run --bin concentrate -- --help
   - cargo fmt -- --check
