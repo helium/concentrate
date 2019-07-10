@@ -7,6 +7,7 @@ use std::{
     ffi::CString,
     fs::File,
     marker::PhantomData,
+    os::raw::c_char,
     path::Path,
     ptr,
     sync::atomic::{AtomicBool, Ordering},
@@ -39,7 +40,6 @@ impl<'a> GPS<'a> {
     where
         P: AsRef<Path>,
     {
-        use std::os::raw::c_char;
         use std::os::unix::ffi::OsStringExt;
         use std::os::unix::io::FromRawFd;
 
@@ -56,8 +56,8 @@ impl<'a> GPS<'a> {
         let tty = unsafe {
             let mut fd = -1;
             hal_call!(lgw_gps_enable(
-                tty_path.as_bytes_with_nul().as_ptr() as *mut c_char,
-                gps_family.as_bytes_with_nul().as_ptr() as *mut c_char,
+                tty_path.as_ptr() as *mut c_char,
+                gps_family.as_ptr() as *mut c_char,
                 baud,
                 &mut fd
             ))?;
@@ -110,7 +110,7 @@ impl<'a> GPS<'a> {
 impl<'a> GPS<'a> {
     fn parse_nmea(&self, msg: CString) -> libloragw_sys::gps_msg {
         let msg = msg.as_bytes_with_nul();
-        unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr(), msg.len() as i32) }
+        unsafe { libloragw_sys::lgw_parse_nmea(msg.as_ptr() as *const c_char, msg.len() as i32) }
     }
 
     fn parse_ublox(&self, msg: Vec<u8>) -> libloragw_sys::gps_msg {
@@ -118,7 +118,7 @@ impl<'a> GPS<'a> {
         let mut msg_size = 0usize;
         unsafe {
             libloragw_sys::lgw_parse_ubx(
-                msg.as_ptr(),
+                msg.as_ptr() as *const c_char,
                 msg.len() as usize,
                 &mut msg_size as *mut usize,
             )
