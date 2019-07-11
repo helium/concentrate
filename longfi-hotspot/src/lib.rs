@@ -77,9 +77,11 @@ impl LongFiParser {
 
     pub fn parse(&mut self, msg: &msg::Resp) -> Option<ParserResponse> {
         if let Some(message) = &msg.kind {
+
             if let msg::Resp_oneof_kind::rx_packet(pkt) = &message {
                 // means single frament packet header
                 if pkt.payload[0] == 0 {
+
                     if pkt.payload.len() < PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET {
                         return None;
                     }
@@ -114,6 +116,7 @@ impl LongFiParser {
                 }
                 // means multi-fragment packet header
                 else if pkt.payload[1] == 0 {
+
                     if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
                         return None;
                     }
@@ -173,6 +176,7 @@ impl LongFiParser {
                         }
 
                         if fragment_num == fragmented_pkt.fragment_cnt {
+
                             if pkt.crc_check {
                                 fragmented_pkt.quality.push(Quality::CrcOk);
                             } else {
@@ -199,7 +203,11 @@ impl LongFiParser {
                         }
                     }
                 }
+            } else {
+                println!("did not parse");
             }
+        } else {
+            println!("did not parse!");
         }
         None
     }
