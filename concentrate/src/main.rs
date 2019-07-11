@@ -59,19 +59,17 @@ fn init_logging() {
 fn init_logging() {}
 
 fn go(args: cmdline::Args) -> AppResult {
-
     let remote_ip = match IpAddr::from_str(&args.remote_ip) {
         Ok(ip) => Some(ip),
         _ => None,
     };
-    
+
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {
                 Some(path) => Some(fs::read_to_string(path)?),
                 None => None,
             };
-
 
             app::serve(
                 cfg.as_ref().map(std::convert::AsRef::as_ref),
@@ -83,7 +81,12 @@ fn go(args: cmdline::Args) -> AppResult {
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
-        cmdline::Cmd::LongFi => app::longfi(args.print_level, args.listen_port, args.publish_port, remote_ip,),
+        cmdline::Cmd::LongFi => app::longfi(
+            args.print_level,
+            args.listen_port,
+            args.publish_port,
+            remote_ip,
+        ),
         cmdline::Cmd::Send {
             implicit,
             freq,
