@@ -63,7 +63,7 @@ fn go(args: cmdline::Args) -> AppResult {
         Ok(ip) => Some(ip),
         _ => None,
     };
-
+    
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {
@@ -86,6 +86,8 @@ fn go(args: cmdline::Args) -> AppResult {
             args.listen_port,
             args.publish_port,
             remote_ip,
+            args.longfi_port_in,
+            args.longfi_port_out,
         ),
         cmdline::Cmd::Send {
             implicit,

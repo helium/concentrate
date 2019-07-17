@@ -46,6 +46,7 @@ message Resp {
         TxResp tx = 2;
         RxPacket rx_packet = 3;
         bytes parse_err = 4;
+        LongFiRxPacket longfi_rx_packet= 5;
     }
 }
 
@@ -95,6 +96,21 @@ message RxPacket {
     float snr = 10;
     // This packet's payload.
     bytes payload = 11;
+}
+
+message LongFiRxPacket {
+    // Status of CRC check.
+    bool crc_check = 1;
+    // 1uS-resolution timestamp derived from concentrator's internal counter.
+    uint64 timestamp = 2;
+    // Average packet RSSI in dB.
+    float rssi = 3;
+    // Average packet SNR, in dB.
+    float snr = 4;
+    uint32 oui = 5;
+    uint32 device_id = 6;
+    uint32 mac = 7;
+    bytes payload = 8;
 }
 
 message TxResp {

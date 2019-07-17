@@ -22,6 +22,26 @@ pub struct LongFiPkt {
     quality: Vec<Quality>,
 }
 
+use messages::LongFiRxPacket;
+
+impl Into<LongFiRxPacket> for LongFiPkt {
+    fn into(self) -> LongFiRxPacket {
+        LongFiRxPacket {
+            crc_check: true,
+            timestamp: 100,
+            rssi: 1.0,
+            snr: 1.0,
+            oui: self.oui as u32,
+            device_id: self.device_id as u32,
+            mac: self.mac as u32,
+            payload: self.payload,
+            // special fields
+            unknown_fields: Default::default(),
+            cached_size: Default::default(),
+        }
+    }
+}
+
 impl core::fmt::Debug for LongFiPkt {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         let mut quality = String::from("");

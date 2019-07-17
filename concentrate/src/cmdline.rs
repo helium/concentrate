@@ -107,6 +107,24 @@ pub struct Args {
     )]
     pub listen_port: u16,
 
+    /// Publish port. UDP port number to publish LongFi packets to
+    #[structopt(
+        value_name = "LONGFI_PORT_OUT",
+        short = "o",
+        long = "longfi_out",
+        default_value = "31340"
+    )]
+    pub longfi_port_out: u16,
+
+    /// Listen port. UDP port number to listen for LongFi transmit requests
+    #[structopt(
+        value_name = "LONGFI_PORT_IN",
+        short = "i",
+        long = "longfi_in",
+        default_value = "31341"
+    )]
+    pub longfi_port_in : u16,
+
     /// Remote IP for listening.
     #[structopt(
         value_name = "REMOTE_IP",

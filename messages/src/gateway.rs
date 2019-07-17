@@ -295,6 +295,7 @@ pub enum Resp_oneof_kind {
     tx(TxResp),
     rx_packet(RxPacket),
     parse_err(::std::vec::Vec<u8>),
+    longfi_rx_packet(LongFiRxPacket),
 }
 
 impl Resp {
@@ -463,6 +464,55 @@ impl Resp {
             ::std::vec::Vec::new()
         }
     }
+
+    // .LongFiRxPacket longfi_rx_packet = 5;
+
+
+    pub fn get_longfi_rx_packet(&self) -> &LongFiRxPacket {
+        match self.kind {
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(ref v)) => v,
+            _ => LongFiRxPacket::default_instance(),
+        }
+    }
+    pub fn clear_longfi_rx_packet(&mut self) {
+        self.kind = ::std::option::Option::None;
+    }
+
+    pub fn has_longfi_rx_packet(&self) -> bool {
+        match self.kind {
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_longfi_rx_packet(&mut self, v: LongFiRxPacket) {
+        self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_longfi_rx_packet(&mut self) -> &mut LongFiRxPacket {
+        if let ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(_)) = self.kind {
+        } else {
+            self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(LongFiRxPacket::new()));
+        }
+        match self.kind {
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_longfi_rx_packet(&mut self) -> LongFiRxPacket {
+        if self.has_longfi_rx_packet() {
+            match self.kind.take() {
+                ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            LongFiRxPacket::new()
+        }
+    }
 }
 
 impl ::protobuf::Message for Resp {
@@ -473,6 +523,11 @@ impl ::protobuf::Message for Resp {
             }
         }
         if let Some(Resp_oneof_kind::rx_packet(ref v)) = self.kind {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        if let Some(Resp_oneof_kind::longfi_rx_packet(ref v)) = self.kind {
             if !v.is_initialized() {
                 return false;
             }
@@ -509,6 +564,12 @@ impl ::protobuf::Message for Resp {
                     }
                     self.kind = ::std::option::Option::Some(Resp_oneof_kind::parse_err(is.read_bytes()?));
                 },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(is.read_message()?));
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -537,6 +598,10 @@ impl ::protobuf::Message for Resp {
                 &Resp_oneof_kind::parse_err(ref v) => {
                     my_size += ::protobuf::rt::bytes_size(4, &v);
                 },
+                &Resp_oneof_kind::longfi_rx_packet(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+                },
             };
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
@@ -562,6 +627,11 @@ impl ::protobuf::Message for Resp {
                 },
                 &Resp_oneof_kind::parse_err(ref v) => {
                     os.write_bytes(4, v)?;
+                },
+                &Resp_oneof_kind::longfi_rx_packet(ref v) => {
+                    os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_raw_varint32(v.get_cached_size())?;
+                    v.write_to_with_cached_sizes(os)?;
                 },
             };
         }
@@ -627,6 +697,11 @@ impl ::protobuf::Message for Resp {
                     Resp::has_parse_err,
                     Resp::get_parse_err,
                 ));
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, LongFiRxPacket>(
+                    "longfi_rx_packet",
+                    Resp::has_longfi_rx_packet,
+                    Resp::get_longfi_rx_packet,
+                ));
                 ::protobuf::reflect::MessageDescriptor::new::<Resp>(
                     "Resp",
                     fields,
@@ -650,6 +725,7 @@ impl ::protobuf::Message for Resp {
 impl ::protobuf::Clear for Resp {
     fn clear(&mut self) {
         self.id = 0;
+        self.kind = ::std::option::Option::None;
         self.kind = ::std::option::Option::None;
         self.kind = ::std::option::Option::None;
         self.kind = ::std::option::Option::None;
@@ -1641,6 +1717,420 @@ impl ::protobuf::reflect::ProtobufValue for RxPacket {
 }
 
 #[derive(PartialEq,Clone,Default)]
+pub struct LongFiRxPacket {
+    // message fields
+    pub crc_check: bool,
+    pub timestamp: u64,
+    pub rssi: f32,
+    pub snr: f32,
+    pub oui: u32,
+    pub device_id: u32,
+    pub mac: u32,
+    pub payload: ::std::vec::Vec<u8>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a LongFiRxPacket {
+    fn default() -> &'a LongFiRxPacket {
+        <LongFiRxPacket as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl LongFiRxPacket {
+    pub fn new() -> LongFiRxPacket {
+        ::std::default::Default::default()
+    }
+
+    // bool crc_check = 1;
+
+
+    pub fn get_crc_check(&self) -> bool {
+        self.crc_check
+    }
+    pub fn clear_crc_check(&mut self) {
+        self.crc_check = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_crc_check(&mut self, v: bool) {
+        self.crc_check = v;
+    }
+
+    // uint64 timestamp = 2;
+
+
+    pub fn get_timestamp(&self) -> u64 {
+        self.timestamp
+    }
+    pub fn clear_timestamp(&mut self) {
+        self.timestamp = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_timestamp(&mut self, v: u64) {
+        self.timestamp = v;
+    }
+
+    // float rssi = 3;
+
+
+    pub fn get_rssi(&self) -> f32 {
+        self.rssi
+    }
+    pub fn clear_rssi(&mut self) {
+        self.rssi = 0.;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_rssi(&mut self, v: f32) {
+        self.rssi = v;
+    }
+
+    // float snr = 4;
+
+
+    pub fn get_snr(&self) -> f32 {
+        self.snr
+    }
+    pub fn clear_snr(&mut self) {
+        self.snr = 0.;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_snr(&mut self, v: f32) {
+        self.snr = v;
+    }
+
+    // uint32 oui = 5;
+
+
+    pub fn get_oui(&self) -> u32 {
+        self.oui
+    }
+    pub fn clear_oui(&mut self) {
+        self.oui = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_oui(&mut self, v: u32) {
+        self.oui = v;
+    }
+
+    // uint32 device_id = 6;
+
+
+    pub fn get_device_id(&self) -> u32 {
+        self.device_id
+    }
+    pub fn clear_device_id(&mut self) {
+        self.device_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_device_id(&mut self, v: u32) {
+        self.device_id = v;
+    }
+
+    // uint32 mac = 7;
+
+
+    pub fn get_mac(&self) -> u32 {
+        self.mac
+    }
+    pub fn clear_mac(&mut self) {
+        self.mac = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_mac(&mut self, v: u32) {
+        self.mac = v;
+    }
+
+    // bytes payload = 8;
+
+
+    pub fn get_payload(&self) -> &[u8] {
+        &self.payload
+    }
+    pub fn clear_payload(&mut self) {
+        self.payload.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_payload(&mut self, v: ::std::vec::Vec<u8>) {
+        self.payload = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_payload(&mut self) -> &mut ::std::vec::Vec<u8> {
+        &mut self.payload
+    }
+
+    // Take field
+    pub fn take_payload(&mut self) -> ::std::vec::Vec<u8> {
+        ::std::mem::replace(&mut self.payload, ::std::vec::Vec::new())
+    }
+}
+
+impl ::protobuf::Message for LongFiRxPacket {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.crc_check = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.timestamp = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeFixed32 {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_float()?;
+                    self.rssi = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeFixed32 {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_float()?;
+                    self.snr = tmp;
+                },
+                5 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.oui = tmp;
+                },
+                6 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.device_id = tmp;
+                },
+                7 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.mac = tmp;
+                },
+                8 => {
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.payload)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.crc_check != false {
+            my_size += 2;
+        }
+        if self.timestamp != 0 {
+            my_size += ::protobuf::rt::value_size(2, self.timestamp, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.rssi != 0. {
+            my_size += 5;
+        }
+        if self.snr != 0. {
+            my_size += 5;
+        }
+        if self.oui != 0 {
+            my_size += ::protobuf::rt::value_size(5, self.oui, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.device_id != 0 {
+            my_size += ::protobuf::rt::value_size(6, self.device_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.mac != 0 {
+            my_size += ::protobuf::rt::value_size(7, self.mac, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if !self.payload.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(8, &self.payload);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.crc_check != false {
+            os.write_bool(1, self.crc_check)?;
+        }
+        if self.timestamp != 0 {
+            os.write_uint64(2, self.timestamp)?;
+        }
+        if self.rssi != 0. {
+            os.write_float(3, self.rssi)?;
+        }
+        if self.snr != 0. {
+            os.write_float(4, self.snr)?;
+        }
+        if self.oui != 0 {
+            os.write_uint32(5, self.oui)?;
+        }
+        if self.device_id != 0 {
+            os.write_uint32(6, self.device_id)?;
+        }
+        if self.mac != 0 {
+            os.write_uint32(7, self.mac)?;
+        }
+        if !self.payload.is_empty() {
+            os.write_bytes(8, &self.payload)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> LongFiRxPacket {
+        LongFiRxPacket::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "crc_check",
+                    |m: &LongFiRxPacket| { &m.crc_check },
+                    |m: &mut LongFiRxPacket| { &mut m.crc_check },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                    "timestamp",
+                    |m: &LongFiRxPacket| { &m.timestamp },
+                    |m: &mut LongFiRxPacket| { &mut m.timestamp },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeFloat>(
+                    "rssi",
+                    |m: &LongFiRxPacket| { &m.rssi },
+                    |m: &mut LongFiRxPacket| { &mut m.rssi },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeFloat>(
+                    "snr",
+                    |m: &LongFiRxPacket| { &m.snr },
+                    |m: &mut LongFiRxPacket| { &mut m.snr },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "oui",
+                    |m: &LongFiRxPacket| { &m.oui },
+                    |m: &mut LongFiRxPacket| { &mut m.oui },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "device_id",
+                    |m: &LongFiRxPacket| { &m.device_id },
+                    |m: &mut LongFiRxPacket| { &mut m.device_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "mac",
+                    |m: &LongFiRxPacket| { &m.mac },
+                    |m: &mut LongFiRxPacket| { &mut m.mac },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
+                    "payload",
+                    |m: &LongFiRxPacket| { &m.payload },
+                    |m: &mut LongFiRxPacket| { &mut m.payload },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<LongFiRxPacket>(
+                    "LongFiRxPacket",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static LongFiRxPacket {
+        static mut instance: ::protobuf::lazy::Lazy<LongFiRxPacket> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const LongFiRxPacket,
+        };
+        unsafe {
+            instance.get(LongFiRxPacket::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for LongFiRxPacket {
+    fn clear(&mut self) {
+        self.crc_check = false;
+        self.timestamp = 0;
+        self.rssi = 0.;
+        self.snr = 0.;
+        self.oui = 0;
+        self.device_id = 0;
+        self.mac = 0;
+        self.payload.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for LongFiRxPacket {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for LongFiRxPacket {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct TxResp {
     // message fields
     pub success: bool,
@@ -2067,35 +2557,42 @@ impl ::protobuf::reflect::ProtobufValue for Coderate {
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\rgateway.proto\x12\0\"5\n\x03Req\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\
     \0\x12\x16\n\x02tx\x18\x02\x20\x01(\x0b2\x06.TxReqH\0B\0B\x06\n\x04kind:\
-    \0\"p\n\x04Resp\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\0\x12\x17\n\x02tx\
-    \x18\x02\x20\x01(\x0b2\x07.TxRespH\0B\0\x12\x20\n\trx_packet\x18\x03\x20\
-    \x01(\x0b2\t.RxPacketH\0B\0\x12\x15\n\tparse_err\x18\x04\x20\x01(\x0cH\0\
-    B\0B\x06\n\x04kind:\0\"\x81\x02\n\x05TxReq\x12\x0e\n\x04freq\x18\x01\x20\
-    \x01(\rB\0\x12\x17\n\x05radio\x18\x02\x20\x01(\x0e2\x06.RadioB\0\x12\x0f\
-    \n\x05power\x18\x03\x20\x01(\x05B\0\x12\x1f\n\tbandwidth\x18\x04\x20\x01\
-    (\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\x18\x05\x20\x01(\x0e2\n.Sprea\
-    dingB\0\x12\x1d\n\x08coderate\x18\x06\x20\x01(\x0e2\t.CoderateB\0\x12\
-    \x19\n\x0finvert_polarity\x18\x07\x20\x01(\x08B\0\x12\x12\n\x08omit_crc\
-    \x18\x08\x20\x01(\x08B\0\x12\x19\n\x0fimplicit_header\x18\t\x20\x01(\x08\
-    B\0\x12\x11\n\x07payload\x18\n\x20\x01(\x0cB\0:\0\"\x86\x02\n\x08RxPacke\
-    t\x12\x0e\n\x04freq\x18\x01\x20\x01(\rB\0\x12\x12\n\x08if_chain\x18\x02\
-    \x20\x01(\rB\0\x12\x13\n\tcrc_check\x18\x03\x20\x01(\x08B\0\x12\x13\n\tt\
-    imestamp\x18\x04\x20\x01(\x04B\0\x12\x17\n\x05radio\x18\x05\x20\x01(\x0e\
-    2\x06.RadioB\0\x12\x1f\n\tbandwidth\x18\x06\x20\x01(\x0e2\n.BandwidthB\0\
-    \x12\x1f\n\tspreading\x18\x07\x20\x01(\x0e2\n.SpreadingB\0\x12\x1d\n\x08\
-    coderate\x18\x08\x20\x01(\x0e2\t.CoderateB\0\x12\x0e\n\x04rssi\x18\t\x20\
-    \x01(\x02B\0\x12\r\n\x03snr\x18\n\x20\x01(\x02B\0\x12\x11\n\x07payload\
-    \x18\x0b\x20\x01(\x0cB\0:\0\"\x1d\n\x06TxResp\x12\x11\n\x07success\x18\
-    \x01\x20\x01(\x08B\0:\0*\x19\n\x05Radio\x12\x06\n\x02R0\x10\0\x12\x06\n\
-    \x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUNDEFINED\x10\0\x12\x07\n\
-    \x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\x03SF9\x10\x03\x12\
-    \x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\x08\n\x04SF12\x10\
-    \x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\x10\0\x12\x0c\n\x08B\
-    W7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\tBW31_2kHz\x10\x03\
-    \x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\x05\x12\x0c\n\x08B\
-    W250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\n\x08Coderate\x12\
-    \r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\x05CR4_6\x10\x02\
-    \x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\0B\0b\x06proto3\
+    \0\"\x9f\x01\n\x04Resp\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\0\x12\x17\n\
+    \x02tx\x18\x02\x20\x01(\x0b2\x07.TxRespH\0B\0\x12\x20\n\trx_packet\x18\
+    \x03\x20\x01(\x0b2\t.RxPacketH\0B\0\x12\x15\n\tparse_err\x18\x04\x20\x01\
+    (\x0cH\0B\0\x12-\n\x10longfi_rx_packet\x18\x05\x20\x01(\x0b2\x0f.LongFiR\
+    xPacketH\0B\0B\x06\n\x04kind:\0\"\x81\x02\n\x05TxReq\x12\x0e\n\x04freq\
+    \x18\x01\x20\x01(\rB\0\x12\x17\n\x05radio\x18\x02\x20\x01(\x0e2\x06.Radi\
+    oB\0\x12\x0f\n\x05power\x18\x03\x20\x01(\x05B\0\x12\x1f\n\tbandwidth\x18\
+    \x04\x20\x01(\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\x18\x05\x20\x01(\
+    \x0e2\n.SpreadingB\0\x12\x1d\n\x08coderate\x18\x06\x20\x01(\x0e2\t.Coder\
+    ateB\0\x12\x19\n\x0finvert_polarity\x18\x07\x20\x01(\x08B\0\x12\x12\n\
+    \x08omit_crc\x18\x08\x20\x01(\x08B\0\x12\x19\n\x0fimplicit_header\x18\t\
+    \x20\x01(\x08B\0\x12\x11\n\x07payload\x18\n\x20\x01(\x0cB\0:\0\"\x86\x02\
+    \n\x08RxPacket\x12\x0e\n\x04freq\x18\x01\x20\x01(\rB\0\x12\x12\n\x08if_c\
+    hain\x18\x02\x20\x01(\rB\0\x12\x13\n\tcrc_check\x18\x03\x20\x01(\x08B\0\
+    \x12\x13\n\ttimestamp\x18\x04\x20\x01(\x04B\0\x12\x17\n\x05radio\x18\x05\
+    \x20\x01(\x0e2\x06.RadioB\0\x12\x1f\n\tbandwidth\x18\x06\x20\x01(\x0e2\n\
+    .BandwidthB\0\x12\x1f\n\tspreading\x18\x07\x20\x01(\x0e2\n.SpreadingB\0\
+    \x12\x1d\n\x08coderate\x18\x08\x20\x01(\x0e2\t.CoderateB\0\x12\x0e\n\x04\
+    rssi\x18\t\x20\x01(\x02B\0\x12\r\n\x03snr\x18\n\x20\x01(\x02B\0\x12\x11\
+    \n\x07payload\x18\x0b\x20\x01(\x0cB\0:\0\"\xa1\x01\n\x0eLongFiRxPacket\
+    \x12\x13\n\tcrc_check\x18\x01\x20\x01(\x08B\0\x12\x13\n\ttimestamp\x18\
+    \x02\x20\x01(\x04B\0\x12\x0e\n\x04rssi\x18\x03\x20\x01(\x02B\0\x12\r\n\
+    \x03snr\x18\x04\x20\x01(\x02B\0\x12\r\n\x03oui\x18\x05\x20\x01(\rB\0\x12\
+    \x13\n\tdevice_id\x18\x06\x20\x01(\rB\0\x12\r\n\x03mac\x18\x07\x20\x01(\
+    \rB\0\x12\x11\n\x07payload\x18\x08\x20\x01(\x0cB\0:\0\"\x1d\n\x06TxResp\
+    \x12\x11\n\x07success\x18\x01\x20\x01(\x08B\0:\0*\x19\n\x05Radio\x12\x06\
+    \n\x02R0\x10\0\x12\x06\n\x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUND\
+    EFINED\x10\0\x12\x07\n\x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\
+    \x03SF9\x10\x03\x12\x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\
+    \x08\n\x04SF12\x10\x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\
+    \x10\0\x12\x0c\n\x08BW7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\
+    \tBW31_2kHz\x10\x03\x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\
+    \x05\x12\x0c\n\x08BW250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\
+    \n\x08Coderate\x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\
+    \x05CR4_6\x10\x02\x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\
+    \0B\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

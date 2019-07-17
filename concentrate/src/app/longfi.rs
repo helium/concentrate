@@ -7,6 +7,7 @@ use mio_extras::timer::{Timeout, Timer};
 use protobuf::{parse_from_bytes, Message};
 use std::net::{IpAddr, SocketAddr};
 use std::time::Duration;
+use messages::LongFiRxPacket;
 
 use super::print_at_level;
 
@@ -21,18 +22,21 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>) -> AppResult {
-    let (socket_in, addr_in, socket_out, addr_out) = {
+pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, longfi_out_port: u16, longfi_in_port:u16 ) -> AppResult {
+    let (socket_in, addr_in, socket_out, addr_out, longfi_socket_in, longfi_addr_in, longfi_socket_out, longfi_addr_out) = {
         let addr_in;
         let addr_out;
 
         if let Some(remote_ip) = ip {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
+            addr_in = SocketAddr::from((remote_ip, in_port));
             addr_out = SocketAddr::from(([0, 0, 0, 0], out_port));
         } else {
             addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
             addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
         }
+
+        let longfi_addr_in = SocketAddr::from(([127, 0, 0, 1], longfi_in_port));
+        let longfi_addr_out = SocketAddr::from(([127, 0, 0, 1], longfi_out_port));
 
         assert_ne!(addr_in, addr_out);
         println!("addr_in : {}", addr_in);
@@ -42,6 +46,10 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>) 
             addr_in,
             UdpSocket::bind(&addr_out)?,
             addr_out,
+            UdpSocket::bind(&longfi_addr_in)?,
+            longfi_addr_in,
+            UdpSocket::bind(&longfi_addr_out)?,
+            longfi_addr_out,
         )
     };
 
@@ -90,34 +98,41 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>) 
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);
                         }
-
                         println!("{:?}", pkt);
 
-                        let payload: Vec<u8> = vec![0x12, 0x34];
-
-                        let tx_req = msg::TxReq {
-                            freq: 916_600_000,
-                            radio: msg::Radio::R0,
-                            power: 22,
-                            bandwidth: msg::Bandwidth::BW250kHz,
-                            spreading: msg::Spreading::SF9,
-                            coderate: msg::Coderate::CR4_5,
-                            invert_polarity: false,
-                            omit_crc: false,
-                            implicit_header: false,
-                            payload,
+                        let resp = msg::Resp {
+                            id: 0,
+                            kind: Some(msg::Resp_oneof_kind::longfi_rx_packet(pkt.into())),
                             ..Default::default()
                         };
-                        println!("requesting to transmit {:#?}", tx_req);
-                        msg_send(
-                            msg::Req {
-                                id: 0xfe,
-                                kind: Some(msg::Req_oneof_kind::tx(tx_req)),
-                                ..Default::default()
-                            },
-                            &socket_out,
-                            &addr_out,
-                        )?;
+
+                        msg_send(resp, &longfi_socket_out, &longfi_addr_out)?;
+
+                        // let payload: Vec<u8> = vec![231, 171, 90, 54, 57, 71, 0, 254, 239, 39, 38, 22, 131, 104, 191, 183, 8, 94, 78, 0, 19, 0, 0];
+
+                        // let tx_req = msg::TxReq {
+                        //     freq: 916_600_000,
+                        //     radio: msg::Radio::R0,
+                        //     power: 22,
+                        //     bandwidth: msg::Bandwidth::BW250kHz,
+                        //     spreading: msg::Spreading::SF9,
+                        //     coderate: msg::Coderate::CR4_5,
+                        //     invert_polarity: false,
+                        //     omit_crc: false,
+                        //     implicit_header: false,
+                        //     payload,
+                        //     ..Default::default()
+                        // };
+                        // println!("requesting to transmit {:#?}", tx_req);
+                        // msg_send(
+                        //     msg::Req {
+                        //         id: 0xfe,
+                        //         kind: Some(msg::Req_oneof_kind::tx(tx_req)),
+                        //         ..Default::default()
+                        //     },
+                        //     &socket_out,
+                        //     &addr_out,
+                        // )?;
                         //super::print_at_level(print_level, &pkt)
                     }
                     ParserResponse::FragmentedPacketBegin(index) => {
