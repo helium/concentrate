@@ -32,8 +32,8 @@ pub fn serve(
         }
 
         assert_ne!(req_addr, resp_addr);
-        println!("req port: {}\r\n", req_addr);
-        println!("resp port: {}\r\n", resp_addr);
+        println!("req port: {}", req_addr);
+        println!("resp port: {}", resp_addr);
         (UdpSocket::bind(req_addr)?, resp_addr)
     };
 
@@ -89,6 +89,19 @@ pub fn serve(
                                     })),
                                     ..Default::default()
                                 },
+                            }
+                        }
+                                                // LongFi Tx to Serve is not valid currently
+                         Req {
+                            id,
+                            kind: Some(Req_oneof_kind::longfi_tx(req)),
+                            ..
+                        } => {
+                            error!("Cannot send LongFi Tx to concentrator-serve directly. Need concentrator-longfi!");
+                            Resp {
+                                id,
+                                kind: None,
+                                ..Default::default()
                             }
                         }
                         // Invalid request

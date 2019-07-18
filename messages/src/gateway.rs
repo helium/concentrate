@@ -41,6 +41,7 @@ impl<'a> ::std::default::Default for &'a Req {
 #[derive(Clone,PartialEq,Debug)]
 pub enum Req_oneof_kind {
     tx(TxReq),
+    longfi_tx(LongFiTxUplinkPacket),
 }
 
 impl Req {
@@ -111,11 +112,65 @@ impl Req {
             TxReq::new()
         }
     }
+
+    // .LongFiTxUplinkPacket longfi_tx = 3;
+
+
+    pub fn get_longfi_tx(&self) -> &LongFiTxUplinkPacket {
+        match self.kind {
+            ::std::option::Option::Some(Req_oneof_kind::longfi_tx(ref v)) => v,
+            _ => LongFiTxUplinkPacket::default_instance(),
+        }
+    }
+    pub fn clear_longfi_tx(&mut self) {
+        self.kind = ::std::option::Option::None;
+    }
+
+    pub fn has_longfi_tx(&self) -> bool {
+        match self.kind {
+            ::std::option::Option::Some(Req_oneof_kind::longfi_tx(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_longfi_tx(&mut self, v: LongFiTxUplinkPacket) {
+        self.kind = ::std::option::Option::Some(Req_oneof_kind::longfi_tx(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_longfi_tx(&mut self) -> &mut LongFiTxUplinkPacket {
+        if let ::std::option::Option::Some(Req_oneof_kind::longfi_tx(_)) = self.kind {
+        } else {
+            self.kind = ::std::option::Option::Some(Req_oneof_kind::longfi_tx(LongFiTxUplinkPacket::new()));
+        }
+        match self.kind {
+            ::std::option::Option::Some(Req_oneof_kind::longfi_tx(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_longfi_tx(&mut self) -> LongFiTxUplinkPacket {
+        if self.has_longfi_tx() {
+            match self.kind.take() {
+                ::std::option::Option::Some(Req_oneof_kind::longfi_tx(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            LongFiTxUplinkPacket::new()
+        }
+    }
 }
 
 impl ::protobuf::Message for Req {
     fn is_initialized(&self) -> bool {
         if let Some(Req_oneof_kind::tx(ref v)) = self.kind {
+            if !v.is_initialized() {
+                return false;
+            }
+        }
+        if let Some(Req_oneof_kind::longfi_tx(ref v)) = self.kind {
             if !v.is_initialized() {
                 return false;
             }
@@ -140,6 +195,12 @@ impl ::protobuf::Message for Req {
                     }
                     self.kind = ::std::option::Option::Some(Req_oneof_kind::tx(is.read_message()?));
                 },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    self.kind = ::std::option::Option::Some(Req_oneof_kind::longfi_tx(is.read_message()?));
+                },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
                 },
@@ -161,6 +222,10 @@ impl ::protobuf::Message for Req {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
+                &Req_oneof_kind::longfi_tx(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
+                },
             };
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
@@ -176,6 +241,11 @@ impl ::protobuf::Message for Req {
             match v {
                 &Req_oneof_kind::tx(ref v) => {
                     os.write_tag(2, ::protobuf::wire_format::WireTypeLengthDelimited)?;
+                    os.write_raw_varint32(v.get_cached_size())?;
+                    v.write_to_with_cached_sizes(os)?;
+                },
+                &Req_oneof_kind::longfi_tx(ref v) => {
+                    os.write_tag(3, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
                 },
@@ -233,6 +303,11 @@ impl ::protobuf::Message for Req {
                     Req::has_tx,
                     Req::get_tx,
                 ));
+                fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, LongFiTxUplinkPacket>(
+                    "longfi_tx",
+                    Req::has_longfi_tx,
+                    Req::get_longfi_tx,
+                ));
                 ::protobuf::reflect::MessageDescriptor::new::<Req>(
                     "Req",
                     fields,
@@ -256,6 +331,7 @@ impl ::protobuf::Message for Req {
 impl ::protobuf::Clear for Req {
     fn clear(&mut self) {
         self.id = 0;
+        self.kind = ::std::option::Option::None;
         self.kind = ::std::option::Option::None;
         self.unknown_fields.clear();
     }
@@ -295,7 +371,7 @@ pub enum Resp_oneof_kind {
     tx(TxResp),
     rx_packet(RxPacket),
     parse_err(::std::vec::Vec<u8>),
-    longfi_rx_packet(LongFiRxPacket),
+    longfi_rx(LongFiRxPacket),
 }
 
 impl Resp {
@@ -465,48 +541,48 @@ impl Resp {
         }
     }
 
-    // .LongFiRxPacket longfi_rx_packet = 5;
+    // .LongFiRxPacket longfi_rx = 5;
 
 
-    pub fn get_longfi_rx_packet(&self) -> &LongFiRxPacket {
+    pub fn get_longfi_rx(&self) -> &LongFiRxPacket {
         match self.kind {
-            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(ref v)) => v,
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(ref v)) => v,
             _ => LongFiRxPacket::default_instance(),
         }
     }
-    pub fn clear_longfi_rx_packet(&mut self) {
+    pub fn clear_longfi_rx(&mut self) {
         self.kind = ::std::option::Option::None;
     }
 
-    pub fn has_longfi_rx_packet(&self) -> bool {
+    pub fn has_longfi_rx(&self) -> bool {
         match self.kind {
-            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(..)) => true,
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(..)) => true,
             _ => false,
         }
     }
 
     // Param is passed by value, moved
-    pub fn set_longfi_rx_packet(&mut self, v: LongFiRxPacket) {
-        self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(v))
+    pub fn set_longfi_rx(&mut self, v: LongFiRxPacket) {
+        self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(v))
     }
 
     // Mutable pointer to the field.
-    pub fn mut_longfi_rx_packet(&mut self) -> &mut LongFiRxPacket {
-        if let ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(_)) = self.kind {
+    pub fn mut_longfi_rx(&mut self) -> &mut LongFiRxPacket {
+        if let ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(_)) = self.kind {
         } else {
-            self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(LongFiRxPacket::new()));
+            self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(LongFiRxPacket::new()));
         }
         match self.kind {
-            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(ref mut v)) => v,
+            ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(ref mut v)) => v,
             _ => panic!(),
         }
     }
 
     // Take field
-    pub fn take_longfi_rx_packet(&mut self) -> LongFiRxPacket {
-        if self.has_longfi_rx_packet() {
+    pub fn take_longfi_rx(&mut self) -> LongFiRxPacket {
+        if self.has_longfi_rx() {
             match self.kind.take() {
-                ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(v)) => v,
+                ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(v)) => v,
                 _ => panic!(),
             }
         } else {
@@ -527,7 +603,7 @@ impl ::protobuf::Message for Resp {
                 return false;
             }
         }
-        if let Some(Resp_oneof_kind::longfi_rx_packet(ref v)) = self.kind {
+        if let Some(Resp_oneof_kind::longfi_rx(ref v)) = self.kind {
             if !v.is_initialized() {
                 return false;
             }
@@ -568,7 +644,7 @@ impl ::protobuf::Message for Resp {
                     if wire_type != ::protobuf::wire_format::WireTypeLengthDelimited {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
-                    self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx_packet(is.read_message()?));
+                    self.kind = ::std::option::Option::Some(Resp_oneof_kind::longfi_rx(is.read_message()?));
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -598,7 +674,7 @@ impl ::protobuf::Message for Resp {
                 &Resp_oneof_kind::parse_err(ref v) => {
                     my_size += ::protobuf::rt::bytes_size(4, &v);
                 },
-                &Resp_oneof_kind::longfi_rx_packet(ref v) => {
+                &Resp_oneof_kind::longfi_rx(ref v) => {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
                 },
@@ -628,7 +704,7 @@ impl ::protobuf::Message for Resp {
                 &Resp_oneof_kind::parse_err(ref v) => {
                     os.write_bytes(4, v)?;
                 },
-                &Resp_oneof_kind::longfi_rx_packet(ref v) => {
+                &Resp_oneof_kind::longfi_rx(ref v) => {
                     os.write_tag(5, ::protobuf::wire_format::WireTypeLengthDelimited)?;
                     os.write_raw_varint32(v.get_cached_size())?;
                     v.write_to_with_cached_sizes(os)?;
@@ -698,9 +774,9 @@ impl ::protobuf::Message for Resp {
                     Resp::get_parse_err,
                 ));
                 fields.push(::protobuf::reflect::accessor::make_singular_message_accessor::<_, LongFiRxPacket>(
-                    "longfi_rx_packet",
-                    Resp::has_longfi_rx_packet,
-                    Resp::get_longfi_rx_packet,
+                    "longfi_rx",
+                    Resp::has_longfi_rx,
+                    Resp::get_longfi_rx,
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Resp>(
                     "Resp",
@@ -1208,6 +1284,315 @@ impl ::std::fmt::Debug for TxReq {
 }
 
 impl ::protobuf::reflect::ProtobufValue for TxReq {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct LongFiTxUplinkPacket {
+    // message fields
+    pub disable_encoding: bool,
+    pub disable_fragmentation: bool,
+    pub oui: u32,
+    pub device_id: u32,
+    pub payload: ::std::vec::Vec<u8>,
+    // special fields
+    pub unknown_fields: ::protobuf::UnknownFields,
+    pub cached_size: ::protobuf::CachedSize,
+}
+
+impl<'a> ::std::default::Default for &'a LongFiTxUplinkPacket {
+    fn default() -> &'a LongFiTxUplinkPacket {
+        <LongFiTxUplinkPacket as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl LongFiTxUplinkPacket {
+    pub fn new() -> LongFiTxUplinkPacket {
+        ::std::default::Default::default()
+    }
+
+    // bool disable_encoding = 1;
+
+
+    pub fn get_disable_encoding(&self) -> bool {
+        self.disable_encoding
+    }
+    pub fn clear_disable_encoding(&mut self) {
+        self.disable_encoding = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_disable_encoding(&mut self, v: bool) {
+        self.disable_encoding = v;
+    }
+
+    // bool disable_fragmentation = 2;
+
+
+    pub fn get_disable_fragmentation(&self) -> bool {
+        self.disable_fragmentation
+    }
+    pub fn clear_disable_fragmentation(&mut self) {
+        self.disable_fragmentation = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_disable_fragmentation(&mut self, v: bool) {
+        self.disable_fragmentation = v;
+    }
+
+    // uint32 oui = 3;
+
+
+    pub fn get_oui(&self) -> u32 {
+        self.oui
+    }
+    pub fn clear_oui(&mut self) {
+        self.oui = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_oui(&mut self, v: u32) {
+        self.oui = v;
+    }
+
+    // uint32 device_id = 4;
+
+
+    pub fn get_device_id(&self) -> u32 {
+        self.device_id
+    }
+    pub fn clear_device_id(&mut self) {
+        self.device_id = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_device_id(&mut self, v: u32) {
+        self.device_id = v;
+    }
+
+    // bytes payload = 5;
+
+
+    pub fn get_payload(&self) -> &[u8] {
+        &self.payload
+    }
+    pub fn clear_payload(&mut self) {
+        self.payload.clear();
+    }
+
+    // Param is passed by value, moved
+    pub fn set_payload(&mut self, v: ::std::vec::Vec<u8>) {
+        self.payload = v;
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_payload(&mut self) -> &mut ::std::vec::Vec<u8> {
+        &mut self.payload
+    }
+
+    // Take field
+    pub fn take_payload(&mut self) -> ::std::vec::Vec<u8> {
+        ::std::mem::replace(&mut self.payload, ::std::vec::Vec::new())
+    }
+}
+
+impl ::protobuf::Message for LongFiTxUplinkPacket {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.disable_encoding = tmp;
+                },
+                2 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.disable_fragmentation = tmp;
+                },
+                3 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.oui = tmp;
+                },
+                4 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint32()?;
+                    self.device_id = tmp;
+                },
+                5 => {
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.payload)?;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.disable_encoding != false {
+            my_size += 2;
+        }
+        if self.disable_fragmentation != false {
+            my_size += 2;
+        }
+        if self.oui != 0 {
+            my_size += ::protobuf::rt::value_size(3, self.oui, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if self.device_id != 0 {
+            my_size += ::protobuf::rt::value_size(4, self.device_id, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if !self.payload.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(5, &self.payload);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.disable_encoding != false {
+            os.write_bool(1, self.disable_encoding)?;
+        }
+        if self.disable_fragmentation != false {
+            os.write_bool(2, self.disable_fragmentation)?;
+        }
+        if self.oui != 0 {
+            os.write_uint32(3, self.oui)?;
+        }
+        if self.device_id != 0 {
+            os.write_uint32(4, self.device_id)?;
+        }
+        if !self.payload.is_empty() {
+            os.write_bytes(5, &self.payload)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> LongFiTxUplinkPacket {
+        LongFiTxUplinkPacket::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "disable_encoding",
+                    |m: &LongFiTxUplinkPacket| { &m.disable_encoding },
+                    |m: &mut LongFiTxUplinkPacket| { &mut m.disable_encoding },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "disable_fragmentation",
+                    |m: &LongFiTxUplinkPacket| { &m.disable_fragmentation },
+                    |m: &mut LongFiTxUplinkPacket| { &mut m.disable_fragmentation },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "oui",
+                    |m: &LongFiTxUplinkPacket| { &m.oui },
+                    |m: &mut LongFiTxUplinkPacket| { &mut m.oui },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint32>(
+                    "device_id",
+                    |m: &LongFiTxUplinkPacket| { &m.device_id },
+                    |m: &mut LongFiTxUplinkPacket| { &mut m.device_id },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
+                    "payload",
+                    |m: &LongFiTxUplinkPacket| { &m.payload },
+                    |m: &mut LongFiTxUplinkPacket| { &mut m.payload },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<LongFiTxUplinkPacket>(
+                    "LongFiTxUplinkPacket",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static LongFiTxUplinkPacket {
+        static mut instance: ::protobuf::lazy::Lazy<LongFiTxUplinkPacket> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const LongFiTxUplinkPacket,
+        };
+        unsafe {
+            instance.get(LongFiTxUplinkPacket::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for LongFiTxUplinkPacket {
+    fn clear(&mut self) {
+        self.disable_encoding = false;
+        self.disable_fragmentation = false;
+        self.oui = 0;
+        self.device_id = 0;
+        self.payload.clear();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for LongFiTxUplinkPacket {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for LongFiTxUplinkPacket {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
     }
@@ -2555,44 +2940,49 @@ impl ::protobuf::reflect::ProtobufValue for Coderate {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\rgateway.proto\x12\0\"5\n\x03Req\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\
-    \0\x12\x16\n\x02tx\x18\x02\x20\x01(\x0b2\x06.TxReqH\0B\0B\x06\n\x04kind:\
-    \0\"\x9f\x01\n\x04Resp\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\0\x12\x17\n\
+    \n\rgateway.proto\x12\0\"c\n\x03Req\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\
+    \0\x12\x16\n\x02tx\x18\x02\x20\x01(\x0b2\x06.TxReqH\0B\0\x12,\n\tlongfi_\
+    tx\x18\x03\x20\x01(\x0b2\x15.LongFiTxUplinkPacketH\0B\0B\x06\n\x04kind:\
+    \0\"\x98\x01\n\x04Resp\x12\x0c\n\x02id\x18\x01\x20\x01(\rB\0\x12\x17\n\
     \x02tx\x18\x02\x20\x01(\x0b2\x07.TxRespH\0B\0\x12\x20\n\trx_packet\x18\
     \x03\x20\x01(\x0b2\t.RxPacketH\0B\0\x12\x15\n\tparse_err\x18\x04\x20\x01\
-    (\x0cH\0B\0\x12-\n\x10longfi_rx_packet\x18\x05\x20\x01(\x0b2\x0f.LongFiR\
-    xPacketH\0B\0B\x06\n\x04kind:\0\"\x81\x02\n\x05TxReq\x12\x0e\n\x04freq\
-    \x18\x01\x20\x01(\rB\0\x12\x17\n\x05radio\x18\x02\x20\x01(\x0e2\x06.Radi\
-    oB\0\x12\x0f\n\x05power\x18\x03\x20\x01(\x05B\0\x12\x1f\n\tbandwidth\x18\
-    \x04\x20\x01(\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\x18\x05\x20\x01(\
-    \x0e2\n.SpreadingB\0\x12\x1d\n\x08coderate\x18\x06\x20\x01(\x0e2\t.Coder\
-    ateB\0\x12\x19\n\x0finvert_polarity\x18\x07\x20\x01(\x08B\0\x12\x12\n\
-    \x08omit_crc\x18\x08\x20\x01(\x08B\0\x12\x19\n\x0fimplicit_header\x18\t\
-    \x20\x01(\x08B\0\x12\x11\n\x07payload\x18\n\x20\x01(\x0cB\0:\0\"\x86\x02\
-    \n\x08RxPacket\x12\x0e\n\x04freq\x18\x01\x20\x01(\rB\0\x12\x12\n\x08if_c\
-    hain\x18\x02\x20\x01(\rB\0\x12\x13\n\tcrc_check\x18\x03\x20\x01(\x08B\0\
-    \x12\x13\n\ttimestamp\x18\x04\x20\x01(\x04B\0\x12\x17\n\x05radio\x18\x05\
-    \x20\x01(\x0e2\x06.RadioB\0\x12\x1f\n\tbandwidth\x18\x06\x20\x01(\x0e2\n\
-    .BandwidthB\0\x12\x1f\n\tspreading\x18\x07\x20\x01(\x0e2\n.SpreadingB\0\
-    \x12\x1d\n\x08coderate\x18\x08\x20\x01(\x0e2\t.CoderateB\0\x12\x0e\n\x04\
-    rssi\x18\t\x20\x01(\x02B\0\x12\r\n\x03snr\x18\n\x20\x01(\x02B\0\x12\x11\
-    \n\x07payload\x18\x0b\x20\x01(\x0cB\0:\0\"\xa1\x01\n\x0eLongFiRxPacket\
-    \x12\x13\n\tcrc_check\x18\x01\x20\x01(\x08B\0\x12\x13\n\ttimestamp\x18\
-    \x02\x20\x01(\x04B\0\x12\x0e\n\x04rssi\x18\x03\x20\x01(\x02B\0\x12\r\n\
-    \x03snr\x18\x04\x20\x01(\x02B\0\x12\r\n\x03oui\x18\x05\x20\x01(\rB\0\x12\
-    \x13\n\tdevice_id\x18\x06\x20\x01(\rB\0\x12\r\n\x03mac\x18\x07\x20\x01(\
-    \rB\0\x12\x11\n\x07payload\x18\x08\x20\x01(\x0cB\0:\0\"\x1d\n\x06TxResp\
-    \x12\x11\n\x07success\x18\x01\x20\x01(\x08B\0:\0*\x19\n\x05Radio\x12\x06\
-    \n\x02R0\x10\0\x12\x06\n\x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUND\
-    EFINED\x10\0\x12\x07\n\x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\
-    \x03SF9\x10\x03\x12\x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\
-    \x08\n\x04SF12\x10\x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\
-    \x10\0\x12\x0c\n\x08BW7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\
-    \tBW31_2kHz\x10\x03\x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\
-    \x05\x12\x0c\n\x08BW250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\
-    \n\x08Coderate\x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\
-    \x05CR4_6\x10\x02\x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\
-    \0B\0b\x06proto3\
+    (\x0cH\0B\0\x12&\n\tlongfi_rx\x18\x05\x20\x01(\x0b2\x0f.LongFiRxPacketH\
+    \0B\0B\x06\n\x04kind:\0\"\x81\x02\n\x05TxReq\x12\x0e\n\x04freq\x18\x01\
+    \x20\x01(\rB\0\x12\x17\n\x05radio\x18\x02\x20\x01(\x0e2\x06.RadioB\0\x12\
+    \x0f\n\x05power\x18\x03\x20\x01(\x05B\0\x12\x1f\n\tbandwidth\x18\x04\x20\
+    \x01(\x0e2\n.BandwidthB\0\x12\x1f\n\tspreading\x18\x05\x20\x01(\x0e2\n.S\
+    preadingB\0\x12\x1d\n\x08coderate\x18\x06\x20\x01(\x0e2\t.CoderateB\0\
+    \x12\x19\n\x0finvert_polarity\x18\x07\x20\x01(\x08B\0\x12\x12\n\x08omit_\
+    crc\x18\x08\x20\x01(\x08B\0\x12\x19\n\x0fimplicit_header\x18\t\x20\x01(\
+    \x08B\0\x12\x11\n\x07payload\x18\n\x20\x01(\x0cB\0:\0\"\x8c\x01\n\x14Lon\
+    gFiTxUplinkPacket\x12\x1a\n\x10disable_encoding\x18\x01\x20\x01(\x08B\0\
+    \x12\x1f\n\x15disable_fragmentation\x18\x02\x20\x01(\x08B\0\x12\r\n\x03o\
+    ui\x18\x03\x20\x01(\rB\0\x12\x13\n\tdevice_id\x18\x04\x20\x01(\rB\0\x12\
+    \x11\n\x07payload\x18\x05\x20\x01(\x0cB\0:\0\"\x86\x02\n\x08RxPacket\x12\
+    \x0e\n\x04freq\x18\x01\x20\x01(\rB\0\x12\x12\n\x08if_chain\x18\x02\x20\
+    \x01(\rB\0\x12\x13\n\tcrc_check\x18\x03\x20\x01(\x08B\0\x12\x13\n\ttimes\
+    tamp\x18\x04\x20\x01(\x04B\0\x12\x17\n\x05radio\x18\x05\x20\x01(\x0e2\
+    \x06.RadioB\0\x12\x1f\n\tbandwidth\x18\x06\x20\x01(\x0e2\n.BandwidthB\0\
+    \x12\x1f\n\tspreading\x18\x07\x20\x01(\x0e2\n.SpreadingB\0\x12\x1d\n\x08\
+    coderate\x18\x08\x20\x01(\x0e2\t.CoderateB\0\x12\x0e\n\x04rssi\x18\t\x20\
+    \x01(\x02B\0\x12\r\n\x03snr\x18\n\x20\x01(\x02B\0\x12\x11\n\x07payload\
+    \x18\x0b\x20\x01(\x0cB\0:\0\"\xa1\x01\n\x0eLongFiRxPacket\x12\x13\n\tcrc\
+    _check\x18\x01\x20\x01(\x08B\0\x12\x13\n\ttimestamp\x18\x02\x20\x01(\x04\
+    B\0\x12\x0e\n\x04rssi\x18\x03\x20\x01(\x02B\0\x12\r\n\x03snr\x18\x04\x20\
+    \x01(\x02B\0\x12\r\n\x03oui\x18\x05\x20\x01(\rB\0\x12\x13\n\tdevice_id\
+    \x18\x06\x20\x01(\rB\0\x12\r\n\x03mac\x18\x07\x20\x01(\rB\0\x12\x11\n\
+    \x07payload\x18\x08\x20\x01(\x0cB\0:\0\"\x1d\n\x06TxResp\x12\x11\n\x07su\
+    ccess\x18\x01\x20\x01(\x08B\0:\0*\x19\n\x05Radio\x12\x06\n\x02R0\x10\0\
+    \x12\x06\n\x02R1\x10\x01\x1a\0*U\n\tSpreading\x12\r\n\tUNDEFINED\x10\0\
+    \x12\x07\n\x03SF7\x10\x01\x12\x07\n\x03SF8\x10\x02\x12\x07\n\x03SF9\x10\
+    \x03\x12\x08\n\x04SF10\x10\x04\x12\x08\n\x04SF11\x10\x05\x12\x08\n\x04SF\
+    12\x10\x06\x1a\0*\x81\x01\n\tBandwidth\x12\r\n\tUNDEFINED\x10\0\x12\x0c\
+    \n\x08BW7_8kHz\x10\x01\x12\r\n\tBW15_6kHz\x10\x02\x12\r\n\tBW31_2kHz\x10\
+    \x03\x12\r\n\tBW62_5kHz\x10\x04\x12\x0c\n\x08BW125kHz\x10\x05\x12\x0c\n\
+    \x08BW250kHz\x10\x06\x12\x0c\n\x08BW500kHz\x10\x07\x1a\0*G\n\x08Coderate\
+    \x12\r\n\tUNDEFINED\x10\0\x12\t\n\x05CR4_5\x10\x01\x12\t\n\x05CR4_6\x10\
+    \x02\x12\t\n\x05CR4_7\x10\x03\x12\t\n\x05CR4_8\x10\x04\x1a\0B\0b\x06prot\
+    o3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

@@ -37,6 +37,7 @@ message Req {
     uint32 id = 1;
     oneof kind {
         TxReq tx = 2;
+        LongFiTxUplinkPacket longfi_tx= 3;
     }
 }
 
@@ -46,7 +47,7 @@ message Resp {
         TxResp tx = 2;
         RxPacket rx_packet = 3;
         bytes parse_err = 4;
-        LongFiRxPacket longfi_rx_packet= 5;
+        LongFiRxPacket longfi_rx = 5;
     }
 }
 
@@ -71,6 +72,14 @@ message TxReq {
     bool implicit_header = 9;
     // Arbitrary user-defined payload to transmit.
     bytes payload = 10;
+}
+
+message LongFiTxUplinkPacket {
+    bool disable_encoding = 1;
+    bool disable_fragmentation = 2;
+    uint32 oui = 3;
+    uint32 device_id = 4;
+    bytes payload = 5;
 }
 
 message RxPacket {

@@ -21,6 +21,11 @@ pub enum Cmd {
     #[structopt(name = "longfi")]
     LongFi,
 
+        /// longfi. This mode is primarily meant for testing and debugging
+    /// longfi device code
+    #[structopt(name = "longfi-test")]
+    LongFiTest,
+
     /// Transmit a packet using provided string as payload. Similar to
     /// 'listen', requires another instance running in
     /// 'serve' mode.
@@ -111,7 +116,7 @@ pub struct Args {
     #[structopt(
         value_name = "LONGFI_PORT_OUT",
         short = "o",
-        long = "longfi_out",
+        long = "longfi-out",
         default_value = "31340"
     )]
     pub longfi_port_out: u16,
