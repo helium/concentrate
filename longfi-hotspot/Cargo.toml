@@ -7,7 +7,7 @@ authors = ["Louis Thiery <louis@helium.com>"]
 messages = { path = "../messages" }
 mio             = "0.6"
 protobuf = "2.5.0"
-
+rand = "0.3"
 
 [dev-dependencies]
 lazy_static = "*"

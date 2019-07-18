@@ -48,55 +48,53 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port:u
 
     let mut read_buf = [0; 1024];
 
-    // let poll = Poll::new().expect("Error initializing poll object");
+    let poll = Poll::new().expect("Error initializing poll object");
 
-    // poll.register(&socket, PACKET_RECV_EVENT, Ready::readable(), PollOpt::edge())
-    //     .unwrap();
+    poll.register(&socket, PACKET_RECV_EVENT, Ready::readable(), PollOpt::edge())
+        .unwrap();
 
-    // let mut events = Events::with_capacity(128);
-    // loop {
-    //     poll.poll(&mut events, None)
-    //         .expect("Error receiving events from Epoll");
-
-    //     for event in &events {
-    //         // handle epoll events
-    //         let maybe_response = match event.token() {
-    //             PACKET_RECV_EVENT => {
-    //                 println!("Received packet!");
-    //                 // packet received from server
-    //                 let sz = socket.recv(&mut read_buf)?;
-
-    //                 // parse it into a raw packet
-    //                 if let Ok(rx) = parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
-    //                     println!("{:?}", rx)
-    //                 }
-    //             }
-    //             _ => (),
-    //         };
-    //     }
-    // }
     let mut rng = rand::thread_rng();
 
-    //loop {
-        let payload: Vec<u8> = vec![rng.gen::<u8>(), rng.gen::<u8>()];
 
-        let tx_req = msg::LongFiTxUplinkPacket {
-            disable_encoding: true,
-            disable_fragmentation: true,
-            payload,
+    let payload: Vec<u8> = vec![rng.gen::<u8>(), rng.gen::<u8>()];
+
+    let tx_req = msg::LongFiTxUplinkPacket {
+        disable_encoding: true,
+        disable_fragmentation: true,
+        payload,
+        ..Default::default()
+    };
+    //println!("requesting to transmit {:#?}", tx_req);
+    msg_send(
+        msg::Req {
+            id: 0xfe,
+            kind: Some(msg::Req_oneof_kind::longfi_tx_uplink(tx_req)),
             ..Default::default()
-        };
-        //println!("requesting to transmit {:#?}", tx_req);
-        msg_send(
-            msg::Req {
-                id: 0xfe,
-                kind: Some(msg::Req_oneof_kind::longfi_tx(tx_req)),
-                ..Default::default()
-            },
-            &socket,
-            &addr_out,
-        )?; 
-//
-    loop {}
-    
+        },
+        &socket,
+        &addr_out,
+    )?; 
+
+    let mut events = Events::with_capacity(128);
+    loop {
+        poll.poll(&mut events, None)
+            .expect("Error receiving events from Epoll");
+
+        for event in &events {
+            // handle epoll events
+            let maybe_response = match event.token() {
+                PACKET_RECV_EVENT => {
+                    println!("Received packet!");
+                    // packet received from server
+                    let sz = socket.recv(&mut read_buf)?;
+
+                    // parse it into a raw packet
+                    if let Ok(rx) = parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+                        println!("{:?}", rx)
+                    }
+                }
+                _ => (),
+            };
+        }
+    }
 }

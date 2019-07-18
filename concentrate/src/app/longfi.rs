@@ -7,7 +7,6 @@ use mio_extras::timer::{Timeout, Timer};
 use protobuf::{parse_from_bytes, Message};
 use std::net::{IpAddr, SocketAddr};
 use std::time::Duration;
-use messages::LongFiRxPacket;
 
 use super::print_at_level;
 
@@ -84,7 +83,18 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
-                        Ok(rx) => longfi_rx.parse(&rx),
+                        Ok(rx) => {
+                            match &rx.kind {
+                                Some(message) => {
+                                    match &message {
+                                        msg::Resp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
+                                        msg::Resp_oneof_kind::tx(pkt) => longfi_tx.update(&pkt, &socket, &addr_out),
+                                        _=> None,
+                                    }
+                                }
+                                _ => None,
+                            }
+                        },
                         Err(e) => {
                             error!("{:?}", e);
                             None
@@ -119,6 +129,8 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
             if let Some(response) = maybe_response {
                 match response {
                     LongFiResponse::Pkt(pkt) => {
+                        println!("Packet recevied!");
+
                         // packet received, cancel the timeout
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);
@@ -126,9 +138,8 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
 
                         let mut ignore = false;
                         if let Some(last_sent) = last_sent_packet {
-                            ignore = (last_sent==pkt); 
+                            ignore = last_sent==pkt; 
                             last_sent_packet = Some(last_sent);
-                            println!("Ignore = {}", ignore);
                         }
 
                         if !ignore {

@@ -140,145 +140,161 @@ impl LongFiParser {
         return None;
     }
 
-    pub fn parse(&mut self, msg: &msg::Resp) -> Option<LongFiResponse> {
-        if let Some(message) = &msg.kind {
-            if let msg::Resp_oneof_kind::rx_packet(pkt) = &message {
-                // if payload is smaller than the smallest header, it's invalid
-                if pkt.payload.len() < PAYLOAD_BEGIN_FRAGMENT_PACKET {
-                    return None;
-                }
+    pub fn parse(&mut self, pkt: &messages::RxPacket) -> Option<LongFiResponse> {
 
-                // means single frament packet header
-                if pkt.payload[0] == 0 {
-                    if pkt.payload.len() < PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET {
-                        return None;
-                    }
-                    let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET;
-
-                    let mut payload: Vec<u8> = vec![0; len_copy];
-                    payload.copy_from_slice(
-                        &pkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
-                            ..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy],
-                    );
-
-                    let mut quality = Vec::new();
-                    if pkt.crc_check {
-                        quality.push(Quality::CrcOk);
-                    } else {
-                        quality.push(Quality::CrcFail);
-                    }
-
-                    return Some(LongFiResponse::Pkt(LongFiPkt {
-                        packet_id: pkt.payload[0],
-                        oui: (pkt.payload[1] as u32)
-                            | (pkt.payload[2] as u32) << 8
-                            | (pkt.payload[3] as u32) << 16
-                            | (pkt.payload[4] as u32) << 24,
-                        device_id: (pkt.payload[5] as u16) | (pkt.payload[6] as u16) << 8,
-                        mac: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
-                        payload,
-                        num_fragments: 1,
-                        fragment_cnt: 1,
-                        quality,
-                    }));
-                }
-                // means multi-fragment packet header
-                else if pkt.payload[1] == 0 {
-                    if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
-                        return None;
-                    }
-                    let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
-
-                    let mut payload: Vec<u8> = vec![0; len_copy];
-                    payload.copy_from_slice(
-                        &pkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
-                            ..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy],
-                    );
-
-                    let packet_id = pkt.payload[0] as usize;
-
-                    let mut quality = Vec::new();
-                    if pkt.crc_check {
-                        quality.push(Quality::CrcOk);
-                    } else {
-                        quality.push(Quality::CrcFail);
-                    }
-
-                    self.fragmented_packets[packet_id] = Some({
-                        LongFiPkt {
-                            packet_id: packet_id as u8,
-                            num_fragments: pkt.payload[2],
-                            fragment_cnt: 1,
-                            oui: (pkt.payload[3] as u32)
-                                | (pkt.payload[4] as u32) << 8
-                                | (pkt.payload[5] as u32) << 16
-                                | (pkt.payload[6] as u32) << 24,
-                            device_id: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
-                            mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
-                            payload,
-                            quality,
-                        }
-                    });
-
-                    return Some(LongFiResponse::FragmentedPacketBegin(packet_id));
-                }
-                // must be fragment
-                else {
-                    let packet_id = pkt.payload[0] as usize;
-                    // we already know that the payload is at least the size of a fragment header
-                    let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_FRAGMENT_PACKET;
-
-                    let mut ret = false;
-                    if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
-                        let fragment_num = pkt.payload[1];
-
-                        while fragment_num > fragmented_pkt.fragment_cnt {
-                            fragmented_pkt.fragment_cnt += 1;
-                            fragmented_pkt.quality.push(Quality::Missed);
-                        }
-
-                        if fragment_num == fragmented_pkt.fragment_cnt {
-                            if pkt.crc_check {
-                                fragmented_pkt.quality.push(Quality::CrcOk);
-                            } else {
-                                fragmented_pkt.quality.push(Quality::CrcFail);
-                            }
-
-                            fragmented_pkt.payload.extend(
-                                pkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
-                                    ..PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy]
-                                    .iter()
-                                    .cloned(),
-                            );
-                            fragmented_pkt.fragment_cnt += 1;
-                        }
-
-                        if fragmented_pkt.fragment_cnt == fragmented_pkt.num_fragments {
-                            ret = true;
-                        }
-                    }
-
-                    if ret {
-                        if let Some(pkt) = self.fragmented_packets[packet_id].take() {
-                            return Some(LongFiResponse::Pkt(pkt));
-                        }
-                    }
-                }
-            } else {
-                println!("did not parse");
-            }
-        } else {
-            println!("did not parse!");
+        // if payload is smaller than the smallest header, it's invalid
+        if pkt.payload.len() < PAYLOAD_BEGIN_FRAGMENT_PACKET {
+            return None;
         }
-        None
+
+        // means single frament packet header
+        if pkt.payload[0] == 0 {
+
+            if pkt.payload.len() < PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET {
+                return None;
+            }
+            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET;
+
+            let mut payload: Vec<u8> = vec![0; len_copy];
+            payload.copy_from_slice(
+                &pkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
+                    ..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy],
+            );
+
+            let mut quality = Vec::new();
+            if pkt.crc_check {
+                quality.push(Quality::CrcOk);
+            } else {
+                quality.push(Quality::CrcFail);
+            }
+
+            return Some(LongFiResponse::Pkt(LongFiPkt {
+                packet_id: pkt.payload[0],
+                oui: (pkt.payload[1] as u32)
+                    | (pkt.payload[2] as u32) << 8
+                    | (pkt.payload[3] as u32) << 16
+                    | (pkt.payload[4] as u32) << 24,
+                device_id: (pkt.payload[5] as u16) | (pkt.payload[6] as u16) << 8,
+                mac: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
+                payload,
+                num_fragments: 1,
+                fragment_cnt: 1,
+                quality,
+            }));
+        }
+        // means multi-fragment packet header
+        else if pkt.payload[1] == 0 {
+
+            if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
+                return None;
+            }
+            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
+
+            let mut payload: Vec<u8> = vec![0; len_copy];
+            payload.copy_from_slice(
+                &pkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
+                    ..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy],
+            );
+
+            let packet_id = pkt.payload[0] as usize;
+
+            let mut quality = Vec::new();
+            if pkt.crc_check {
+                quality.push(Quality::CrcOk);
+            } else {
+                quality.push(Quality::CrcFail);
+            }
+
+            self.fragmented_packets[packet_id] = Some({
+                LongFiPkt {
+                    packet_id: packet_id as u8,
+                    num_fragments: pkt.payload[2],
+                    fragment_cnt: 1,
+                    oui: (pkt.payload[3] as u32)
+                        | (pkt.payload[4] as u32) << 8
+                        | (pkt.payload[5] as u32) << 16
+                        | (pkt.payload[6] as u32) << 24,
+                    device_id: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
+                    mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
+                    payload,
+                    quality,
+                }
+            });
+
+            return Some(LongFiResponse::FragmentedPacketBegin(packet_id));
+        }
+        // must be fragment
+        else {
+            
+            let packet_id = pkt.payload[0] as usize;
+            // we already know that the payload is at least the size of a fragment header
+            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_FRAGMENT_PACKET;
+
+            let mut ret = false;
+            if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
+                let fragment_num = pkt.payload[1];
+
+                while fragment_num > fragmented_pkt.fragment_cnt {
+                    fragmented_pkt.fragment_cnt += 1;
+                    fragmented_pkt.quality.push(Quality::Missed);
+                }
+
+                if fragment_num == fragmented_pkt.fragment_cnt {
+                    if pkt.crc_check {
+                        fragmented_pkt.quality.push(Quality::CrcOk);
+                    } else {
+                        fragmented_pkt.quality.push(Quality::CrcFail);
+                    }
+
+                    fragmented_pkt.payload.extend(
+                        pkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
+                            ..PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy]
+                            .iter()
+                            .cloned(),
+                    );
+                    fragmented_pkt.fragment_cnt += 1;
+                }
+
+                if fragmented_pkt.fragment_cnt == fragmented_pkt.num_fragments {
+                    ret = true;
+                }
+            }
+
+            if ret {
+                if let Some(pkt) = self.fragmented_packets[packet_id].take() {
+                    return Some(LongFiResponse::Pkt(pkt));
+                }
+            }
+            None
+        }
     }
 }
-
+extern crate rand;
 extern crate mio;
-pub struct LongFiSender;
-
 extern crate protobuf;
+
+use rand::Rng;
 use protobuf::{parse_from_bytes, Message};
+
+pub struct LongFiSender {
+    rng:  rand::ThreadRng
+}
+
+const RADIO_1: u32 = 920600000;
+const RADIO_2: u32 = 916600000;
+const FREQ_SPACING: u32 =200000;
+const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
+
+const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS] = [
+  RADIO_1 - FREQ_SPACING*2,
+  RADIO_1 - FREQ_SPACING,
+  RADIO_1,
+  RADIO_2 - FREQ_SPACING*2,
+  RADIO_2 - FREQ_SPACING,
+  RADIO_2,
+  RADIO_2 + FREQ_SPACING,
+  RADIO_2 + FREQ_SPACING*2
+];
 
 fn msg_send<T: Message>(msg: T, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> std::io::Result<()> {
     let mut enc_buf = Vec::new();
@@ -290,26 +306,32 @@ fn msg_send<T: Message>(msg: T, socket: &mio::net::UdpSocket, addr_out: &std::ne
 
 impl LongFiSender {
     pub fn new() -> LongFiSender {
-        LongFiSender {}
+        LongFiSender {
+            rng: rand::thread_rng(),
+        }
+    }
+
+
+    pub fn update(&mut self, tx: &messages::TxResp, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> Option<LongFiResponse> {
+        println!("TxSuccess = {}", tx.success);
+        None
     }
 
     pub fn send(&mut self, msg: &msg::Req, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> Option<LongFiResponse> {
         if let Some(message) = &msg.kind {
-            if let msg::Req_oneof_kind::longfi_tx(req) = &message {
-                println!("Tx request");
+            if let msg::Req_oneof_kind::longfi_tx_uplink(req) = &message {
 
                 let mut longfi_payload = vec![
-                    0x00,                       // uint8_t packet_id;  // 0    must be zero
-                    0x00, 0x00, 0x00, 0x00,     // uint32_t oui;       // 1:4
-                    0x00, 0x00,                 // uint16_t device_id; // 5:6
+                    0x00,
+                    req.oui as u8, (req.oui>>8) as u8, (req.oui>>16) as u8, (req.oui>>24) as u8,
+                    req.device_id as u8, (req.device_id>>8) as u8,
                     0x00, 0x00                  // uint16_t mac;       // 7:8
                 ];
 
                 longfi_payload.extend(&req.payload);
-                println!("Sending {:?}", longfi_payload);
 
                 let tx_req = msg::TxReq {
-                        freq: 916_600_000,
+                        freq: CHANNEL[self.rng.gen::<usize>()%LONGFI_NUM_UPLINK_CHANNELS],
                         radio: msg::Radio::R0,
                         power: 22,
                         bandwidth: msg::Bandwidth::BW125kHz,

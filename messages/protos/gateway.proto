@@ -6,7 +6,7 @@ enum Radio {
 }
 
 enum Spreading {
-    UNDEFINED = 0;
+    SF_UNDEFINED = 0;
     SF7 = 1;
     SF8 = 2;
     SF9 = 3;
@@ -16,7 +16,7 @@ enum Spreading {
 }
 
 enum Bandwidth {
-    UNDEFINED = 0;
+    BW_UNDEFINED = 0;
     BW7_8kHz = 1;
     BW15_6kHz = 2;
     BW31_2kHz = 3;
@@ -26,7 +26,7 @@ enum Bandwidth {
     BW500kHz = 7;
 }
 enum Coderate {
-    UNDEFINED = 0;
+    CR_UNDEFINED = 0;
     CR4_5 = 1;
     CR4_6 = 2;
     CR4_7 = 3;
@@ -37,7 +37,7 @@ message Req {
     uint32 id = 1;
     oneof kind {
         TxReq tx = 2;
-        LongFiTxUplinkPacket longfi_tx= 3;
+        LongFiTxUplinkPacket longfi_tx_uplink = 3;
     }
 }
 

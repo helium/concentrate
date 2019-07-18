@@ -91,10 +91,10 @@ pub fn serve(
                                 },
                             }
                         }
-                                                // LongFi Tx to Serve is not valid currently
-                         Req {
+                        // LongFi Tx to Serve is not valid currently
+                        Req {
                             id,
-                            kind: Some(Req_oneof_kind::longfi_tx(req)),
+                            kind: Some(Req_oneof_kind::longfi_tx_uplink(req)),
                             ..
                         } => {
                             error!("Cannot send LongFi Tx to concentrator-serve directly. Need concentrator-longfi!");

@@ -13,7 +13,7 @@ impl From<loragw::Spreading> for Spreading {
             loragw::Spreading::SF10 => Spreading::SF10,
             loragw::Spreading::SF11 => Spreading::SF11,
             loragw::Spreading::SF12 => Spreading::SF12,
-            _ => Spreading::UNDEFINED,
+            _ => Spreading::SF_UNDEFINED,
         }
     }
 }
@@ -42,7 +42,7 @@ impl From<loragw::Bandwidth> for Bandwidth {
             loragw::Bandwidth::BW125kHz => Bandwidth::BW125kHz,
             loragw::Bandwidth::BW250kHz => Bandwidth::BW250kHz,
             loragw::Bandwidth::BW500kHz => Bandwidth::BW500kHz,
-            _ => Bandwidth::UNDEFINED,
+            _ => Bandwidth::BW_UNDEFINED,
         }
     }
 }
@@ -69,7 +69,7 @@ impl From<loragw::Coderate> for Coderate {
             loragw::Coderate::Cr4_6 => Coderate::CR4_6,
             loragw::Coderate::Cr4_7 => Coderate::CR4_7,
             loragw::Coderate::Cr4_8 => Coderate::CR4_8,
-            _ => Coderate::UNDEFINED,
+            _ => Coderate::CR_UNDEFINED,
         }
     }
 }
