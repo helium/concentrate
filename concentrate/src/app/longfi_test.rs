@@ -64,7 +64,7 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
         payload,
         ..Default::default()
     };
-    //println!("requesting to transmit {:#?}", tx_req);
+
     msg_send(
         msg::LongFiReq {
             id: 0xfe,
@@ -91,6 +91,8 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
                     // parse it into a raw packet
                     if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
                         println!("{:?}", rx)
+                    } else {
+                        println!("Failed to parse LongFiResp!");
                     }
                 }
                 _ => (),

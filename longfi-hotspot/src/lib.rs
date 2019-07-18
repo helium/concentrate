@@ -329,7 +329,6 @@ impl LongFiSender {
         socket: &mio::net::UdpSocket,
         addr_out: &std::net::SocketAddr,
     ) -> Option<LongFiResponse> {
-        println!("TxSuccess = {}", tx.success);
         None
     }
 

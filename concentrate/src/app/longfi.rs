@@ -46,11 +46,11 @@ pub fn longfi(
         let longfi_addr_out = SocketAddr::from(([127, 0, 0, 1], longfi_out_port));
 
         assert_ne!(addr_in, addr_out);
-        println!("radio_addr_in : {}", addr_in);
-        println!("radio_addr_out: {}", addr_out);
+        debug!("radio_addr_in : {}", addr_in);
+        debug!("radio_addr_out: {}", addr_out);
 
-        println!("longfi_addr_in : {}", longfi_addr_in);
-        println!("longfi_addr_out: {}", longfi_addr_out);
+        debug!("longfi_addr_in : {}", longfi_addr_in);
+        debug!("longfi_addr_out: {}", longfi_addr_out);
         (
             UdpSocket::bind(&addr_in)?,
             addr_out,
@@ -158,9 +158,6 @@ pub fn longfi(
                         }
 
                         if !ignore {
-                            // print packet for debug
-                            println!("{:?}", pkt);
-
                             // transform it into a UDP msg for client
                             let resp = msg::LongFiResp {
                                 id: 0,

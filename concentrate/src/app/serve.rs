@@ -31,8 +31,8 @@ pub fn serve(
         }
 
         assert_ne!(req_addr, resp_addr);
-        println!("req port: {}", req_addr);
-        println!("resp port: {}", resp_addr);
+        debug!("req port: {}", req_addr);
+        debug!("resp port: {}", resp_addr);
         (UdpSocket::bind(req_addr)?, resp_addr)
     };
 
@@ -48,7 +48,7 @@ pub fn serve(
             for pkt in packets {
                 print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
-                    println!("received {:?}", pkt);
+                    debug!("received {:?}", pkt);
                     let resp = RadioResp {
                         id: 0,
                         kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
@@ -70,7 +70,7 @@ pub fn serve(
                             ..
                         } => {
                             let pkt = req.into();
-                            println!("transmitting {:?}", pkt);
+                            debug!("transmitting {:?}", pkt);
                             match concentrator.transmit(loragw::TxPacket::LoRa(pkt)) {
                                 Ok(()) => RadioResp {
                                     id,
