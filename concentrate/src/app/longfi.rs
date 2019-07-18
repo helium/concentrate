@@ -67,6 +67,7 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
             .expect("Error receiving events from Epoll");
 
         for event in &events {
+            // handle epoll events
             let maybe_response = match event.token() {
                 RECV_EVENT => {
                     let sz = socket.recv(&mut read_buf)?;
@@ -88,6 +89,7 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
                 _ => None,
             };
 
+            // if there was a response, deal with it
             if let Some(response) = maybe_response {
                 match response {
                     ParserResponse::Pkt(pkt) => {
@@ -103,33 +105,6 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
                         };
 
                         msg_send(resp, &longfi_socket, &longfi_addr_out)?;
-
-                        let payload: Vec<u8> = vec![231, 171, 90, 54, 57, 71, 0, 254, 239, 39, 38, 22, 131, 104, 191, 183, 8, 94, 78, 0, 19, 0, 0];
-
-                        let tx_req = msg::TxReq {
-                            freq: 916_600_000,
-                            radio: msg::Radio::R0,
-                            power: 22,
-                            bandwidth: msg::Bandwidth::BW250kHz,
-                            spreading: msg::Spreading::SF9,
-                            coderate: msg::Coderate::CR4_5,
-                            invert_polarity: false,
-                            omit_crc: false,
-                            implicit_header: false,
-                            payload,
-                            ..Default::default()
-                        };
-                        println!("requesting to transmit {:#?}", tx_req);
-                        msg_send(
-                            msg::Req {
-                                id: 0xfe,
-                                kind: Some(msg::Req_oneof_kind::tx(tx_req)),
-                                ..Default::default()
-                            },
-                            &socket,
-                            &addr_out,
-                        )?;
-                        //super::print_at_level(print_level, &pkt)
                     }
                     ParserResponse::FragmentedPacketBegin(index) => {
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
