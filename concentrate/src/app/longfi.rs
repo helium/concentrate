@@ -23,13 +23,13 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 }
 
 pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, longfi_out_port: u16, longfi_in_port:u16 ) -> AppResult {
-    let (socket_in, addr_in, socket_out, addr_out, longfi_socket_in, longfi_addr_in, longfi_socket_out, longfi_addr_out) = {
+    let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;
         let addr_out;
 
         if let Some(remote_ip) = ip {
-            addr_in = SocketAddr::from((remote_ip, in_port));
-            addr_out = SocketAddr::from(([0, 0, 0, 0], out_port));
+            addr_in = SocketAddr::from(([0,0,0,0], in_port));
+            addr_out = SocketAddr::from((remote_ip, out_port));
         } else {
             addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
             addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
@@ -43,12 +43,8 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
         println!("addr_out: {}", addr_out);
         (
             UdpSocket::bind(&addr_in)?,
-            addr_in,
-            UdpSocket::bind(&addr_out)?,
             addr_out,
             UdpSocket::bind(&longfi_addr_in)?,
-            longfi_addr_in,
-            UdpSocket::bind(&longfi_addr_out)?,
             longfi_addr_out,
         )
     };
@@ -62,7 +58,7 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
     poll.register(&timer, PACKET_TIMEOUT, Ready::readable(), PollOpt::edge())
         .unwrap();
 
-    poll.register(&socket_in, RECV_EVENT, Ready::readable(), PollOpt::edge())
+    poll.register(&socket, RECV_EVENT, Ready::readable(), PollOpt::edge())
         .unwrap();
 
     let mut events = Events::with_capacity(128);
@@ -73,7 +69,7 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
         for event in &events {
             let maybe_response = match event.token() {
                 RECV_EVENT => {
-                    let sz = socket_in.recv(&mut read_buf)?;
+                    let sz = socket.recv(&mut read_buf)?;
                     match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
                         Ok(rx) => longfi.parse(&rx),
                         Err(e) => {
@@ -106,33 +102,33 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
                             ..Default::default()
                         };
 
-                        msg_send(resp, &longfi_socket_out, &longfi_addr_out)?;
+                        msg_send(resp, &longfi_socket, &longfi_addr_out)?;
 
-                        // let payload: Vec<u8> = vec![231, 171, 90, 54, 57, 71, 0, 254, 239, 39, 38, 22, 131, 104, 191, 183, 8, 94, 78, 0, 19, 0, 0];
+                        let payload: Vec<u8> = vec![231, 171, 90, 54, 57, 71, 0, 254, 239, 39, 38, 22, 131, 104, 191, 183, 8, 94, 78, 0, 19, 0, 0];
 
-                        // let tx_req = msg::TxReq {
-                        //     freq: 916_600_000,
-                        //     radio: msg::Radio::R0,
-                        //     power: 22,
-                        //     bandwidth: msg::Bandwidth::BW250kHz,
-                        //     spreading: msg::Spreading::SF9,
-                        //     coderate: msg::Coderate::CR4_5,
-                        //     invert_polarity: false,
-                        //     omit_crc: false,
-                        //     implicit_header: false,
-                        //     payload,
-                        //     ..Default::default()
-                        // };
-                        // println!("requesting to transmit {:#?}", tx_req);
-                        // msg_send(
-                        //     msg::Req {
-                        //         id: 0xfe,
-                        //         kind: Some(msg::Req_oneof_kind::tx(tx_req)),
-                        //         ..Default::default()
-                        //     },
-                        //     &socket_out,
-                        //     &addr_out,
-                        // )?;
+                        let tx_req = msg::TxReq {
+                            freq: 916_600_000,
+                            radio: msg::Radio::R0,
+                            power: 22,
+                            bandwidth: msg::Bandwidth::BW250kHz,
+                            spreading: msg::Spreading::SF9,
+                            coderate: msg::Coderate::CR4_5,
+                            invert_polarity: false,
+                            omit_crc: false,
+                            implicit_header: false,
+                            payload,
+                            ..Default::default()
+                        };
+                        println!("requesting to transmit {:#?}", tx_req);
+                        msg_send(
+                            msg::Req {
+                                id: 0xfe,
+                                kind: Some(msg::Req_oneof_kind::tx(tx_req)),
+                                ..Default::default()
+                            },
+                            &socket,
+                            &addr_out,
+                        )?;
                         //super::print_at_level(print_level, &pkt)
                     }
                     ParserResponse::FragmentedPacketBegin(index) => {

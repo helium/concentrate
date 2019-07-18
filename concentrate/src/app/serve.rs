@@ -49,7 +49,7 @@ pub fn serve(
             for pkt in packets {
                 print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
-                    debug!("received {:?}", pkt);
+                    println!("received {:?}", pkt);
                     let resp = Resp {
                         id: 0,
                         kind: Some(Resp_oneof_kind::rx_packet(pkt.into())),
@@ -71,7 +71,7 @@ pub fn serve(
                             ..
                         } => {
                             let pkt = req.into();
-                            debug!("transmitting {:?}", pkt);
+                            println!("transmitting {:?}", pkt);
                             match concentrator.transmit(loragw::TxPacket::LoRa(pkt)) {
                                 Ok(()) => Resp {
                                     id,
