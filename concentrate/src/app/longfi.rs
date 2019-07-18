@@ -98,12 +98,12 @@ pub fn longfi(
                     // packet received from server
                     let sz = socket.recv(&mut read_buf)?;
                     // parse it into a raw packet
-                    match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+                    match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
                         Ok(rx) => match &rx.kind {
                             Some(message) => match &message {
-                                msg::Resp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
-                                msg::Resp_oneof_kind::tx(pkt) => {
+                                msg::RadioResp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
+                                msg::RadioResp_oneof_kind::tx(pkt) => {
                                     longfi_tx.update(&pkt, &socket, &addr_out)
                                 }
                                 _ => None,
@@ -120,7 +120,7 @@ pub fn longfi(
                     // packet received from server
                     let sz = longfi_socket.recv(&mut read_buf)?;
                     // parse it into a raw packet
-                    match parse_from_bytes::<msg::Req>(&read_buf[..sz]) {
+                    match parse_from_bytes::<msg::LongFiReq>(&read_buf[..sz]) {
                         // feed transmit request to LongFi
                         Ok(tx) => longfi_tx.send(&tx, &socket, &addr_out),
                         Err(e) => {
@@ -162,9 +162,9 @@ pub fn longfi(
                             println!("{:?}", pkt);
 
                             // transform it into a UDP msg for client
-                            let resp = msg::Resp {
+                            let resp = msg::LongFiResp {
                                 id: 0,
-                                kind: Some(msg::Resp_oneof_kind::longfi_rx(pkt.into())),
+                                kind: Some(msg::LongFiResp_oneof_kind::longfi_rx(pkt.into())),
                                 ..Default::default()
                             };
 

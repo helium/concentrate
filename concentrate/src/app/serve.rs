@@ -49,9 +49,9 @@ pub fn serve(
                 print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     println!("received {:?}", pkt);
-                    let resp = Resp {
+                    let resp = RadioResp {
                         id: 0,
-                        kind: Some(Resp_oneof_kind::rx_packet(pkt.into())),
+                        kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
                         ..Default::default()
                     };
                     msg_send(resp, &socket, resp_addr)?;
@@ -61,28 +61,28 @@ pub fn serve(
 
         match socket.recv(&mut req_buf) {
             Ok(sz) => {
-                let resp = match parse_from_bytes::<Req>(&req_buf[..sz]) {
+                let resp = match parse_from_bytes::<RadioReq>(&req_buf[..sz]) {
                     Ok(req) => match req {
                         // Valid TX request
-                        Req {
+                        RadioReq {
                             id,
-                            kind: Some(Req_oneof_kind::tx(req)),
+                            kind: Some(RadioReq_oneof_kind::tx(req)),
                             ..
                         } => {
                             let pkt = req.into();
                             println!("transmitting {:?}", pkt);
                             match concentrator.transmit(loragw::TxPacket::LoRa(pkt)) {
-                                Ok(()) => Resp {
+                                Ok(()) => RadioResp {
                                     id,
-                                    kind: Some(Resp_oneof_kind::tx(TxResp {
+                                    kind: Some(RadioResp_oneof_kind::tx(RadioTxResp {
                                         success: true,
                                         ..Default::default()
                                     })),
                                     ..Default::default()
                                 },
-                                Err(_) => Resp {
+                                Err(_) => RadioResp {
                                     id,
-                                    kind: Some(Resp_oneof_kind::tx(TxResp {
+                                    kind: Some(RadioResp_oneof_kind::tx(RadioTxResp {
                                         success: false,
                                         ..Default::default()
                                     })),
@@ -90,23 +90,10 @@ pub fn serve(
                                 },
                             }
                         }
-                        // LongFi Tx to Serve is not valid currently
-                        Req {
-                            id,
-                            kind: Some(Req_oneof_kind::longfi_tx_uplink(req)),
-                            ..
-                        } => {
-                            error!("Cannot send LongFi Tx to concentrator-serve directly. Need concentrator-longfi!");
-                            Resp {
-                                id,
-                                kind: None,
-                                ..Default::default()
-                            }
-                        }
                         // Invalid request
-                        Req { id, kind: None, .. } => {
+                        RadioReq { id, kind: None, .. } => {
                             error!("request {} empty", id);
-                            Resp {
+                            RadioResp {
                                 id,
                                 kind: None,
                                 ..Default::default()
@@ -115,9 +102,9 @@ pub fn serve(
                     },
                     Err(e) => {
                         error!("parse Req error {:?} from {:x?}", e, &req_buf[..sz]);
-                        Resp {
+                        RadioResp {
                             id: 0,
-                            kind: Some(Resp_oneof_kind::parse_err(Vec::from(&req_buf[..sz]))),
+                            kind: Some(RadioResp_oneof_kind::parse_err(Vec::from(&req_buf[..sz]))),
                             ..Default::default()
                         }
                     }

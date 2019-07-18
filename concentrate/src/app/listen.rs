@@ -14,7 +14,7 @@ pub fn listen(print_level: u8, resp_port: u16) -> AppResult {
     loop {
         let (sz, src) = socket.recv_from(&mut read_buf)?;
         debug!("read {} bytes from {}", sz, src);
-        match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+        match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
             Ok(rx_pkt) => super::print_at_level(print_level, &rx_pkt),
             Err(e) => error!("{:?}", e),
         }

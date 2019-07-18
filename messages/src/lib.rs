@@ -1,8 +1,10 @@
 extern crate loragw;
 extern crate protobuf;
 
-mod gateway;
-pub use gateway::*;
+mod longfi;
+mod radio;
+pub use longfi::*;
+pub use radio::*;
 
 impl From<loragw::Spreading> for Spreading {
     fn from(other: loragw::Spreading) -> Spreading {
@@ -104,9 +106,9 @@ impl From<Radio> for loragw::Radio {
     }
 }
 
-impl From<loragw::RxPacketLoRa> for RxPacket {
-    fn from(other: loragw::RxPacketLoRa) -> RxPacket {
-        RxPacket {
+impl From<loragw::RxPacketLoRa> for RadioRxPacket {
+    fn from(other: loragw::RxPacketLoRa) -> RadioRxPacket {
+        RadioRxPacket {
             freq: other.freq,
             if_chain: other.if_chain.into(),
             crc_check: match other.crc_check {
@@ -126,8 +128,8 @@ impl From<loragw::RxPacketLoRa> for RxPacket {
     }
 }
 
-impl From<TxReq> for loragw::TxPacketLoRa {
-    fn from(other: TxReq) -> loragw::TxPacketLoRa {
+impl From<RadioTxReq> for loragw::TxPacketLoRa {
+    fn from(other: RadioTxReq) -> loragw::TxPacketLoRa {
         loragw::TxPacketLoRa {
             freq: other.freq,
             mode: loragw::TxMode::Immediate,

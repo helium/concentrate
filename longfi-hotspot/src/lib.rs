@@ -146,7 +146,7 @@ impl LongFiParser {
         return None;
     }
 
-    pub fn parse(&mut self, pkt: &messages::RxPacket) -> Option<LongFiResponse> {
+    pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {
         // if payload is smaller than the smallest header, it's invalid
         if pkt.payload.len() < PAYLOAD_BEGIN_FRAGMENT_PACKET {
             return None;
@@ -325,7 +325,7 @@ impl LongFiSender {
 
     pub fn update(
         &mut self,
-        tx: &messages::TxResp,
+        tx: &messages::RadioTxResp,
         socket: &mio::net::UdpSocket,
         addr_out: &std::net::SocketAddr,
     ) -> Option<LongFiResponse> {
@@ -335,12 +335,12 @@ impl LongFiSender {
 
     pub fn send(
         &mut self,
-        msg: &msg::Req,
+        msg: &msg::LongFiReq,
         socket: &mio::net::UdpSocket,
         addr_out: &std::net::SocketAddr,
     ) -> Option<LongFiResponse> {
         if let Some(message) = &msg.kind {
-            if let msg::Req_oneof_kind::longfi_tx_uplink(req) = &message {
+            if let msg::LongFiReq_oneof_kind::longfi_tx_uplink(req) = &message {
                 let mut longfi_payload = vec![
                     0x00,
                     req.oui as u8,
@@ -355,7 +355,7 @@ impl LongFiSender {
 
                 longfi_payload.extend(&req.payload);
 
-                let tx_req = msg::TxReq {
+                let tx_req = msg::RadioTxReq {
                     freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
                     radio: msg::Radio::R0,
                     power: 22,
@@ -369,9 +369,9 @@ impl LongFiSender {
                     ..Default::default()
                 };
                 if let Err(e) = msg_send(
-                    msg::Req {
+                    msg::RadioReq {
                         id: 0xfe,
-                        kind: Some(msg::Req_oneof_kind::tx(tx_req)),
+                        kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
                         ..Default::default()
                     },
                     &socket,

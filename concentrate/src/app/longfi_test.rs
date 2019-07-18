@@ -37,8 +37,8 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
         }
 
         assert_ne!(addr_in, addr_out);
-        println!("addr_in : {}", addr_in);
-        println!("addr_out: {}", addr_out);
+        debug!("addr_in : {}", addr_in);
+        debug!("addr_out: {}", addr_out);
         (UdpSocket::bind(&addr_in)?, addr_out)
     };
 
@@ -66,9 +66,9 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
     };
     //println!("requesting to transmit {:#?}", tx_req);
     msg_send(
-        msg::Req {
+        msg::LongFiReq {
             id: 0xfe,
-            kind: Some(msg::Req_oneof_kind::longfi_tx_uplink(tx_req)),
+            kind: Some(msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_req)),
             ..Default::default()
         },
         &socket,
@@ -89,7 +89,7 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
                     let sz = socket.recv(&mut read_buf)?;
 
                     // parse it into a raw packet
-                    if let Ok(rx) = parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+                    if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
                         println!("{:?}", rx)
                     }
                 }

@@ -23,7 +23,7 @@ pub fn send(
     bandwidth: u32,
     payload: Option<String>,
 ) -> AppResult {
-    let tx_req = msg::TxReq {
+    let tx_req = msg::RadioTxReq {
         freq,
         radio: match radio {
             0 => msg::Radio::R0,
@@ -81,9 +81,9 @@ pub fn send(
     let socket = UdpSocket::bind(SocketAddr::from(([127, 0, 0, 1], resp_port)))?;
     socket.set_read_timeout(Some(Duration::from_millis(200)))?;
     msg_send(
-        msg::Req {
+        msg::RadioReq {
             id: 0xfe,
-            kind: Some(msg::Req_oneof_kind::tx(tx_req)),
+            kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
             ..Default::default()
         },
         &socket,
@@ -92,7 +92,7 @@ pub fn send(
 
     let mut read_buf = [0; 1024];
     match socket.recv(&mut read_buf) {
-        Ok(sz) => match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
+        Ok(sz) => match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
             Ok(resp) => {
                 print_at_level(print_level, &resp);
                 Ok(())
