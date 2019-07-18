@@ -144,7 +144,6 @@ pub fn longfi(
             if let Some(response) = maybe_response {
                 match response {
                     LongFiResponse::Pkt(pkt) => {
-
                         // packet received, cancel the timeout
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);

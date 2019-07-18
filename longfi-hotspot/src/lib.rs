@@ -19,7 +19,7 @@ pub struct LongFiPkt {
     payload: Vec<u8>,
     num_fragments: u8,
     fragment_cnt: u8,
-    timestamp: u64, 
+    timestamp: u64,
     snr: f32,
     rssi: f32,
     quality: Vec<Quality>,
@@ -36,7 +36,7 @@ impl LongFiPkt {
             num_fragments: 0,
             fragment_cnt: 0,
             quality: Default::default(),
-            timestamp: 0, 
+            timestamp: 0,
             snr: 0.0,
             rssi: 0.0,
         }
@@ -184,7 +184,7 @@ impl LongFiParser {
                 num_fragments: 1,
                 fragment_cnt: 1,
                 quality,
-                timestamp: pkt.timestamp, 
+                timestamp: pkt.timestamp,
                 snr: pkt.snr,
                 rssi: pkt.rssi,
             }));
@@ -224,7 +224,7 @@ impl LongFiParser {
                     mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
                     payload,
                     quality,
-                    timestamp: 0, 
+                    timestamp: 0,
                     snr: 0.0,
                     rssi: 0.0,
                 }
