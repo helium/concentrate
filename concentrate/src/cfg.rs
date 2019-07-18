@@ -15,12 +15,14 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from_str_or_default(cfg: Option<&str>) -> AppResult<Self> {
-        Self::from_str(cfg.unwrap_or(DEFAULT_CFG_TOML))
+    pub fn from_str<T: AsRef<str>>(cfg: T) -> AppResult<Self> {
+        Ok(toml::from_str(cfg.as_ref())?)
     }
+}
 
-    pub fn from_str(cfg: &str) -> AppResult<Self> {
-        Ok(toml::from_str(cfg)?)
+impl Default for Config {
+    fn default() -> Self {
+        toml::from_str(DEFAULT_CFG_TOML).expect("default must be infallible")
     }
 }
 

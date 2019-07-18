@@ -3,7 +3,7 @@ use std::convert::{TryFrom, TryInto};
 
 pub fn built_in_self_test() -> AppResult {
     let concentrator = loragw::Concentrator::open()?;
-    let cfg = cfg::Config::from_str_or_default(None)?;
+    let cfg = cfg::Config::default();
 
     concentrator.config_board(&cfg.board.try_into()?)?;
 
