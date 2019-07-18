@@ -18,7 +18,6 @@ pub fn serve(
     resp_port: u16,
     ip: Option<IpAddr>,
 ) -> AppResult {
-
     let (socket, resp_addr) = {
         let resp_addr;
         let req_addr;

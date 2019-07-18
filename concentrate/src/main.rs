@@ -63,7 +63,7 @@ fn go(args: cmdline::Args) -> AppResult {
         Ok(ip) => Some(ip),
         _ => None,
     };
-    
+
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {

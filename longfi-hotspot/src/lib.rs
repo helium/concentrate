@@ -41,7 +41,6 @@ use messages::LongFiRxPacket;
 
 impl Into<LongFiRxPacket> for LongFiPkt {
     fn into(self) -> LongFiRxPacket {
-
         let mut crc_check = true;
 
         for i in self.quality.iter() {
@@ -89,11 +88,13 @@ impl core::fmt::Debug for LongFiPkt {
     }
 }
 
-
-
 impl PartialEq for LongFiPkt {
     fn eq(&self, other: &Self) -> bool {
-        if (self.oui == other.oui) && (self.device_id == other.device_id) &&  (self.device_id == other.device_id) && (self.payload.len() == other.payload.len()){
+        if (self.oui == other.oui)
+            && (self.device_id == other.device_id)
+            && (self.device_id == other.device_id)
+            && (self.payload.len() == other.payload.len())
+        {
             for (pos, e) in self.payload.iter().enumerate() {
                 if *e != other.payload[pos] {
                     return false;
@@ -105,7 +106,6 @@ impl PartialEq for LongFiPkt {
         }
     }
 }
-
 
 const PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET: usize = 9;
 const PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET: usize = 11;
@@ -141,7 +141,6 @@ impl LongFiParser {
     }
 
     pub fn parse(&mut self, pkt: &messages::RxPacket) -> Option<LongFiResponse> {
-
         // if payload is smaller than the smallest header, it's invalid
         if pkt.payload.len() < PAYLOAD_BEGIN_FRAGMENT_PACKET {
             return None;
@@ -149,7 +148,6 @@ impl LongFiParser {
 
         // means single frament packet header
         if pkt.payload[0] == 0 {
-
             if pkt.payload.len() < PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET {
                 return None;
             }
@@ -184,7 +182,6 @@ impl LongFiParser {
         }
         // means multi-fragment packet header
         else if pkt.payload[1] == 0 {
-
             if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
                 return None;
             }
@@ -225,7 +222,6 @@ impl LongFiParser {
         }
         // must be fragment
         else {
-            
             let packet_id = pkt.payload[0] as usize;
             // we already know that the payload is at least the size of a fragment header
             let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_FRAGMENT_PACKET;
@@ -269,34 +265,38 @@ impl LongFiParser {
         }
     }
 }
-extern crate rand;
 extern crate mio;
 extern crate protobuf;
+extern crate rand;
 
-use rand::Rng;
 use protobuf::{parse_from_bytes, Message};
+use rand::Rng;
 
 pub struct LongFiSender {
-    rng:  rand::ThreadRng
+    rng: rand::ThreadRng,
 }
 
 const RADIO_1: u32 = 920600000;
 const RADIO_2: u32 = 916600000;
-const FREQ_SPACING: u32 =200000;
+const FREQ_SPACING: u32 = 200000;
 const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
 
 const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS] = [
-  RADIO_1 - FREQ_SPACING*2,
-  RADIO_1 - FREQ_SPACING,
-  RADIO_1,
-  RADIO_2 - FREQ_SPACING*2,
-  RADIO_2 - FREQ_SPACING,
-  RADIO_2,
-  RADIO_2 + FREQ_SPACING,
-  RADIO_2 + FREQ_SPACING*2
+    RADIO_1 - FREQ_SPACING * 2,
+    RADIO_1 - FREQ_SPACING,
+    RADIO_1,
+    RADIO_2 - FREQ_SPACING * 2,
+    RADIO_2 - FREQ_SPACING,
+    RADIO_2,
+    RADIO_2 + FREQ_SPACING,
+    RADIO_2 + FREQ_SPACING * 2,
 ];
 
-fn msg_send<T: Message>(msg: T, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> std::io::Result<()> {
+fn msg_send<T: Message>(
+    msg: T,
+    socket: &mio::net::UdpSocket,
+    addr_out: &std::net::SocketAddr,
+) -> std::io::Result<()> {
     let mut enc_buf = Vec::new();
     msg.write_to_vec(&mut enc_buf)
         .expect("error serializing packet");
@@ -311,37 +311,50 @@ impl LongFiSender {
         }
     }
 
-
-    pub fn update(&mut self, tx: &messages::TxResp, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> Option<LongFiResponse> {
+    pub fn update(
+        &mut self,
+        tx: &messages::TxResp,
+        socket: &mio::net::UdpSocket,
+        addr_out: &std::net::SocketAddr,
+    ) -> Option<LongFiResponse> {
         println!("TxSuccess = {}", tx.success);
         None
     }
 
-    pub fn send(&mut self, msg: &msg::Req, socket: &mio::net::UdpSocket, addr_out: &std::net::SocketAddr) -> Option<LongFiResponse> {
+    pub fn send(
+        &mut self,
+        msg: &msg::Req,
+        socket: &mio::net::UdpSocket,
+        addr_out: &std::net::SocketAddr,
+    ) -> Option<LongFiResponse> {
         if let Some(message) = &msg.kind {
             if let msg::Req_oneof_kind::longfi_tx_uplink(req) = &message {
-
                 let mut longfi_payload = vec![
                     0x00,
-                    req.oui as u8, (req.oui>>8) as u8, (req.oui>>16) as u8, (req.oui>>24) as u8,
-                    req.device_id as u8, (req.device_id>>8) as u8,
-                    0x00, 0x00                  // uint16_t mac;       // 7:8
+                    req.oui as u8,
+                    (req.oui >> 8) as u8,
+                    (req.oui >> 16) as u8,
+                    (req.oui >> 24) as u8,
+                    req.device_id as u8,
+                    (req.device_id >> 8) as u8,
+                    0x00,
+                    0x00, // uint16_t mac;       // 7:8
                 ];
 
                 longfi_payload.extend(&req.payload);
 
                 let tx_req = msg::TxReq {
-                        freq: CHANNEL[self.rng.gen::<usize>()%LONGFI_NUM_UPLINK_CHANNELS],
-                        radio: msg::Radio::R0,
-                        power: 22,
-                        bandwidth: msg::Bandwidth::BW125kHz,
-                        spreading: msg::Spreading::SF9,
-                        coderate: msg::Coderate::CR4_5,
-                        invert_polarity: false,
-                        omit_crc: false,
-                        implicit_header: false,
-                        payload: longfi_payload,
-                        ..Default::default()
+                    freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
+                    radio: msg::Radio::R0,
+                    power: 22,
+                    bandwidth: msg::Bandwidth::BW125kHz,
+                    spreading: msg::Spreading::SF9,
+                    coderate: msg::Coderate::CR4_5,
+                    invert_polarity: false,
+                    omit_crc: false,
+                    implicit_header: false,
+                    payload: longfi_payload,
+                    ..Default::default()
                 };
                 if let Err(e) = msg_send(
                     msg::Req {
@@ -356,11 +369,9 @@ impl LongFiSender {
                 } else {
                     return Some(LongFiResponse::SentPacket(LongFiPkt::from_req(req)));
                 }
-
             }
         }
 
         None
     }
-
 }

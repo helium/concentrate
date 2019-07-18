@@ -21,7 +21,7 @@ pub enum Cmd {
     #[structopt(name = "longfi")]
     LongFi,
 
-        /// longfi. This mode is primarily meant for testing and debugging
+    /// longfi. This mode is primarily meant for testing and debugging
     /// longfi device code
     #[structopt(name = "longfi-test")]
     LongFiTest,
@@ -128,7 +128,7 @@ pub struct Args {
         long = "longfi_in",
         default_value = "31341"
     )]
-    pub longfi_port_in : u16,
+    pub longfi_port_in: u16,
 
     /// Remote IP for listening.
     #[structopt(

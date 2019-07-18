@@ -1,5 +1,5 @@
 use crate::error::AppResult;
-use longfi_hotspot::{LongFiParser, LongFiSender, LongFiResponse};
+use longfi_hotspot::{LongFiParser, LongFiResponse, LongFiSender};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
@@ -22,13 +22,20 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, longfi_out_port: u16, longfi_in_port:u16 ) -> AppResult {
+pub fn longfi(
+    print_level: u8,
+    out_port: u16,
+    in_port: u16,
+    ip: Option<IpAddr>,
+    longfi_out_port: u16,
+    longfi_in_port: u16,
+) -> AppResult {
     let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;
         let addr_out;
 
         if let Some(remote_ip) = ip {
-            addr_in = SocketAddr::from(([0,0,0,0], in_port));
+            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
             addr_out = SocketAddr::from((remote_ip, out_port));
         } else {
             addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
@@ -63,11 +70,21 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
     poll.register(&timer, PACKET_TIMEOUT, Ready::readable(), PollOpt::edge())
         .unwrap();
 
-    poll.register(&socket, PACKET_RECV_EVENT, Ready::readable(), PollOpt::edge())
-        .unwrap();
+    poll.register(
+        &socket,
+        PACKET_RECV_EVENT,
+        Ready::readable(),
+        PollOpt::edge(),
+    )
+    .unwrap();
 
-    poll.register(&longfi_socket, PACKET_SEND_EVENT, Ready::readable(), PollOpt::edge())
-        .unwrap();
+    poll.register(
+        &longfi_socket,
+        PACKET_SEND_EVENT,
+        Ready::readable(),
+        PollOpt::edge(),
+    )
+    .unwrap();
 
     let mut events = Events::with_capacity(128);
     loop {
@@ -83,17 +100,15 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::Resp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
-                        Ok(rx) => {
-                            match &rx.kind {
-                                Some(message) => {
-                                    match &message {
-                                        msg::Resp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
-                                        msg::Resp_oneof_kind::tx(pkt) => longfi_tx.update(&pkt, &socket, &addr_out),
-                                        _=> None,
-                                    }
+                        Ok(rx) => match &rx.kind {
+                            Some(message) => match &message {
+                                msg::Resp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
+                                msg::Resp_oneof_kind::tx(pkt) => {
+                                    longfi_tx.update(&pkt, &socket, &addr_out)
                                 }
                                 _ => None,
-                            }
+                            },
+                            _ => None,
                         },
                         Err(e) => {
                             error!("{:?}", e);
@@ -138,7 +153,7 @@ pub fn longfi(print_level: u8, out_port: u16, in_port: u16, ip: Option<IpAddr>, 
 
                         let mut ignore = false;
                         if let Some(last_sent) = last_sent_packet {
-                            ignore = last_sent==pkt; 
+                            ignore = last_sent == pkt;
                             last_sent_packet = Some(last_sent);
                         }
 
