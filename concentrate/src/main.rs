@@ -122,7 +122,7 @@ fn go(args: cmdline::Args) -> AppResult {
 }
 
 fn main() {
-    //init_logging();
+    init_logging();
     let args = cmdline::Args::from_args();
     match go(args) {
         Ok(()) => process::exit(0),
