@@ -2,7 +2,7 @@ use super::{msg_send, print_at_level};
 use crate::{cfg, cmdline, error::AppResult};
 use loragw;
 use messages::*;
-use protobuf::parse_from_bytes;
+use protobuf::{parse_from_bytes, well_known_types};
 use std::{
     convert::{TryFrom, TryInto},
     error::Error,
@@ -12,7 +12,7 @@ use std::{
     path::PathBuf,
     sync::mpsc,
     thread,
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 pub fn serve(args: cmdline::Serve) -> AppResult {
@@ -41,6 +41,12 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                 print_at_level(args.print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     debug!("received {:?}", pkt);
+                    let (_timestamp_is_gps, _timestamp) =
+                        if let Ok(t) = gps.systemtime_from_timestamp(pkt.timestamp) {
+                            (true, t)
+                        } else {
+                            (false, SystemTime::now())
+                        };
                     let resp = RadioResp {
                         id: 0,
                         kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
@@ -167,5 +173,16 @@ fn gps_deframer(tty: fs::File, sender: mpsc::Sender<loragw::Frame>) {
                 }
             }
         }
+    }
+}
+
+fn prototimestamp_from_systemtime(sys_time: SystemTime) -> well_known_types::Timestamp {
+    let unix_dur = sys_time
+        .duration_since(UNIX_EPOCH)
+        .expect("cannot convert a timestamp before the Unix epoch to a duration");
+    well_known_types::Timestamp {
+        seconds: unix_dur.as_secs() as i64,
+        nanos: unix_dur.subsec_nanos() as i32,
+        ..Default::default()
     }
 }
