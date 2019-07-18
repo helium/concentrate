@@ -144,13 +144,13 @@ pub fn longfi(
             if let Some(response) = maybe_response {
                 match response {
                     LongFiResponse::Pkt(pkt) => {
-                        println!("Packet recevied!");
 
                         // packet received, cancel the timeout
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);
                         }
 
+                        // check with the packet is identical to the last sent packet
                         let mut ignore = false;
                         if let Some(last_sent) = last_sent_packet {
                             ignore = last_sent == pkt;

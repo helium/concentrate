@@ -19,6 +19,9 @@ pub struct LongFiPkt {
     payload: Vec<u8>,
     num_fragments: u8,
     fragment_cnt: u8,
+    timestamp: u64, 
+    snr: f32,
+    rssi: f32,
     quality: Vec<Quality>,
 }
 
@@ -33,6 +36,9 @@ impl LongFiPkt {
             num_fragments: 0,
             fragment_cnt: 0,
             quality: Default::default(),
+            timestamp: 0, 
+            snr: 0.0,
+            rssi: 0.0,
         }
     }
 }
@@ -52,9 +58,9 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
         LongFiRxPacket {
             crc_check,
-            timestamp: 100,
-            rssi: 1.0,
-            snr: 1.0,
+            timestamp: self.timestamp,
+            rssi: self.rssi,
+            snr: self.snr,
             oui: self.oui as u32,
             device_id: self.device_id as u32,
             mac: self.mac as u32,
@@ -178,6 +184,9 @@ impl LongFiParser {
                 num_fragments: 1,
                 fragment_cnt: 1,
                 quality,
+                timestamp: pkt.timestamp, 
+                snr: pkt.snr,
+                rssi: pkt.rssi,
             }));
         }
         // means multi-fragment packet header
@@ -215,6 +224,9 @@ impl LongFiParser {
                     mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
                     payload,
                     quality,
+                    timestamp: 0, 
+                    snr: 0.0,
+                    rssi: 0.0,
                 }
             });
 
