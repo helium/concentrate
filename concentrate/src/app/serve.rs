@@ -1,5 +1,5 @@
 use super::{msg_send, print_at_level};
-use crate::{cfg, error::AppResult};
+use crate::{cfg::Config, error::AppResult};
 use loragw;
 use messages::*;
 use protobuf::{parse_from_bytes, well_known_types, SingularPtrField};
@@ -62,12 +62,14 @@ pub fn serve(
     socket.set_read_timeout(Some(Duration::from_millis(polling_interval)))?;
     let mut req_buf = [0; 1024];
 
+    let cfg = Config::from_str_or_default(cfg)?;
+
     let mut concentrator = loragw::Concentrator::open()?;
-    config(&mut concentrator, cfg)?;
+    config_concentrator(&mut concentrator, &cfg)?;
     concentrator.start()?;
 
     let (sender, receiver) = mpsc::channel();
-    let (mut gps, tty) = loragw::GPS::open("/dev/ttyS0", 9600, Some(&concentrator))?;
+    let (mut gps, tty) = loragw::GPS::open(cfg.board.gps, 9600, Some(&concentrator))?;
     thread::spawn(move || gps_deframer(tty, sender));
 
     loop {
@@ -161,25 +163,26 @@ pub fn serve(
     }
 }
 
-fn config(concentrator: &mut loragw::Concentrator, cfg: Option<&str>) -> AppResult {
-    let cfg = cfg::Config::from_str_or_default(cfg)?;
-    debug!("configuring concentrator with {:?}", cfg);
+fn config_concentrator(concentrator: &mut loragw::Concentrator, cfg: &Config) -> AppResult {
+    // TODO: remove the need for the following `.clone()`s. It's not a
+    // performance issue here, as this function is called only once,
+    // but it's amateurish.
+    let board_cfg = cfg.board.clone();
+    concentrator.config_board(&board_cfg.try_into()?)?;
 
-    concentrator.config_board(&cfg.board.try_into()?)?;
-
-    if let Some(radios) = cfg.radios {
+    if let Some(radios) = cfg.radios.clone() {
         for c in radios {
             concentrator.config_rx_rf(&loragw::RxRFConf::try_from(c)?)?;
         }
     }
 
-    if let Some(multirate_channels) = cfg.multirate_channels {
+    if let Some(multirate_channels) = cfg.multirate_channels.clone() {
         for (i, c) in multirate_channels.iter().enumerate() {
             concentrator.config_channel(i as u8, &loragw::ChannelConf::try_from(c)?)?;
         }
     }
 
-    if let Some(gains) = cfg.tx_gains {
+    if let Some(gains) = cfg.tx_gains.clone() {
         let gains: Vec<loragw::TxGain> = gains
             .iter()
             .map(|g| loragw::TxGain::from(g.clone()))
