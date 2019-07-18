@@ -22,6 +22,11 @@ Bug fixes:
 
 next-release
 ==================
+Feature enhancements:
+
+* [#22](https://github.com/helium/concentrate/pull/22):
+  Add GPS-based packet timestamping.
+
 Bug fixes:
 
 * [#18](https://github.com/helium/concentrate/pull/18):
