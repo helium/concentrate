@@ -2,7 +2,7 @@ use super::{msg_send, print_at_level};
 use crate::{cfg, error::AppResult};
 use loragw;
 use messages::*;
-use protobuf::parse_from_bytes;
+use protobuf::{parse_from_bytes, well_known_types, SingularPtrField};
 use std::{
     convert::{TryFrom, TryInto},
     error::Error,
@@ -11,7 +11,7 @@ use std::{
     net::{IpAddr, SocketAddr, UdpSocket},
     sync::mpsc,
     thread,
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 fn gps_deframer(tty: File, sender: mpsc::Sender<loragw::Frame>) {
@@ -77,9 +77,19 @@ pub fn serve(
                 print_at_level(print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     debug!("received {:?}", pkt);
+                    let (timestamp_is_gps, timestamp) =
+                        if let Ok(t) = gps.systemtime_from_timestamp(pkt.timestamp) {
+                            (true, t)
+                        } else {
+                            (false, SystemTime::now())
+                        };
+                    let mut proto_pkt: messages::RxPacket = pkt.into();
+                    proto_pkt.timestamp_is_gps = timestamp_is_gps;
+                    proto_pkt.timestamp =
+                        SingularPtrField::some(prototimestamp_from_systemtime(timestamp));
                     let resp = Resp {
                         id: 0,
-                        kind: Some(Resp_oneof_kind::rx_packet(pkt.into())),
+                        kind: Some(Resp_oneof_kind::rx_packet(proto_pkt)),
                         ..Default::default()
                     };
                     msg_send(resp, &socket, resp_addr)?;
@@ -178,4 +188,15 @@ fn config(concentrator: &mut loragw::Concentrator, cfg: Option<&str>) -> AppResu
     }
 
     Ok(())
+}
+
+fn prototimestamp_from_systemtime(sys_time: SystemTime) -> well_known_types::Timestamp {
+    let unix_dur = sys_time
+        .duration_since(UNIX_EPOCH)
+        .expect("cannot convert a timestamp before the Unix epoch to a duration");
+    well_known_types::Timestamp {
+        seconds: unix_dur.as_secs() as i64,
+        nanos: unix_dur.subsec_nanos() as i32,
+        ..Default::default()
+    }
 }

@@ -113,7 +113,6 @@ impl From<loragw::RxPacketLoRa> for RxPacket {
                 loragw::CRCCheck::Fail => false,
                 _ => true,
             },
-            timestamp: other.timestamp.as_micros() as u64,
             radio: other.radio.into(),
             bandwidth: other.bandwidth.into(),
             spreading: other.spreading.into(),

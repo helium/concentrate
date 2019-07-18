@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import 'timestamp.proto';
+
 enum Radio {
     R0 = 0;
     R1 = 1;
@@ -72,6 +74,19 @@ message TxReq {
     bytes payload = 10;
 }
 
+message Timestamp {
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  int32 nanos = 2;
+}
+
 message RxPacket {
     // Center frequency of the channel this packet was received on.
     uint32 freq = 1;
@@ -79,22 +94,26 @@ message RxPacket {
     uint32 if_chain = 2;
     // Status of CRC check.
     bool crc_check = 3;
-    // 1uS-resolution timestamp derived from concentrator's internal counter.
-    uint64 timestamp = 4;
+    // Indicates wheter or not the following timestamp is:
+    // - GPS-based (2 uS accuracy)
+    // - system time (unknown accuracy)
+    bool timestamp_is_gps = 4;
+    // Either a GPS-based or system timestamp.
+    google.protobuf.Timestamp timestamp = 5;
     // RF chain this packet was received on.
-    Radio radio = 5;
+    Radio radio = 6;
     // Modulation bandwidth.
-    Bandwidth bandwidth = 6;
+    Bandwidth bandwidth = 7;
     // Spreading factor of this packet.
-    Spreading spreading  = 7;
+    Spreading spreading  = 8;
     // Error Correcting Code rate of this packet.
-    Coderate coderate = 8;
+    Coderate coderate = 9;
     // Average packet RSSI in dB.
-    float rssi = 9;
+    float rssi = 10;
     // Average packet SNR, in dB.
-    float snr = 10;
+    float snr = 11;
     // This packet's payload.
-    bytes payload = 11;
+    bytes payload = 12;
 }
 
 message TxResp {
