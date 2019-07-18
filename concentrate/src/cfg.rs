@@ -1,6 +1,6 @@
 use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
+use std::{convert::TryFrom, path::PathBuf};
 use toml;
 
 static DEFAULT_CFG_TOML: &str = include_str!("../../default_config.toml");
@@ -28,6 +28,7 @@ impl Config {
 pub struct Board {
     pub lorawan_public: bool,
     pub clksrc: u32,
+    pub gps: PathBuf,
 }
 
 impl TryFrom<Board> for loragw::BoardConf {
@@ -117,6 +118,7 @@ mod tests {
             board: Board {
                 lorawan_public: false,
                 clksrc: 1,
+                gps: PathBuf::from("/dev/ttyS0"),
             },
             radios: Some(vec![
                 Radio {

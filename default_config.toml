@@ -1,6 +1,7 @@
 [board]
 lorawan_public = false
 clksrc = 1
+gps = "/dev/ttyS0"
 
 [[radios]]
 id = 0
