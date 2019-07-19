@@ -62,7 +62,6 @@ pub fn longfi(
     let mut read_buf = [0; 1024];
     let mut longfi_rx = LongFiParser::new();
     let mut longfi_tx = LongFiSender::new();
-    let mut last_sent_packet = None;
 
     let poll = Poll::new().expect("Error initializing poll object");
     let mut timer: Timer<usize> = Timer::default();
@@ -122,7 +121,9 @@ pub fn longfi(
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::LongFiReq>(&read_buf[..sz]) {
                         // feed transmit request to LongFi
-                        Ok(tx) => longfi_tx.send(&tx, &socket, &addr_out),
+                        Ok(tx) => {
+                            longfi_tx.send_uplink(&tx)
+                        }
                         Err(e) => {
                             error!("{:?}", e);
                             None
@@ -149,34 +150,24 @@ pub fn longfi(
                             timer.cancel_timeout(&timeout);
                         }
 
-                        // check with the packet is identical to the last sent packet
-                        let mut ignore = false;
-                        if let Some(last_sent) = last_sent_packet {
-                            ignore = last_sent == pkt;
-                            last_sent_packet = Some(last_sent);
-                        }
+                        // transform it into a UDP msg for client
+                        let resp = msg::LongFiResp {
+                            id: 0,
+                            kind: Some(msg::LongFiResp_oneof_kind::longfi_rx(pkt.into())),
+                            ..Default::default()
+                        };
 
-                        if !ignore {
-                            // transform it into a UDP msg for client
-                            let resp = msg::LongFiResp {
-                                id: 0,
-                                kind: Some(msg::LongFiResp_oneof_kind::longfi_rx(pkt.into())),
-                                ..Default::default()
-                            };
-
-                            // send to client
-                            msg_send(resp, &longfi_socket, &longfi_addr_out)?;
-                        }
+                        // send to client
+                        msg_send(resp, &longfi_socket, &longfi_addr_out)?;
                     }
                     // the parser got a header fragment and will continue parsing the packet
                     // NOTE: there is a known bug here where a new timeout configuration writes over the previous one
                     LongFiResponse::FragmentedPacketBegin(index) => {
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
-                    LongFiResponse::SentPacket(packet) => {
-                        last_sent_packet = Some(packet);
-                    }
-                    LongFiResponse::SocketError => error!("Socket Error!"),
+                    LongFiResponse::RadioMsg(msg) => {
+                        msg_send(msg, &socket, &addr_out);
+                    },
                 }
             }
         }

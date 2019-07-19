@@ -123,8 +123,7 @@ pub struct LongFiParser {
 pub enum LongFiResponse {
     Pkt(LongFiPkt),
     FragmentedPacketBegin(usize),
-    SocketError,
-    SentPacket(LongFiPkt),
+    RadioMsg(msg::RadioReq),
 }
 
 impl LongFiParser {
@@ -332,14 +331,13 @@ impl LongFiSender {
         None
     }
 
-    pub fn send(
+    pub fn send_uplink(
         &mut self,
         msg: &msg::LongFiReq,
-        socket: &mio::net::UdpSocket,
-        addr_out: &std::net::SocketAddr,
     ) -> Option<LongFiResponse> {
         if let Some(message) = &msg.kind {
             if let msg::LongFiReq_oneof_kind::longfi_tx_uplink(req) = &message {
+
                 let mut longfi_payload = vec![
                     0x00,
                     req.oui as u8,
@@ -351,7 +349,6 @@ impl LongFiSender {
                     0x00,
                     0x00, // uint16_t mac;       // 7:8
                 ];
-
                 longfi_payload.extend(&req.payload);
 
                 let tx_req = msg::RadioTxReq {
@@ -367,19 +364,12 @@ impl LongFiSender {
                     payload: longfi_payload,
                     ..Default::default()
                 };
-                if let Err(e) = msg_send(
-                    msg::RadioReq {
+
+                return Some(LongFiResponse::RadioMsg(msg::RadioReq {
                         id: 0xfe,
                         kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
                         ..Default::default()
-                    },
-                    &socket,
-                    &addr_out,
-                ) {
-                    return Some(LongFiResponse::SocketError);
-                } else {
-                    return Some(LongFiResponse::SentPacket(LongFiPkt::from_req(req)));
-                }
+                }));
             }
         }
 
