@@ -16,11 +16,10 @@ fn main() {
                 if let Some(msg) = deframer.push(byte) {
                     println!();
                     println!("{:?}", msg);
-                   
+
                     match msg {
                         loragw::Frame::Nmea(_) => nmea_flag = true,
                         loragw::Frame::Ublox(_) => ubx_flag = true,
-
                     }
                     let _ = gps.parse(msg);
 
