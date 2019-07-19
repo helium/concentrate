@@ -2,6 +2,7 @@ use super::{LongFiPkt, LongFiResponse};
 use messages as msg;
 use protobuf::{parse_from_bytes, Message};
 use rand::Rng;
+use msg::LongFiSpreading as Spreading;
 
 pub struct LongFiSender {
     rng: rand::ThreadRng,
@@ -23,6 +24,35 @@ const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS] = [
     RADIO_2 + FREQ_SPACING,
     RADIO_2 + FREQ_SPACING * 2,
 ];
+
+const SIZEOF_PACKET_HEADER: usize = 11;
+const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize = 10;
+const SIZEOF_FRAGMENT_HEADER: usize = 4;
+
+fn payload_per_fragment(spreading: Spreading) -> usize {
+    match spreading {
+        Spreading::SF7 => 32,
+        Spreading::SF8 => 32,
+        Spreading::SF9 => 32,
+        Spreading::SF10 => 32,
+        Spreading::SF_INVALID => 0,
+    }
+}
+
+// number of bytes in a fragment
+fn payload_bytes_in_single_fragment_packet(spreading: Spreading) ->  usize {
+  payload_per_fragment(spreading) - SIZEOF_PACKET_HEADER
+}
+
+// number of bytes in a fragment
+fn payload_bytes_in_first_fragment_of_many(spreading: Spreading) ->  usize {
+  payload_per_fragment(spreading) - SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS
+}
+
+// number of bytes in a fragment
+fn payload_bytes_in_subsequent_fragments(spreading: Spreading) ->  usize {
+  payload_per_fragment(spreading) - SIZEOF_FRAGMENT_HEADER
+}
 
 impl LongFiSender {
     pub fn new() -> LongFiSender {
@@ -51,6 +81,24 @@ impl LongFiSender {
         tx_uplink: &msg::LongFiTxUplinkPacket,
         id: u32,
     ) -> Option<LongFiResponse> {
+            let mut num_fragments;
+            let payload_consumed = 0;
+            let packet_id = 0;
+            //let num_bytes_copy;
+            let len = tx_uplink.payload.len();
+
+            if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) {
+                num_fragments = 1;
+            } else {
+                let remaining_len = len - payload_bytes_in_first_fragment_of_many(tx_uplink.spreading);
+                num_fragments = 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
+
+                // if there was remainder, we need a final fragment
+                if (remaining_len%payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0){
+                  num_fragments += 1;
+                }
+            }
+
         match self.req_id {
             Some(id) => None, // should throw error
             None => {
