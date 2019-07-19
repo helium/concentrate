@@ -14,6 +14,8 @@ mod longfi_sender;
 use longfi_parser::LongFiParser;
 use longfi_sender::LongFiSender;
 
+use msg::LongFiSpreading as Spreading;
+
 pub enum LongFiResponse {
     PktRx(LongFiPkt),
     FragmentedPacketBegin(usize),
@@ -48,7 +50,7 @@ impl LongFi {
     pub fn handle_request(&mut self, req: &msg::LongFiReq) -> Option<LongFiResponse> {
         match &req.kind {
             Some(request) => match request {
-                msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_uplink) => {
+                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => {
                     self.sender.tx_uplink(tx_uplink, req.id)
                 }
                 _ => None,
@@ -80,6 +82,7 @@ pub struct LongFiPkt {
     timestamp: u64,
     snr: f32,
     rssi: f32,
+    spreading: Spreading,
     quality: Vec<Quality>,
 }
 
@@ -97,6 +100,7 @@ impl LongFiPkt {
             timestamp: 0,
             snr: 0.0,
             rssi: 0.0,
+            spreading: Spreading::SF_INVALID,
         }
     }
 }
@@ -123,6 +127,7 @@ impl Into<LongFiRxPacket> for LongFiPkt {
             device_id: self.device_id as u32,
             mac: self.mac as u32,
             payload: self.payload,
+            spreading: self.spreading,
             // special fields
             unknown_fields: Default::default(),
             cached_size: Default::default(),

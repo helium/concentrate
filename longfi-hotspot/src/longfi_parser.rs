@@ -68,6 +68,7 @@ impl LongFiParser {
                 timestamp: pkt.timestamp,
                 snr: pkt.snr,
                 rssi: pkt.rssi,
+                spreading: pkt.spreading.into(),
             }));
         }
         // means multi-fragment packet header
@@ -108,6 +109,7 @@ impl LongFiParser {
                     timestamp: 0,
                     snr: 0.0,
                     rssi: 0.0,
+                    spreading: pkt.spreading.into(),
                 }
             });
 

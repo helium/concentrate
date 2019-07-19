@@ -68,7 +68,7 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
     msg_send(
         msg::LongFiReq {
             id: 0xfe,
-            kind: Some(msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_req)),
+            kind: Some(msg::LongFiReq_oneof_kind::tx_uplink(tx_req)),
             ..Default::default()
         },
         &socket,

@@ -141,7 +141,7 @@ pub fn longfi(
                         // transform it into a UDP msg for client
                         let resp = msg::LongFiResp {
                             id: 0,
-                            kind: Some(msg::LongFiResp_oneof_kind::longfi_rx(pkt.into())),
+                            kind: Some(msg::LongFiResp_oneof_kind::rx(pkt.into())),
                             ..Default::default()
                         };
 

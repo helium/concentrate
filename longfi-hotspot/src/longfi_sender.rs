@@ -36,7 +36,7 @@ impl LongFiSender {
         match self.req_id.take() {
             Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
                 id,
-                kind: Some(msg::LongFiResp_oneof_kind::tx(msg::LongFiTxResp {
+                kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
                     success: true,
                     ..Default::default()
                 })),
