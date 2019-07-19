@@ -1,8 +1,66 @@
 extern crate messages;
+extern crate mio;
+extern crate protobuf;
+extern crate rand;
+
 use messages as msg;
 
 #[macro_use]
 pub mod macros;
+
+mod longfi_parser;
+mod longfi_sender;
+
+use longfi_parser::LongFiParser;
+use longfi_sender::LongFiSender;
+
+pub enum LongFiResponse {
+    PktRx(LongFiPkt),
+    FragmentedPacketBegin(usize),
+    RadioReq(msg::RadioReq),
+    ClientResp(msg::LongFiResp),
+}
+
+pub struct LongFi {
+    parser: LongFiParser,
+    sender: LongFiSender,
+}
+
+impl LongFi {
+    pub fn new() -> LongFi {
+        LongFi {
+            parser: LongFiParser::new(),
+            sender: LongFiSender::new(),
+        }
+    }
+
+    pub fn handle_response(&mut self, resp: &msg::RadioResp) -> Option<LongFiResponse> {
+        match &resp.kind {
+            Some(resp) => match resp {
+                msg::RadioResp_oneof_kind::tx(tx) => self.sender.tx_resp(tx),
+                msg::RadioResp_oneof_kind::rx_packet(rx) => self.parser.parse(rx),
+                msg::RadioResp_oneof_kind::parse_err(parse_err) => None,
+            },
+            None => None,
+        }
+    }
+
+    pub fn handle_request(&mut self, req: &msg::LongFiReq) -> Option<LongFiResponse> {
+        match &req.kind {
+            Some(request) => match request {
+                msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_uplink) => {
+                    self.sender.tx_uplink(tx_uplink, req.id)
+                }
+                _ => None,
+            },
+            None => None,
+        }
+    }
+
+    pub fn parser_timeout(&mut self, index: usize) -> Option<LongFiResponse> {
+        self.parser.timeout(index)
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Quality {
@@ -109,285 +167,6 @@ impl PartialEq for LongFiPkt {
             return true;
         } else {
             return false;
-        }
-    }
-}
-
-const PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET: usize = 9;
-const PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET: usize = 11;
-const PAYLOAD_BEGIN_FRAGMENT_PACKET: usize = 4;
-pub struct LongFiParser {
-    fragmented_packets: [Option<LongFiPkt>; 256],
-}
-
-pub enum LongFiResponse {
-    Pkt(LongFiPkt),
-    FragmentedPacketBegin(usize),
-    RadioMsg(msg::RadioReq),
-}
-
-impl LongFiParser {
-    pub fn new() -> LongFiParser {
-        LongFiParser {
-            fragmented_packets: array_of_none_256!(),
-        }
-    }
-
-    pub fn timeout(&mut self, index: usize) -> Option<LongFiResponse> {
-        if let Some(mut pkt) = self.fragmented_packets[index].take() {
-            while pkt.num_fragments > pkt.fragment_cnt {
-                pkt.fragment_cnt += 1;
-                pkt.quality.push(Quality::Missed);
-            }
-
-            return Some(LongFiResponse::Pkt(pkt));
-        }
-        return None;
-    }
-
-    pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {
-        // if payload is smaller than the smallest header, it's invalid
-        if pkt.payload.len() < PAYLOAD_BEGIN_FRAGMENT_PACKET {
-            return None;
-        }
-
-        // means single frament packet header
-        if pkt.payload[0] == 0 {
-            if pkt.payload.len() < PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET {
-                return None;
-            }
-            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET;
-
-            let mut payload: Vec<u8> = vec![0; len_copy];
-            payload.copy_from_slice(
-                &pkt.payload[PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET
-                    ..PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET + len_copy],
-            );
-
-            let mut quality = Vec::new();
-            if pkt.crc_check {
-                quality.push(Quality::CrcOk);
-            } else {
-                quality.push(Quality::CrcFail);
-            }
-
-            return Some(LongFiResponse::Pkt(LongFiPkt {
-                packet_id: pkt.payload[0],
-                oui: (pkt.payload[1] as u32)
-                    | (pkt.payload[2] as u32) << 8
-                    | (pkt.payload[3] as u32) << 16
-                    | (pkt.payload[4] as u32) << 24,
-                device_id: (pkt.payload[5] as u16) | (pkt.payload[6] as u16) << 8,
-                mac: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
-                payload,
-                num_fragments: 1,
-                fragment_cnt: 1,
-                quality,
-                timestamp: pkt.timestamp,
-                snr: pkt.snr,
-                rssi: pkt.rssi,
-            }));
-        }
-        // means multi-fragment packet header
-        else if pkt.payload[1] == 0 {
-            if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
-                return None;
-            }
-            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
-
-            let mut payload: Vec<u8> = vec![0; len_copy];
-            payload.copy_from_slice(
-                &pkt.payload[PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET
-                    ..PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET + len_copy],
-            );
-
-            let packet_id = pkt.payload[0] as usize;
-
-            let mut quality = Vec::new();
-            if pkt.crc_check {
-                quality.push(Quality::CrcOk);
-            } else {
-                quality.push(Quality::CrcFail);
-            }
-
-            self.fragmented_packets[packet_id] = Some({
-                LongFiPkt {
-                    packet_id: packet_id as u8,
-                    num_fragments: pkt.payload[2],
-                    fragment_cnt: 1,
-                    oui: (pkt.payload[3] as u32)
-                        | (pkt.payload[4] as u32) << 8
-                        | (pkt.payload[5] as u32) << 16
-                        | (pkt.payload[6] as u32) << 24,
-                    device_id: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
-                    mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
-                    payload,
-                    quality,
-                    timestamp: 0,
-                    snr: 0.0,
-                    rssi: 0.0,
-                }
-            });
-
-            return Some(LongFiResponse::FragmentedPacketBegin(packet_id));
-        }
-        // must be fragment
-        else {
-            let packet_id = pkt.payload[0] as usize;
-            // we already know that the payload is at least the size of a fragment header
-            let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_FRAGMENT_PACKET;
-
-            let mut ret = false;
-            if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
-                let fragment_num = pkt.payload[1];
-
-                while fragment_num > fragmented_pkt.fragment_cnt {
-                    fragmented_pkt.fragment_cnt += 1;
-                    fragmented_pkt.quality.push(Quality::Missed);
-                }
-
-                if fragment_num == fragmented_pkt.fragment_cnt {
-                    if pkt.crc_check {
-                        fragmented_pkt.quality.push(Quality::CrcOk);
-                    } else {
-                        fragmented_pkt.quality.push(Quality::CrcFail);
-                    }
-
-                    fragmented_pkt.payload.extend(
-                        pkt.payload[PAYLOAD_BEGIN_FRAGMENT_PACKET
-                            ..PAYLOAD_BEGIN_FRAGMENT_PACKET + len_copy]
-                            .iter()
-                            .cloned(),
-                    );
-                    fragmented_pkt.fragment_cnt += 1;
-                }
-
-                if fragmented_pkt.fragment_cnt == fragmented_pkt.num_fragments {
-                    ret = true;
-                }
-            }
-
-            if ret {
-                if let Some(pkt) = self.fragmented_packets[packet_id].take() {
-                    return Some(LongFiResponse::Pkt(pkt));
-                }
-            }
-            None
-        }
-    }
-}
-extern crate mio;
-extern crate protobuf;
-extern crate rand;
-
-use protobuf::{parse_from_bytes, Message};
-use rand::Rng;
-
-pub struct LongFiSender {
-    rng: rand::ThreadRng,
-    req_id: Option<u32>,
-}
-
-const RADIO_1: u32 = 920600000;
-const RADIO_2: u32 = 916600000;
-const FREQ_SPACING: u32 = 200000;
-const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
-
-const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS] = [
-    RADIO_1 - FREQ_SPACING * 2,
-    RADIO_1 - FREQ_SPACING,
-    RADIO_1,
-    RADIO_2 - FREQ_SPACING * 2,
-    RADIO_2 - FREQ_SPACING,
-    RADIO_2,
-    RADIO_2 + FREQ_SPACING,
-    RADIO_2 + FREQ_SPACING * 2,
-];
-
-fn msg_send<T: Message>(
-    msg: T,
-    socket: &mio::net::UdpSocket,
-    addr_out: &std::net::SocketAddr,
-) -> std::io::Result<()> {
-    let mut enc_buf = Vec::new();
-    msg.write_to_vec(&mut enc_buf)
-        .expect("error serializing packet");
-    socket.send_to(&enc_buf, addr_out)?;
-    Ok(())
-}
-
-impl LongFiSender {
-    pub fn new() -> LongFiSender {
-        LongFiSender {
-            rng: rand::thread_rng(),
-            req_id: None,
-        }
-    }
-
-    pub fn handle_response(
-        &mut self,
-        resp: &msg::RadioResp,
-    ) -> Option<LongFiResponse> {
-        if let Some(resp) = &resp.kind {
-            match resp {
-                msg::RadioResp_oneof_kind::tx(tx) => (),
-                msg::RadioResp_oneof_kind::rx_packet(rx) => (),
-                msg::RadioResp_oneof_kind::parse_err(parse_err) => (),
-            }
-        }
-        None
-    }
-
-    pub fn handle_request(
-        &mut self,
-        req: &msg::LongFiReq,
-    ) -> Option<LongFiResponse> {
-        match self.req_id {
-            Some(i) => None,// should throw error 
-            None => {
-                match &req.kind {
-                    Some(req) => {
-                        match req {
-                            msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_uplink) => {
-                                    let mut longfi_payload = vec![
-                                    0x00,
-                                    tx_uplink.oui as u8,
-                                    (tx_uplink.oui >> 8) as u8,
-                                    (tx_uplink.oui >> 16) as u8,
-                                    (tx_uplink.oui >> 24) as u8,
-                                    tx_uplink.device_id as u8,
-                                    (tx_uplink.device_id >> 8) as u8,
-                                    0x00,
-                                    0x00, // uint16_t mac;       // 7:8
-                                ];
-                                longfi_payload.extend(&tx_uplink.payload);
-
-                                let tx_req = msg::RadioTxReq {
-                                    freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
-                                    radio: msg::Radio::R0,
-                                    power: 22,
-                                    bandwidth: msg::Bandwidth::BW125kHz,
-                                    spreading: msg::Spreading::SF9,
-                                    coderate: msg::Coderate::CR4_5,
-                                    invert_polarity: false,
-                                    omit_crc: false,
-                                    implicit_header: false,
-                                    payload: longfi_payload,
-                                    ..Default::default()
-                                };
-
-                                Some(LongFiResponse::RadioMsg(msg::RadioReq {
-                                        id: 0xfe,
-                                        kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
-                                        ..Default::default()
-                                }))
-                            }
-                            _=> None,
-                        }
-                    }
-                    None => None,
-                }
-            }
         }
     }
 }

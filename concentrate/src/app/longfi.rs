@@ -1,5 +1,5 @@
 use crate::error::AppResult;
-use longfi_hotspot::{LongFiParser, LongFiResponse, LongFiSender};
+use longfi_hotspot::{LongFi, LongFiResponse};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
@@ -60,8 +60,7 @@ pub fn longfi(
     };
 
     let mut read_buf = [0; 1024];
-    let mut longfi_rx = LongFiParser::new();
-    let mut longfi_tx = LongFiSender::new();
+    let mut longfi = LongFi::new();
 
     let poll = Poll::new().expect("Error initializing poll object");
     let mut timer: Timer<usize> = Timer::default();
@@ -99,7 +98,7 @@ pub fn longfi(
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
-                        Ok(resp) => longfi_tx.handle_response(&resp),
+                        Ok(resp) => longfi.handle_response(&resp),
                         Err(e) => {
                             error!("{:?}", e);
                             None
@@ -112,9 +111,7 @@ pub fn longfi(
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::LongFiReq>(&read_buf[..sz]) {
                         // feed transmit request to LongFi
-                        Ok(req) => {
-                            longfi_tx.handle_request(&req)
-                        }
+                        Ok(req) => longfi.handle_request(&req),
                         Err(e) => {
                             error!("{:?}", e);
                             None
@@ -124,7 +121,7 @@ pub fn longfi(
                 PACKET_TIMEOUT => {
                     // packet has timed out, so cancel it
                     if let Some(index) = timer.poll() {
-                        longfi_rx.timeout(index)
+                        longfi.parser_timeout(index)
                     } else {
                         None
                     }
@@ -135,7 +132,7 @@ pub fn longfi(
             // if there was a response, deal with it
             if let Some(response) = maybe_response {
                 match response {
-                    LongFiResponse::Pkt(pkt) => {
+                    LongFiResponse::PktRx(pkt) => {
                         // packet received, cancel the timeout
                         if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
                             timer.cancel_timeout(&timeout);
@@ -156,9 +153,12 @@ pub fn longfi(
                     LongFiResponse::FragmentedPacketBegin(index) => {
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
-                    LongFiResponse::RadioMsg(msg) => {
+                    LongFiResponse::RadioReq(msg) => {
                         msg_send(msg, &socket, &addr_out);
-                    },
+                    }
+                    LongFiResponse::ClientResp(resp) => {
+                        msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                    }
                 }
             }
         }
