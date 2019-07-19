@@ -99,16 +99,7 @@ pub fn longfi(
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
-                        Ok(rx) => match &rx.kind {
-                            Some(message) => match &message {
-                                msg::RadioResp_oneof_kind::rx_packet(pkt) => longfi_rx.parse(&pkt),
-                                msg::RadioResp_oneof_kind::tx(pkt) => {
-                                    longfi_tx.update(&pkt, &socket, &addr_out)
-                                }
-                                _ => None,
-                            },
-                            _ => None,
-                        },
+                        Ok(resp) => longfi_tx.handle_response(&resp),
                         Err(e) => {
                             error!("{:?}", e);
                             None
@@ -121,8 +112,8 @@ pub fn longfi(
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::LongFiReq>(&read_buf[..sz]) {
                         // feed transmit request to LongFi
-                        Ok(tx) => {
-                            longfi_tx.send_uplink(&tx)
+                        Ok(req) => {
+                            longfi_tx.handle_request(&req)
                         }
                         Err(e) => {
                             error!("{:?}", e);

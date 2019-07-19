@@ -285,6 +285,7 @@ use rand::Rng;
 
 pub struct LongFiSender {
     rng: rand::ThreadRng,
+    req_id: Option<u32>,
 }
 
 const RADIO_1: u32 = 920600000;
@@ -319,60 +320,74 @@ impl LongFiSender {
     pub fn new() -> LongFiSender {
         LongFiSender {
             rng: rand::thread_rng(),
+            req_id: None,
         }
     }
 
-    pub fn update(
+    pub fn handle_response(
         &mut self,
-        tx: &messages::RadioTxResp,
-        socket: &mio::net::UdpSocket,
-        addr_out: &std::net::SocketAddr,
+        resp: &msg::RadioResp,
     ) -> Option<LongFiResponse> {
-        None
-    }
-
-    pub fn send_uplink(
-        &mut self,
-        msg: &msg::LongFiReq,
-    ) -> Option<LongFiResponse> {
-        if let Some(message) = &msg.kind {
-            if let msg::LongFiReq_oneof_kind::longfi_tx_uplink(req) = &message {
-
-                let mut longfi_payload = vec![
-                    0x00,
-                    req.oui as u8,
-                    (req.oui >> 8) as u8,
-                    (req.oui >> 16) as u8,
-                    (req.oui >> 24) as u8,
-                    req.device_id as u8,
-                    (req.device_id >> 8) as u8,
-                    0x00,
-                    0x00, // uint16_t mac;       // 7:8
-                ];
-                longfi_payload.extend(&req.payload);
-
-                let tx_req = msg::RadioTxReq {
-                    freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
-                    radio: msg::Radio::R0,
-                    power: 22,
-                    bandwidth: msg::Bandwidth::BW125kHz,
-                    spreading: msg::Spreading::SF9,
-                    coderate: msg::Coderate::CR4_5,
-                    invert_polarity: false,
-                    omit_crc: false,
-                    implicit_header: false,
-                    payload: longfi_payload,
-                    ..Default::default()
-                };
-
-                return Some(LongFiResponse::RadioMsg(msg::RadioReq {
-                        id: 0xfe,
-                        kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
-                        ..Default::default()
-                }));
+        if let Some(resp) = &resp.kind {
+            match resp {
+                msg::RadioResp_oneof_kind::tx(tx) => (),
+                msg::RadioResp_oneof_kind::rx_packet(rx) => (),
+                msg::RadioResp_oneof_kind::parse_err(parse_err) => (),
             }
         }
-
         None
+    }
+
+    pub fn handle_request(
+        &mut self,
+        req: &msg::LongFiReq,
+    ) -> Option<LongFiResponse> {
+        match self.req_id {
+            Some(i) => None,// should throw error 
+            None => {
+                match &req.kind {
+                    Some(req) => {
+                        match req {
+                            msg::LongFiReq_oneof_kind::longfi_tx_uplink(tx_uplink) => {
+                                    let mut longfi_payload = vec![
+                                    0x00,
+                                    tx_uplink.oui as u8,
+                                    (tx_uplink.oui >> 8) as u8,
+                                    (tx_uplink.oui >> 16) as u8,
+                                    (tx_uplink.oui >> 24) as u8,
+                                    tx_uplink.device_id as u8,
+                                    (tx_uplink.device_id >> 8) as u8,
+                                    0x00,
+                                    0x00, // uint16_t mac;       // 7:8
+                                ];
+                                longfi_payload.extend(&tx_uplink.payload);
+
+                                let tx_req = msg::RadioTxReq {
+                                    freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
+                                    radio: msg::Radio::R0,
+                                    power: 22,
+                                    bandwidth: msg::Bandwidth::BW125kHz,
+                                    spreading: msg::Spreading::SF9,
+                                    coderate: msg::Coderate::CR4_5,
+                                    invert_polarity: false,
+                                    omit_crc: false,
+                                    implicit_header: false,
+                                    payload: longfi_payload,
+                                    ..Default::default()
+                                };
+
+                                Some(LongFiResponse::RadioMsg(msg::RadioReq {
+                                        id: 0xfe,
+                                        kind: Some(msg::RadioReq_oneof_kind::tx(tx_req)),
+                                        ..Default::default()
+                                }))
+                            }
+                            _=> None,
+                        }
+                    }
+                    None => None,
+                }
+            }
+        }
     }
 }
