@@ -81,23 +81,58 @@ impl LongFiSender {
         tx_uplink: &msg::LongFiTxUplinkPacket,
         id: u32,
     ) -> Option<LongFiResponse> {
-            let mut num_fragments;
-            let payload_consumed = 0;
-            let packet_id = 0;
-            //let num_bytes_copy;
-            let len = tx_uplink.payload.len();
+        let mut num_fragments;
+        let payload_consumed = 0;
+        let packet_id = 0;
+        //let num_bytes_copy;
+        let len = tx_uplink.payload.len();
 
-            if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) {
-                num_fragments = 1;
-            } else {
-                let remaining_len = len - payload_bytes_in_first_fragment_of_many(tx_uplink.spreading);
-                num_fragments = 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
+        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) {
+            num_fragments = 1;
+        } else {
+            let remaining_len = len - payload_bytes_in_first_fragment_of_many(tx_uplink.spreading);
+            num_fragments = 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
 
-                // if there was remainder, we need a final fragment
-                if (remaining_len%payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0){
-                  num_fragments += 1;
-                }
+            // if there was remainder, we need a final fragment
+            if (remaining_len%payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0){
+              num_fragments += 1;
             }
+        }
+
+        /*
+        const SIZEOF_PACKET_HEADER: usize = 11;
+        const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize = 10;
+        const SIZEOF_FRAGMENT_HEADER: usize = 4;
+        */
+
+        // copy in short header for single fragment packets
+        if num_fragments == 1 {
+            packet_header_t pheader  = {
+              .oui = LongFi.config.oui,
+              .device_id = LongFi.config.device_id,
+              .packet_id = 0, //packet_id means no fragments
+              .mac = 0xEFFE,
+            };
+            memcpy(Buffer, &pheader, SIZEOF_PACKET_HEADER);
+            num_bytes_copy = MIN(len, payload_bytes_in_single_fragment_packet(tx_uplink.spreading));
+            LongFi.tx_len = SIZEOF_PACKET_HEADER;
+        } else {
+            // cannot allow packet_id = 0
+            while (packet_id == 0) {
+              packet_id = self.rng.gen::<u8>();
+            }
+            packet_header_multiple_fragments_t pheader  = {
+              .oui = LongFi.config.oui,
+              .device_id = LongFi.config.device_id,
+              .packet_id = packet_id,
+              .fragment_num = 0x00,
+              .num_fragments = num_fragments,
+              .mac = 0xEFFE,
+            };
+            memcpy(Buffer, &pheader, SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS);
+            num_bytes_copy = MIN(len, payload_bytes_in_first_fragment_of_many());
+            LongFi.tx_len = SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS;
+        }
 
         match self.req_id {
             Some(id) => None, // should throw error
