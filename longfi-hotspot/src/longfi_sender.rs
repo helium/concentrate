@@ -176,12 +176,14 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
+        
         match &mut self.pending_fragments {
             // if there is a vector, we should have more fragments
             Some(vec) => {
                 let maybe_fragment = vec.pop_front();
+
                 if vec.len() == 0 {
-                    self.pending_fragments.take();
+                    self.pending_fragments = None;
                 }
 
                 match maybe_fragment {
