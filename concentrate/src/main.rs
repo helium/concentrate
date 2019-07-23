@@ -1,7 +1,6 @@
 #![forbid(clippy::panicking_unwrap)]
 
 extern crate byteorder;
-extern crate colored;
 #[cfg(feature = "log_env")]
 extern crate env_logger;
 #[macro_use]
@@ -29,7 +28,6 @@ mod cfg;
 mod cmdline;
 mod error;
 
-use colored::Colorize;
 use error::AppResult;
 use std::net::IpAddr;
 use std::str::FromStr;
@@ -134,7 +132,7 @@ fn main() {
     match go(args) {
         Ok(()) => process::exit(0),
         Err(e) => {
-            eprintln!("{} {}", "error:".red().bold(), e);
+            eprintln!("{} {}", "error:", e);
             process::exit(1);
         }
     }
