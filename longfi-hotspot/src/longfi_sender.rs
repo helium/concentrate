@@ -184,7 +184,6 @@ impl LongFiSender {
 
                 if vec.len() == 0 {
                     clear_pending_fragments = true;
-
                 }
 
                 match maybe_fragment {
