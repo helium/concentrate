@@ -30,6 +30,9 @@ Bug fixes:
 * [#21](https://github.com/helium/concentrate/pull/21):
   Add `.cargo/config` for cross-compilation. Extend `serve`/`listen` to allow `serve` to run on hardware but listener to be remote; `remote-ip` cli option was added to enable this.
 
+* [#24](https://github.com/helium/concentrate/pull/24):
+  Block in `transmit()` until Concentrator is able to accept a new TX packet.
+
 0.1.7 (2019-06-26)
 ==================
 Bug fixes:
