@@ -101,7 +101,7 @@ pub struct Args {
         long = "publish",
         default_value = "31337"
     )]
-    pub publish_port: u16,
+    pub radio_publish_port: u16,
 
     /// Listen port. UDP port number to listen for send packet TX requests.
     #[structopt(
@@ -110,7 +110,7 @@ pub struct Args {
         long = "listen",
         default_value = "31338"
     )]
-    pub listen_port: u16,
+    pub radio_listen_port: u16,
 
     /// Publish port. UDP port number to publish LongFi packets to
     #[structopt(

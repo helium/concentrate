@@ -73,12 +73,12 @@ fn go(args: cmdline::Args) -> AppResult {
                 cfg.as_ref().map(std::convert::AsRef::as_ref),
                 args.interval,
                 args.print_level,
-                args.listen_port,
-                args.publish_port,
+                args.radio_listen_port,
+                args.radio_publish_port,
                 remote_ip,
             )
         }
-        cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
+        cmdline::Cmd::Listen => app::listen(args.print_level, args.radio_publish_port),
         cmdline::Cmd::LongFi => {
             let longfi_remote_ip = match IpAddr::from_str(&args.longfi_remote_ip) {
                 Ok(ip) => Some(ip),
@@ -86,8 +86,8 @@ fn go(args: cmdline::Args) -> AppResult {
             };
             app::longfi(
                 args.print_level,
-                args.publish_port,
-                args.listen_port,
+                args.radio_publish_port,
+                args.radio_listen_port,
                 remote_ip,
                 args.longfi_port_out,
                 args.longfi_port_in,
@@ -111,8 +111,8 @@ fn go(args: cmdline::Args) -> AppResult {
             payload,
         } => app::send(
             args.print_level,
-            args.listen_port,
-            args.publish_port,
+            args.radio_listen_port,
+            args.radio_publish_port,
             implicit,
             freq as u32,
             radio,
