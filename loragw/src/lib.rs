@@ -19,11 +19,13 @@ mod error;
 mod types;
 pub use error::*;
 use libloragw_sys as llg;
-use std::cell::Cell;
-use std::convert::{TryFrom, TryInto};
-use std::marker::PhantomData;
-use std::ops;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    cell::Cell,
+    convert::{TryFrom, TryInto},
+    marker::PhantomData,
+    ops,
+    sync::atomic::{AtomicBool, Ordering},
+};
 pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
