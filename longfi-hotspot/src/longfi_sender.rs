@@ -176,7 +176,6 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
-
         match &mut self.pending_fragments {
             // if there is a vector, we should have more fragments
             Some(vec) => {
@@ -185,29 +184,23 @@ impl LongFiSender {
                     self.pending_fragments.take();
                 }
 
-
                 match maybe_fragment {
-                    Some(fragment) => {
-                        Some(LongFiResponse::RadioReq(fragment))
-                    },
-                    None => None
-                }
-                
-            }
-            // if None, just completed a full packet
-            None => {
-                match self.req_id.take() {
-                    Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
-                        id,
-                        kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
-                            success: true,
-                            ..Default::default()
-                        })),
-                        ..Default::default()
-                    })),
+                    Some(fragment) => Some(LongFiResponse::RadioReq(fragment)),
                     None => None,
                 }
             }
+            // if None, just completed a full packet
+            None => match self.req_id.take() {
+                Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
+                    id,
+                    kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
+                        success: true,
+                        ..Default::default()
+                    })),
+                    ..Default::default()
+                })),
+                None => None,
+            },
         }
     }
 
@@ -269,7 +262,6 @@ impl LongFiSender {
                     &tx_uplink.payload
                         [0..payload_bytes_in_first_fragment_of_many(tx_uplink.spreading)],
                 );
-                println!("payload: {:?}", payload);
                 let ret = self.new_fragment(tx_uplink.spreading, payload);
 
                 let mut pending_fragments = VecDeque::new();

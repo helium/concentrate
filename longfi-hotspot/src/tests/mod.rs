@@ -39,7 +39,7 @@ mod tests {
         }
     }
 
-        #[test]
+    #[test]
     fn test_multifragment_header_serialization() {
         let oui = 0x12345678;
         let device_id = 0x9ABC;

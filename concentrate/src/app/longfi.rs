@@ -155,7 +155,6 @@ pub fn longfi(
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {
-                        println!("sending message to radio");
                         msg_send(msg, &socket, &addr_out);
                     }
                     LongFiResponse::ClientResp(resp) => {
