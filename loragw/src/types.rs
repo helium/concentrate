@@ -685,3 +685,27 @@ impl TryFrom<u8> for TxStatus {
         })
     }
 }
+
+/// Concentrator's current RX availability.
+#[repr(u8)]
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum RxStatus {
+    /// RX modem is disabled, it will ignore commands.
+    Off = 1,
+    /// RX modem is receiving.
+    On = 2,
+    /// RX is suspended while a TX is ongoing.
+    Suspended = 3,
+}
+
+impl TryFrom<u8> for RxStatus {
+    type Error = error::Error;
+    fn try_from(other: u8) -> Result<Self, error::Error> {
+        Ok(match other {
+            1 => RxStatus::Off,
+            2 => RxStatus::On,
+            3 => RxStatus::Suspended,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}

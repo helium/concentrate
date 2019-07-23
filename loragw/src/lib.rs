@@ -111,6 +111,14 @@ impl Concentrator {
         Ok(())
     }
 
+    /// Returns the concentrators current receive status.
+    pub fn receive_status(&self) -> Result<RxStatus> {
+        const RX_STATUS: u8 = 2;
+        let mut rx_status = 0xFE;
+        unsafe { hal_call!(lgw_status(RX_STATUS, &mut rx_status)) }?;
+        rx_status.try_into()
+    }
+
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
     pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
