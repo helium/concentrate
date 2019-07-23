@@ -102,7 +102,9 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
     let tx_req = msg::LongFiTxUplinkPacket {
         disable_encoding: true,
         disable_fragmentation: true,
-        spreading: msg::LongFiSpreading::SF10,
+        oui: 0xBEEFFEED,
+        device_id: 0xABCD,
+        spreading: msg::LongFiSpreading::SF7,
         payload,
         ..Default::default()
     };

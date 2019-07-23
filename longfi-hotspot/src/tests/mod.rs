@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use longfi_sender::PacketHeader;
+    use longfi_sender::{PacketHeader, PacketHeaderMultipleFragments};
     use messages as msg;
     use msg::LongFiSpreading as Spreading;
     use LongFi;
@@ -33,6 +33,43 @@ mod tests {
         };
 
         let serialized_array: [u8; 9] = header_struct.into();
+
+        for (index, item) in serialized_array.iter().enumerate() {
+            assert_eq!(*item, expected_array[index]);
+        }
+    }
+
+        #[test]
+    fn test_multifragment_header_serialization() {
+        let oui = 0x12345678;
+        let device_id = 0x9ABC;
+        let mac = 0xBEEF;
+        let packet_id = 0xBB;
+        let num_fragments = 0xAF;
+        let expected_array = [
+            packet_id,
+            0,
+            num_fragments,
+            oui as u8,
+            (oui >> 8) as u8,
+            (oui >> 16) as u8,
+            (oui >> 24) as u8,
+            device_id as u8,
+            (device_id >> 8) as u8,
+            mac as u8,
+            (mac >> 8) as u8,
+        ];
+
+        let header_struct = PacketHeaderMultipleFragments {
+            packet_id,
+            fragment_num: 0,
+            num_fragments,
+            oui,
+            device_id,
+            mac,
+        };
+
+        let serialized_array: [u8; 11] = header_struct.into();
 
         for (index, item) in serialized_array.iter().enumerate() {
             assert_eq!(*item, expected_array[index]);

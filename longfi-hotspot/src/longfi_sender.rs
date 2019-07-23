@@ -3,6 +3,7 @@ use messages as msg;
 use msg::LongFiSpreading as Spreading;
 use protobuf::{parse_from_bytes, Message};
 use rand::Rng;
+use std::collections::VecDeque;
 
 const SIZEOF_PACKET_HEADER: usize = std::mem::size_of::<PacketHeader>();
 const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize =
@@ -37,13 +38,13 @@ impl From<PacketHeader> for [u8; SIZEOF_PACKET_HEADER] {
 
 #[repr(C, packed(1))]
 // if second byte is 0, is multi-fragment packet_header
-struct PacketHeaderMultipleFragments {
-    packet_id: u8,     // 0    must be non-zero
-    fragment_num: u8,  // 1    must be zero (byte)
-    num_fragments: u8, // 2    must be non-zero
-    oui: u32,          // 3:6
-    device_id: u16,    // 7:8
-    mac: u16,          // 9:10
+pub struct PacketHeaderMultipleFragments {
+    pub packet_id: u8,     // 0    must be non-zero
+    pub fragment_num: u8,  // 1    must be zero (byte)
+    pub num_fragments: u8, // 2    must be non-zero
+    pub oui: u32,          // 3:6
+    pub device_id: u16,    // 7:8
+    pub mac: u16,          // 9:10
 }
 
 impl PacketHeaderMultipleFragments {
@@ -101,7 +102,7 @@ impl From<FragmentHeader> for [u8; SIZEOF_FRAGMENT_HEADER] {
 pub struct LongFiSender {
     rng: rand::ThreadRng,
     req_id: Option<u32>,
-    pending_fragments: Option<Vec<msg::RadioReq>>,
+    pending_fragments: Option<VecDeque<msg::RadioReq>>,
 }
 
 const RADIO_1: u32 = 920600000;
@@ -124,8 +125,8 @@ fn payload_per_fragment(spreading: Spreading) -> usize {
     match spreading {
         Spreading::SF7 => 32,
         Spreading::SF8 => 32,
-        Spreading::SF9 => 32,
-        Spreading::SF10 => 32,
+        Spreading::SF9 => 28,
+        Spreading::SF10 => 24,
         Spreading::SF_INVALID => 0,
     }
 }
@@ -175,16 +176,38 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
-        match self.req_id.take() {
-            Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
-                id,
-                kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
-                    success: true,
-                    ..Default::default()
-                })),
-                ..Default::default()
-            })),
-            None => None,
+
+        match &mut self.pending_fragments {
+            // if there is a vector, we should have more fragments
+            Some(vec) => {
+                let maybe_fragment = vec.pop_front();
+                if vec.len() == 0 {
+                    self.pending_fragments.take();
+                }
+
+
+                match maybe_fragment {
+                    Some(fragment) => {
+                        Some(LongFiResponse::RadioReq(fragment))
+                    },
+                    None => None
+                }
+                
+            }
+            // if None, just completed a full packet
+            None => {
+                match self.req_id.take() {
+                    Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
+                        id,
+                        kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
+                            success: true,
+                            ..Default::default()
+                        })),
+                        ..Default::default()
+                    })),
+                    None => None,
+                }
+            }
         }
     }
 
@@ -199,7 +222,10 @@ impl LongFiSender {
         if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) {
             num_fragments = 1;
         } else {
+            // some payload will be pushed out with the header, depending on fragment size
             let remaining_len = len - payload_bytes_in_first_fragment_of_many(tx_uplink.spreading);
+
+            // the amount of payload in subsequent fragments is constant, so divide into even chunks
             num_fragments =
                 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
 
@@ -209,8 +235,8 @@ impl LongFiSender {
             }
         }
 
-        // copy in short header for single fragment packets
         match num_fragments {
+            // if it's a single fragment, use short packet header
             1 => {
                 let mut payload = Vec::new();
 
@@ -224,6 +250,7 @@ impl LongFiSender {
                     self.new_fragment(tx_uplink.spreading, payload),
                 ))
             }
+            // otherwise, long packet header and fragments are assembled
             _ => {
                 let mut packet_id = 0;
                 // assign non-zero packet_id
@@ -242,9 +269,10 @@ impl LongFiSender {
                     &tx_uplink.payload
                         [0..payload_bytes_in_first_fragment_of_many(tx_uplink.spreading)],
                 );
+                println!("payload: {:?}", payload);
                 let ret = self.new_fragment(tx_uplink.spreading, payload);
 
-                let mut pending_fragments = Vec::new();
+                let mut pending_fragments = VecDeque::new();
                 // remove the first bytes from the beginning
                 for chunk in tx_uplink.payload
                     [payload_bytes_in_first_fragment_of_many(tx_uplink.spreading)..]
@@ -261,9 +289,10 @@ impl LongFiSender {
                             [0..payload_bytes_in_first_fragment_of_many(tx_uplink.spreading)],
                     );
 
-                    pending_fragments.push(self.new_fragment(tx_uplink.spreading, payload));
+                    pending_fragments.push_back(self.new_fragment(tx_uplink.spreading, payload));
                 }
-                //assert pending_fragments.len() + 1 == num_fragments
+
+                // assert pending_fragments.len() + 1 == num_fragments
                 self.pending_fragments = Some(pending_fragments);
 
                 Some(LongFiResponse::RadioReq(ret))
