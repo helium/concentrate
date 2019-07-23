@@ -132,6 +132,14 @@ impl Concentrator {
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
+
+    /// Returns the concentrators current transmit status.
+    pub fn transmit_status(&self) -> Result<TxStatus> {
+        const TX_STATUS: u8 = 1;
+        let mut tx_status = 0xFE;
+        unsafe { hal_call!(lgw_status(TX_STATUS, &mut tx_status)) }?;
+        tx_status.try_into()
+    }
 }
 
 impl ops::Drop for Concentrator {
@@ -170,5 +178,4 @@ mod tests {
         assert!(GW_IS_OPEN.load(Ordering::Relaxed));
         assert!(Concentrator::open().is_err());
     }
-
 }
