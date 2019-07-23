@@ -139,6 +139,15 @@ pub struct Args {
     )]
     pub remote_ip: String,
 
+    /// Remote IP for listening.
+    #[structopt(
+        value_name = "LONGFI_CLIENT_IP",
+        short = "c",
+        long = "longfi-client-ip",
+        default_value = ""
+    )]
+    pub longfi_remote_ip: String,
+
     #[structopt(subcommand)]
     pub cmd: Cmd,
 }

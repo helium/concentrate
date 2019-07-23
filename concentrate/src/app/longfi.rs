@@ -26,15 +26,16 @@ pub fn longfi(
     print_level: u8,
     out_port: u16,
     in_port: u16,
-    ip: Option<IpAddr>,
+    radio_ip: Option<IpAddr>,
     longfi_out_port: u16,
     longfi_in_port: u16,
+    longfi_ip: Option<IpAddr>,
 ) -> AppResult {
     let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;
         let addr_out;
 
-        if let Some(remote_ip) = ip {
+        if let Some(remote_ip) = radio_ip {
             addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
             addr_out = SocketAddr::from((remote_ip, out_port));
         } else {

@@ -56,11 +56,53 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
 
     let mut rng = rand::thread_rng();
 
-    let payload: Vec<u8> = vec![rng.gen::<u8>(), rng.gen::<u8>()];
+    let payload: Vec<u8> = vec![
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+        rng.gen::<u8>(),
+    ];
 
     let tx_req = msg::LongFiTxUplinkPacket {
         disable_encoding: true,
         disable_fragmentation: true,
+        spreading: msg::LongFiSpreading::SF10,
         payload,
         ..Default::default()
     };

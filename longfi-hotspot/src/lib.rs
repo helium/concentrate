@@ -8,6 +8,9 @@ use messages as msg;
 #[macro_use]
 pub mod macros;
 
+#[cfg(test)]
+mod tests;
+
 mod longfi_parser;
 mod longfi_sender;
 
@@ -16,6 +19,7 @@ use longfi_sender::LongFiSender;
 
 use msg::LongFiSpreading as Spreading;
 
+#[derive(Debug)]
 pub enum LongFiResponse {
     PktRx(LongFiPkt),
     FragmentedPacketBegin(usize),

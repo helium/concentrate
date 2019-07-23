@@ -46,6 +46,18 @@ impl From<Spreading> for longfi::LongFiSpreading {
     }
 }
 
+impl From<longfi::LongFiSpreading> for Spreading {
+    fn from(other: longfi::LongFiSpreading) -> Spreading {
+        match other {
+            longfi::LongFiSpreading::SF7 => Spreading::SF7,
+            longfi::LongFiSpreading::SF8 => Spreading::SF8,
+            longfi::LongFiSpreading::SF9 => Spreading::SF9,
+            longfi::LongFiSpreading::SF10 => Spreading::SF10,
+            _ => Spreading::SF10,
+        }
+    }
+}
+
 impl From<loragw::Bandwidth> for Bandwidth {
     fn from(other: loragw::Bandwidth) -> Bandwidth {
         match other {
