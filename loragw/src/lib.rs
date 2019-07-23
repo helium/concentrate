@@ -19,11 +19,14 @@ mod error;
 mod types;
 pub use error::*;
 use libloragw_sys as llg;
-use std::cell::Cell;
-use std::convert::{TryFrom, TryInto};
-use std::marker::PhantomData;
-use std::ops;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    cell::Cell,
+    convert::{TryFrom, TryInto},
+    marker::PhantomData,
+    ops,
+    sync::atomic::{AtomicBool, Ordering},
+    thread, time,
+};
 pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
@@ -109,6 +112,14 @@ impl Concentrator {
         Ok(())
     }
 
+    /// Returns the concentrators current receive status.
+    pub fn receive_status(&self) -> Result<RxStatus> {
+        const RX_STATUS: u8 = 2;
+        let mut rx_status = 0xFE;
+        unsafe { hal_call!(lgw_status(RX_STATUS, &mut rx_status)) }?;
+        rx_status.try_into()
+    }
+
     /// Perform a non-blocking read of up to 16 packets from
     /// concentrator's FIFO.
     pub fn receive(&self) -> Result<Option<Vec<RxPacket>>> {
@@ -127,8 +138,28 @@ impl Concentrator {
 
     /// Transmit `packet` over the air.
     pub fn transmit(&self, packet: TxPacket) -> Result {
+        while self.transmit_status()? != TxStatus::Free {
+            const SLEEP_TIME: time::Duration = time::Duration::from_millis(5);
+            trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
+            thread::sleep(SLEEP_TIME);
+        }
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
+    }
+}
+
+// Private functions.
+impl Concentrator {
+    /// Returns the concentrators current transmit status.
+    ///
+    /// We keep this private since `transmit` uses it internally, and
+    /// it may lead to confusion about who's responsibility it is to
+    /// check TX status.
+    fn transmit_status(&self) -> Result<TxStatus> {
+        const TX_STATUS: u8 = 1;
+        let mut tx_status = 0xFE;
+        unsafe { hal_call!(lgw_status(TX_STATUS, &mut tx_status)) }?;
+        tx_status.try_into()
     }
 }
 
@@ -168,5 +199,4 @@ mod tests {
         assert!(GW_IS_OPEN.load(Ordering::Relaxed));
         assert!(Concentrator::open().is_err());
     }
-
 }

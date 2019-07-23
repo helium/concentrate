@@ -658,3 +658,54 @@ pub struct TxGainLUT {
     /// Number of LUT indexes.
     pub size: u8,
 }
+
+/// Concentrator's current TX availability.
+#[repr(u8)]
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum TxStatus {
+    /// TX modem disabled, it will ignore commands.
+    Off = 1,
+    /// TX modem is free, ready to receive a command.
+    Free = 2,
+    /// TX modem is loaded, ready to send the packet after an event and/or delay.
+    Scheduled = 3,
+    /// TX modem is emitting.
+    Transmitting = 4,
+}
+
+impl TryFrom<u8> for TxStatus {
+    type Error = error::Error;
+    fn try_from(other: u8) -> Result<Self, error::Error> {
+        Ok(match other {
+            1 => TxStatus::Off,
+            2 => TxStatus::Free,
+            3 => TxStatus::Scheduled,
+            4 => TxStatus::Transmitting,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}
+
+/// Concentrator's current RX availability.
+#[repr(u8)]
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum RxStatus {
+    /// RX modem is disabled, it will ignore commands.
+    Off = 1,
+    /// RX modem is receiving.
+    On = 2,
+    /// RX is suspended while a TX is ongoing.
+    Suspended = 3,
+}
+
+impl TryFrom<u8> for RxStatus {
+    type Error = error::Error;
+    fn try_from(other: u8) -> Result<Self, error::Error> {
+        Ok(match other {
+            1 => RxStatus::Off,
+            2 => RxStatus::On,
+            3 => RxStatus::Suspended,
+            _ => return Err(error::Error::Data),
+        })
+    }
+}
