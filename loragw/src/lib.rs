@@ -25,6 +25,7 @@ use std::{
     marker::PhantomData,
     ops,
     sync::atomic::{AtomicBool, Ordering},
+    thread, time,
 };
 pub use types::*;
 
@@ -137,12 +138,24 @@ impl Concentrator {
 
     /// Transmit `packet` over the air.
     pub fn transmit(&self, packet: TxPacket) -> Result {
+        while self.transmit_status()? != TxStatus::Free {
+            const SLEEP_TIME: time::Duration = time::Duration::from_millis(5);
+            trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
+            thread::sleep(SLEEP_TIME);
+        }
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
+}
 
+// Private functions.
+impl Concentrator {
     /// Returns the concentrators current transmit status.
-    pub fn transmit_status(&self) -> Result<TxStatus> {
+    ///
+    /// We keep this private since `transmit` uses it internally, and
+    /// it may lead to confusion about who's responsibility it is to
+    /// check TX status.
+    fn transmit_status(&self) -> Result<TxStatus> {
         const TX_STATUS: u8 = 1;
         let mut tx_status = 0xFE;
         unsafe { hal_call!(lgw_status(TX_STATUS, &mut tx_status)) }?;
