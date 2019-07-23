@@ -176,14 +176,15 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
-        
-        match &mut self.pending_fragments {
+        let mut clear_pending_fragments = false;
+        let ret = match &mut self.pending_fragments {
             // if there is a vector, we should have more fragments
             Some(vec) => {
                 let maybe_fragment = vec.pop_front();
 
                 if vec.len() == 0 {
-                    self.pending_fragments = None;
+                    clear_pending_fragments = true;
+
                 }
 
                 match maybe_fragment {
@@ -203,7 +204,12 @@ impl LongFiSender {
                 })),
                 None => None,
             },
+        };
+
+        if clear_pending_fragments {
+            self.pending_fragments = None;
         }
+        ret
     }
 
     pub fn tx_uplink(
