@@ -165,8 +165,6 @@ impl core::fmt::Debug for LongFiPkt {
             self.oui, self.device_id, self.packet_id, self.mac, quality, self.payload
         )
     }
-
-
 }
 
 impl PartialEq for LongFiPkt {
