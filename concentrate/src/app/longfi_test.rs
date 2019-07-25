@@ -55,93 +55,12 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
     .unwrap();
 
     let mut rng = rand::thread_rng();
+    let payload: Vec<u8> = (0..90).map(|_| rng.gen::<u8>()).collect();
 
-    let payload: Vec<u8> = vec![
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-        rng.gen::<u8>(),
-    ];
-
+    println!("sending packet: {:?}", payload);
     let tx_req = msg::LongFiTxUplinkPacket {
-        disable_encoding: true,
-        disable_fragmentation: true,
+        disable_encoding: false,
+        disable_fragmentation: false,
         oui: 0xBEEFFEED,
         device_id: 0xABCD,
         spreading: msg::LongFiSpreading::SF10,
@@ -168,13 +87,26 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
             // handle epoll events
             let maybe_response = match event.token() {
                 PACKET_RECV_EVENT => {
-                    println!("Received packet!");
                     // packet received from server
                     let sz = socket.recv(&mut read_buf)?;
 
                     // parse it into a raw packet
                     if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
-                        println!("{:?}", rx)
+                        match &rx.kind {
+                            Some(request) => match request {
+                                msg::LongFiResp_oneof_kind::rx(pkt) => {
+                                    println!("Received packet! Length = {}", pkt.payload.len());
+
+                                    for byte in &pkt.payload {
+                                        print!("{:} ", *byte as u8);
+                                    }
+                                    println!("");
+                                    
+                                },
+                                _ => (),
+                            },
+                            None => (),
+                        }
                     } else {
                         println!("Failed to parse LongFiResp!");
                     }

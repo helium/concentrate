@@ -125,8 +125,8 @@ fn payload_per_fragment(spreading: Spreading) -> usize {
     match spreading {
         Spreading::SF7 => 32,
         Spreading::SF8 => 32,
-        Spreading::SF9 => 28,
-        Spreading::SF10 => 24,
+        Spreading::SF9 => 32,
+        Spreading::SF10 => 32,
         Spreading::SF_INVALID => 0,
     }
 }
@@ -219,7 +219,7 @@ impl LongFiSender {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
 
-        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) || !tx_uplink.disable_fragmentation {
+        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) || tx_uplink.disable_fragmentation {
             num_fragments = 1;
         } else {
             // some payload will be pushed out with the header, depending on fragment size
@@ -284,12 +284,12 @@ impl LongFiSender {
 
                     // could assert tx_uplink.payload <= payload_bytes_in_first_fragment_of_many
                     payload.extend(
-                        &tx_uplink.payload
-                            [0..payload_bytes_in_first_fragment_of_many(tx_uplink.spreading)],
+                        chunk
                     );
 
                     pending_fragments.push_back(self.new_fragment(tx_uplink.spreading, payload));
                 }
+                println!("num fragments {} pending_fragments_len {}", num_fragments, pending_fragments.len());
 
                 // assert pending_fragments.len() + 1 == num_fragments
                 self.pending_fragments = Some(pending_fragments);

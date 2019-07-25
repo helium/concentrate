@@ -139,12 +139,12 @@ pub fn longfi(
                             timer.cancel_timeout(&timeout);
                         }
 
-                        debug!("Packet received: {:?}", pkt);
-
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
                             // transform it into a UDP msg for client
+                            //println!("Packet received, sending to client: {:?}", rx_packet);
+
                             let resp = msg::LongFiResp {
                                 id: 0,
                                 kind: Some(msg::LongFiResp_oneof_kind::rx(rx_packet)),
@@ -152,9 +152,10 @@ pub fn longfi(
                             };
                             // send to client
                             msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                        } else {
+                            // transform it into a UDP msg for client
+                            println!("Packet received, with CRC error, dropping: {:?}", rx_packet);
                         }
-
-
 
                     }
                     // the parser got a header fragment and will continue parsing the packet
