@@ -143,7 +143,7 @@ pub fn longfi(
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
                             // transform it into a UDP msg for client
-                            //println!("Packet received, sending to client: {:?}", rx_packet);
+                            debug!("Packet received, sending to client: {:?}", rx_packet);
 
                             let resp = msg::LongFiResp {
                                 id: 0,
@@ -154,7 +154,7 @@ pub fn longfi(
                             msg_send(resp, &longfi_socket, &longfi_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
-                            println!("Packet received, with CRC error, dropping: {:?}", rx_packet);
+                            debug!("Packet received, with CRC error, dropping: {:?}", rx_packet);
                         }
 
                     }

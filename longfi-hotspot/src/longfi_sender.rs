@@ -289,7 +289,6 @@ impl LongFiSender {
 
                     pending_fragments.push_back(self.new_fragment(tx_uplink.spreading, payload));
                 }
-                println!("num fragments {} pending_fragments_len {}", num_fragments, pending_fragments.len());
 
                 // assert pending_fragments.len() + 1 == num_fragments
                 self.pending_fragments = Some(pending_fragments);
