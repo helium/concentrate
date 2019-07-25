@@ -107,6 +107,20 @@ impl LongFiPkt {
             spreading: Spreading::SF_INVALID,
         }
     }
+
+    pub fn get_quality_string(&self) -> String {
+        let mut quality = String::from("");
+
+        for i in self.quality.iter() {
+            match i {
+                Quality::CrcOk => quality.push('O'),
+                Quality::CrcFail => quality.push('S'),
+                Quality::Missed => quality.push('X'),
+            }
+        }
+
+        quality
+    }
 }
 
 use messages::LongFiRxPacket;
@@ -141,15 +155,7 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
 impl core::fmt::Debug for LongFiPkt {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        let mut quality = String::from("");
-
-        for i in self.quality.iter() {
-            match i {
-                Quality::CrcOk => quality.push('O'),
-                Quality::CrcFail => quality.push('S'),
-                Quality::Missed => quality.push('X'),
-            }
-        }
+        let mut quality = self.get_quality_string();
 
         write!(
             f,
@@ -159,6 +165,8 @@ impl core::fmt::Debug for LongFiPkt {
             self.oui, self.device_id, self.packet_id, self.mac, quality, self.payload
         )
     }
+
+
 }
 
 impl PartialEq for LongFiPkt {

@@ -139,6 +139,8 @@ pub fn longfi(
                             timer.cancel_timeout(&timeout);
                         }
 
+                        let quality_string = pkt.get_quality_string();
+
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
