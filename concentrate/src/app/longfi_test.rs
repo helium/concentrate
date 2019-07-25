@@ -101,8 +101,7 @@ pub fn longfi_test(print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: 
                                         print!("{:} ", *byte as u8);
                                     }
                                     println!("");
-                                    
-                                },
+                                }
                                 _ => (),
                             },
                             None => (),

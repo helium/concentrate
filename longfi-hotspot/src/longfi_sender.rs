@@ -161,7 +161,7 @@ impl LongFiSender {
             kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
                 freq: CHANNEL[self.rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
                 radio: msg::Radio::R0,
-                power: 22,
+                power: 28,
                 bandwidth: msg::Bandwidth::BW125kHz,
                 spreading: spreading.into(),
                 coderate: msg::Coderate::CR4_5,
@@ -219,7 +219,9 @@ impl LongFiSender {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
 
-        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) || tx_uplink.disable_fragmentation {
+        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading)
+            || tx_uplink.disable_fragmentation
+        {
             num_fragments = 1;
         } else {
             // some payload will be pushed out with the header, depending on fragment size
@@ -283,9 +285,7 @@ impl LongFiSender {
                     payload.extend(&header);
 
                     // could assert tx_uplink.payload <= payload_bytes_in_first_fragment_of_many
-                    payload.extend(
-                        chunk
-                    );
+                    payload.extend(chunk);
 
                     pending_fragments.push_back(self.new_fragment(tx_uplink.spreading, payload));
                 }

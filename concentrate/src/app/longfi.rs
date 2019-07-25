@@ -156,7 +156,6 @@ pub fn longfi(
                             // transform it into a UDP msg for client
                             debug!("Packet received, with CRC error, dropping: {:?}", rx_packet);
                         }
-
                     }
                     // the parser got a header fragment and will continue parsing the packet
                     // NOTE: there is a known bug here where a new timeout configuration writes over the previous one
