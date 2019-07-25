@@ -139,15 +139,23 @@ pub fn longfi(
                             timer.cancel_timeout(&timeout);
                         }
 
-                        // transform it into a UDP msg for client
-                        let resp = msg::LongFiResp {
-                            id: 0,
-                            kind: Some(msg::LongFiResp_oneof_kind::rx(pkt.into())),
-                            ..Default::default()
-                        };
+                        debug!("Packet received: {:?}", pkt);
 
-                        // send to client
-                        msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                        let rx_packet: msg::LongFiRxPacket = pkt.into();
+                        // only forward a packet to client if CRC pass on every fragment
+                        if rx_packet.crc_check {
+                            // transform it into a UDP msg for client
+                            let resp = msg::LongFiResp {
+                                id: 0,
+                                kind: Some(msg::LongFiResp_oneof_kind::rx(rx_packet)),
+                                ..Default::default()
+                            };
+                            // send to client
+                            msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                        }
+
+
+
                     }
                     // the parser got a header fragment and will continue parsing the packet
                     // NOTE: there is a known bug here where a new timeout configuration writes over the previous one

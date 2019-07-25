@@ -219,7 +219,7 @@ impl LongFiSender {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
 
-        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) {
+        if len < payload_bytes_in_single_fragment_packet(tx_uplink.spreading) || !tx_uplink.disable_fragmentation {
             num_fragments = 1;
         } else {
             // some payload will be pushed out with the header, depending on fragment size
