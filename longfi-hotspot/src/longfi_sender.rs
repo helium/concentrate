@@ -177,10 +177,14 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
+        debug!("[LongFi] Radio Ready - packet was sent");
+
         let mut clear_pending_fragments = false;
+
         let ret = match &mut self.pending_fragments {
             // if there is a vector, we should have more fragments
             Some(vec) => {
+                debug!("[LongFi] Sending another fragment. {} remaining", vec.len());
                 let maybe_fragment = vec.pop_front();
 
                 if vec.len() == 0 {
@@ -189,6 +193,8 @@ impl LongFiSender {
 
                 match maybe_fragment {
                     Some(fragment) => {
+                        debug!("[LongFi] Fragment: ", fragment);
+
                         let quarter_second = time::Duration::from_millis(250);
                         thread::sleep(quarter_second);
                         Some(LongFiResponse::RadioReq(fragment))
@@ -198,6 +204,8 @@ impl LongFiSender {
             }
             // if None, just completed a full packet
             None => match self.req_id.take() {
+                debug!("[LongFi] Packet complete");
+
                 Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
                     id,
                     kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
@@ -294,7 +302,7 @@ impl LongFiSender {
 
                     pending_fragments.push_back(self.new_fragment(tx_uplink.spreading, payload));
                 }
-
+                debug!("[LongFi] Assembled packet with {} fragments", num_fragments);
                 // assert pending_fragments.len() + 1 == num_fragments
                 self.pending_fragments = Some(pending_fragments);
 

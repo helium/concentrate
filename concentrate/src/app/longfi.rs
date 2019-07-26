@@ -168,6 +168,7 @@ pub fn longfi(
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {
+                        debug!("[LongFi] Sending fragment to radio via UDP")
                         msg_send(msg, &socket, &addr_out);
                     }
                     LongFiResponse::ClientResp(resp) => {
