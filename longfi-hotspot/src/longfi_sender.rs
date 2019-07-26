@@ -192,7 +192,7 @@ impl LongFiSender {
                         let quarter_second = time::Duration::from_millis(250);
                         thread::sleep(quarter_second);
                         Some(LongFiResponse::RadioReq(fragment))
-                    },
+                    }
                     None => None,
                 }
             }

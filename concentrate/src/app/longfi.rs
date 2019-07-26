@@ -156,7 +156,10 @@ pub fn longfi(
                             msg_send(resp, &longfi_socket, &longfi_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
-                            debug!("Packet received, with CRC error ({}), dropping: {:?}", quality_str, rx_packet);
+                            debug!(
+                                "Packet received, with CRC error ({}), dropping: {:?}",
+                                quality_str, rx_packet
+                            );
                         }
                     }
                     // the parser got a header fragment and will continue parsing the packet
