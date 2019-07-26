@@ -2,6 +2,8 @@ extern crate messages;
 extern crate mio;
 extern crate protobuf;
 extern crate rand;
+#[macro_use]
+extern crate log;
 
 use messages as msg;
 

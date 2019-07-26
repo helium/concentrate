@@ -126,8 +126,8 @@ fn payload_per_fragment(spreading: Spreading) -> usize {
     match spreading {
         Spreading::SF7 => 32,
         Spreading::SF8 => 32,
-        Spreading::SF9 => 32,
-        Spreading::SF10 => 32,
+        Spreading::SF9 => 24,
+        Spreading::SF10 => 24,
         Spreading::SF_INVALID => 0,
     }
 }
@@ -193,7 +193,7 @@ impl LongFiSender {
 
                 match maybe_fragment {
                     Some(fragment) => {
-                        debug!("[LongFi] Fragment: ", fragment);
+                        debug!("[LongFi] Fragment: {:?}", fragment);
 
                         let quarter_second = time::Duration::from_millis(250);
                         thread::sleep(quarter_second);
@@ -204,16 +204,17 @@ impl LongFiSender {
             }
             // if None, just completed a full packet
             None => match self.req_id.take() {
-                debug!("[LongFi] Packet complete");
-
-                Some(id) => Some(LongFiResponse::ClientResp(msg::LongFiResp {
-                    id,
-                    kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
-                        success: true,
+                Some(id) => {
+                    debug!("[LongFi] Packet complete");
+                    Some(LongFiResponse::ClientResp(msg::LongFiResp {
+                        id,
+                        kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
+                            success: true,
+                            ..Default::default()
+                        })),
                         ..Default::default()
-                    })),
-                    ..Default::default()
-                })),
+                    }))
+                }
                 None => None,
             },
         };
