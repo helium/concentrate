@@ -4,6 +4,7 @@ use msg::LongFiSpreading as Spreading;
 use protobuf::{parse_from_bytes, Message};
 use rand::Rng;
 use std::collections::VecDeque;
+use std::{thread, time};
 
 const SIZEOF_PACKET_HEADER: usize = std::mem::size_of::<PacketHeader>();
 const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize =
@@ -187,7 +188,11 @@ impl LongFiSender {
                 }
 
                 match maybe_fragment {
-                    Some(fragment) => Some(LongFiResponse::RadioReq(fragment)),
+                    Some(fragment) => {
+                        let quarter_second = time::Duration::from_millis(250);
+                        thread::sleep(quarter_second);
+                        Some(LongFiResponse::RadioReq(fragment))
+                    },
                     None => None,
                 }
             }
