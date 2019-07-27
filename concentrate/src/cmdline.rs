@@ -62,6 +62,11 @@ pub enum Cmd {
         /// String payload.
         payload: Option<String>,
     },
+
+    /// Built In Self Test. Configures, starts, then immediately stops
+    /// concentrator. Returns 1 on hardware failure.
+    #[structopt(name = "bist")]
+    Bist,
 }
 
 #[derive(StructOpt)]

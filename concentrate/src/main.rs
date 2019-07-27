@@ -96,6 +96,7 @@ fn go(args: cmdline::Args) -> AppResult {
             bandwidth,
             payload,
         ),
+        cmdline::Cmd::Bist => app::built_in_self_test(),
     }
 }
 
