@@ -19,6 +19,12 @@ Bug fixes:
   A bugfix.
 -->
 
+0.1.9 (2019-07-27)
+==================
+Feature enhancements:
+
+* [#26](https://github.com/helium/concentrate/pull/26):
+  Add built in self test.
 
 0.1.8 (2019-07-23)
 ==================

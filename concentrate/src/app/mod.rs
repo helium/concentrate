@@ -3,10 +3,12 @@ use protobuf::Message;
 use std::fmt;
 use std::net::{SocketAddr, UdpSocket};
 
+mod bist;
 mod listen;
 mod send;
 mod serve;
 
+pub use self::bist::*;
 pub use self::listen::*;
 pub use self::send::*;
 pub use self::serve::*;
