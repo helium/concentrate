@@ -16,6 +16,16 @@ pub enum Cmd {
     #[structopt(name = "listen")]
     Listen,
 
+    /// longfi. This mode is primarily meant for testing and debugging
+    /// longfi device code
+    #[structopt(name = "longfi")]
+    LongFi,
+
+    /// longfi. This mode is primarily meant for testing and debugging
+    /// longfi device code
+    #[structopt(name = "longfi-test")]
+    LongFiTest,
+
     /// Transmit a packet using provided string as payload. Similar to
     /// 'listen', requires another instance running in
     /// 'serve' mode.
@@ -91,7 +101,7 @@ pub struct Args {
         long = "publish",
         default_value = "31337"
     )]
-    pub publish_port: u16,
+    pub radio_publish_port: u16,
 
     /// Listen port. UDP port number to listen for send packet TX requests.
     #[structopt(
@@ -100,7 +110,25 @@ pub struct Args {
         long = "listen",
         default_value = "31338"
     )]
-    pub listen_port: u16,
+    pub radio_listen_port: u16,
+
+    /// Publish port. UDP port number to publish LongFi packets to
+    #[structopt(
+        value_name = "LONGFI_PORT_OUT",
+        short = "o",
+        long = "longfi-out",
+        default_value = "31340"
+    )]
+    pub longfi_port_out: u16,
+
+    /// Listen port. UDP port number to listen for LongFi transmit requests
+    #[structopt(
+        value_name = "LONGFI_PORT_IN",
+        short = "i",
+        long = "longfi_in",
+        default_value = "31341"
+    )]
+    pub longfi_port_in: u16,
 
     /// Remote IP for listening.
     #[structopt(
@@ -110,6 +138,15 @@ pub struct Args {
         default_value = ""
     )]
     pub remote_ip: String,
+
+    /// Remote IP for listening.
+    #[structopt(
+        value_name = "LONGFI_CLIENT_IP",
+        short = "c",
+        long = "longfi-client-ip",
+        default_value = ""
+    )]
+    pub longfi_remote_ip: String,
 
     #[structopt(subcommand)]
     pub cmd: Cmd,

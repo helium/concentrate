@@ -1,0 +1,4 @@
+[submodule "messages/proto"]
+	path = messages/proto
+	url = https://github.com/helium/proto.git
+	branch = master

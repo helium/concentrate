@@ -45,3 +45,15 @@ On the remote machine, such a local development machine, you can run the client:
 ```sh
 concentrate -p listen
 ```
+
+### Notes
+For 10.76.100.10: 
+
+./concentrate -p -r 10.76.100.1 -u 31335 -l 31336 serve
+./target/debug/concentrate -r 10.76.100.10 -u 31335 -l 31336 -o 31342 -i 31343 longfi
+./target/debug/concentrate -i 31342 -o 31343 longfi-test
+
+For 10.76.100.11: 
+./concentrate -p -r 10.76.100.1 -u 31337 -l 31338 serve
+./target/debug/concentrate -r 10.76.100.11 -u 31337 -l 31338 -o 31340 -i 31341 longfi
+./target/debug/concentrate -i 31340 -o 31341 longfi-test

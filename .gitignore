@@ -1,2 +1,6 @@
 /target
 **/*.rs.bk
+# ignore generated code
+/messages/src/longfi.rs
+/messages/src/radio.rs
+

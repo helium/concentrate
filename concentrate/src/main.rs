@@ -1,10 +1,12 @@
 #![forbid(clippy::panicking_unwrap)]
 
-extern crate colored;
+extern crate byteorder;
 #[cfg(feature = "log_env")]
 extern crate env_logger;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate longfi_hotspot;
 extern crate loragw;
 extern crate messages;
 extern crate protobuf;
@@ -18,12 +20,14 @@ extern crate structopt;
 extern crate syslog;
 extern crate toml;
 
+extern crate mio;
+extern crate mio_extras;
+extern crate rand;
 mod app;
 mod cfg;
 mod cmdline;
 mod error;
 
-use colored::Colorize;
 use error::AppResult;
 use std::net::IpAddr;
 use std::str::FromStr;
@@ -53,27 +57,49 @@ fn init_logging() {
 fn init_logging() {}
 
 fn go(args: cmdline::Args) -> AppResult {
+    let remote_ip = match IpAddr::from_str(&args.remote_ip) {
+        Ok(ip) => Some(ip),
+        _ => None,
+    };
+
     match args.cmd {
         cmdline::Cmd::Serve { cfg_file } => {
             let cfg = match cfg_file {
                 Some(path) => Some(fs::read_to_string(path)?),
                 None => None,
             };
-            let remote_ip = match IpAddr::from_str(&args.remote_ip) {
-                Ok(ip) => Some(ip),
-                _ => None,
-            };
 
             app::serve(
                 cfg.as_ref().map(std::convert::AsRef::as_ref),
                 args.interval,
                 args.print_level,
-                args.listen_port,
-                args.publish_port,
+                args.radio_listen_port,
+                args.radio_publish_port,
                 remote_ip,
             )
         }
-        cmdline::Cmd::Listen => app::listen(args.print_level, args.publish_port),
+        cmdline::Cmd::Listen => app::listen(args.print_level, args.radio_publish_port),
+        cmdline::Cmd::LongFi => {
+            let longfi_remote_ip = match IpAddr::from_str(&args.longfi_remote_ip) {
+                Ok(ip) => Some(ip),
+                _ => None,
+            };
+            app::longfi(
+                args.print_level,
+                args.radio_publish_port,
+                args.radio_listen_port,
+                remote_ip,
+                args.longfi_port_out,
+                args.longfi_port_in,
+                longfi_remote_ip,
+            )
+        }
+        cmdline::Cmd::LongFiTest => app::longfi_test(
+            args.print_level,
+            remote_ip,
+            args.longfi_port_out,
+            args.longfi_port_in,
+        ),
         cmdline::Cmd::Send {
             implicit,
             freq,
@@ -85,8 +111,8 @@ fn go(args: cmdline::Args) -> AppResult {
             payload,
         } => app::send(
             args.print_level,
-            args.listen_port,
-            args.publish_port,
+            args.radio_listen_port,
+            args.radio_publish_port,
             implicit,
             freq as u32,
             radio,
@@ -106,7 +132,7 @@ fn main() {
     match go(args) {
         Ok(()) => process::exit(0),
         Err(e) => {
-            eprintln!("{} {}", "error:".red().bold(), e);
+            eprintln!("{} {}", "error:", e);
             process::exit(1);
         }
     }

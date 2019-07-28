@@ -5,11 +5,15 @@ use std::net::{SocketAddr, UdpSocket};
 
 mod bist;
 mod listen;
+mod longfi;
+mod longfi_test;
 mod send;
 mod serve;
 
 pub use self::bist::*;
 pub use self::listen::*;
+pub use self::longfi::*;
+pub use self::longfi_test::*;
 pub use self::send::*;
 pub use self::serve::*;
 

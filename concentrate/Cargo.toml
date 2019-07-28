@@ -4,15 +4,21 @@ version = "0.1.9"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 
 [dependencies]
-colored = "1.8"
 log = "0.4.6"
 loragw = { path = "../loragw" }
+longfi-hotspot = { path = "../longfi-hotspot" }
+
 messages = { path = "../messages" }
 protobuf = "2.5.0"
 quick-error = "1.2.2"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.2.15"
 toml = "=0.5.0"
+byteorder = "1"
+mio             = "0.6"
+mio-extras      = "1.0"
+rand = "0.3"
+
 
 [dependencies.syslog]
 version = "4"

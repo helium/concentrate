@@ -1,8 +1,10 @@
 extern crate loragw;
 extern crate protobuf;
 
-mod gateway;
-pub use gateway::*;
+mod longfi;
+mod radio;
+pub use longfi::*;
+pub use radio::*;
 
 impl From<loragw::Spreading> for Spreading {
     fn from(other: loragw::Spreading) -> Spreading {
@@ -13,7 +15,7 @@ impl From<loragw::Spreading> for Spreading {
             loragw::Spreading::SF10 => Spreading::SF10,
             loragw::Spreading::SF11 => Spreading::SF11,
             loragw::Spreading::SF12 => Spreading::SF12,
-            _ => Spreading::UNDEFINED,
+            _ => Spreading::SF_UNDEFINED,
         }
     }
 }
@@ -32,6 +34,30 @@ impl From<Spreading> for loragw::Spreading {
     }
 }
 
+impl From<Spreading> for longfi::LongFiSpreading {
+    fn from(other: Spreading) -> longfi::LongFiSpreading {
+        match other {
+            Spreading::SF7 => longfi::LongFiSpreading::SF7,
+            Spreading::SF8 => longfi::LongFiSpreading::SF8,
+            Spreading::SF9 => longfi::LongFiSpreading::SF9,
+            Spreading::SF10 => longfi::LongFiSpreading::SF10,
+            _ => longfi::LongFiSpreading::SF_INVALID,
+        }
+    }
+}
+
+impl From<longfi::LongFiSpreading> for Spreading {
+    fn from(other: longfi::LongFiSpreading) -> Spreading {
+        match other {
+            longfi::LongFiSpreading::SF7 => Spreading::SF7,
+            longfi::LongFiSpreading::SF8 => Spreading::SF8,
+            longfi::LongFiSpreading::SF9 => Spreading::SF9,
+            longfi::LongFiSpreading::SF10 => Spreading::SF10,
+            _ => Spreading::SF10,
+        }
+    }
+}
+
 impl From<loragw::Bandwidth> for Bandwidth {
     fn from(other: loragw::Bandwidth) -> Bandwidth {
         match other {
@@ -42,7 +68,7 @@ impl From<loragw::Bandwidth> for Bandwidth {
             loragw::Bandwidth::BW125kHz => Bandwidth::BW125kHz,
             loragw::Bandwidth::BW250kHz => Bandwidth::BW250kHz,
             loragw::Bandwidth::BW500kHz => Bandwidth::BW500kHz,
-            _ => Bandwidth::UNDEFINED,
+            _ => Bandwidth::BW_UNDEFINED,
         }
     }
 }
@@ -69,7 +95,7 @@ impl From<loragw::Coderate> for Coderate {
             loragw::Coderate::Cr4_6 => Coderate::CR4_6,
             loragw::Coderate::Cr4_7 => Coderate::CR4_7,
             loragw::Coderate::Cr4_8 => Coderate::CR4_8,
-            _ => Coderate::UNDEFINED,
+            _ => Coderate::CR_UNDEFINED,
         }
     }
 }
@@ -104,9 +130,9 @@ impl From<Radio> for loragw::Radio {
     }
 }
 
-impl From<loragw::RxPacketLoRa> for RxPacket {
-    fn from(other: loragw::RxPacketLoRa) -> RxPacket {
-        RxPacket {
+impl From<loragw::RxPacketLoRa> for RadioRxPacket {
+    fn from(other: loragw::RxPacketLoRa) -> RadioRxPacket {
+        RadioRxPacket {
             freq: other.freq,
             if_chain: other.if_chain.into(),
             crc_check: match other.crc_check {
@@ -126,8 +152,8 @@ impl From<loragw::RxPacketLoRa> for RxPacket {
     }
 }
 
-impl From<TxReq> for loragw::TxPacketLoRa {
-    fn from(other: TxReq) -> loragw::TxPacketLoRa {
+impl From<RadioTxReq> for loragw::TxPacketLoRa {
+    fn from(other: RadioTxReq) -> loragw::TxPacketLoRa {
         loragw::TxPacketLoRa {
             freq: other.freq,
             mode: loragw::TxMode::Immediate,

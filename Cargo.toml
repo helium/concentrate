@@ -2,6 +2,7 @@
 members = [
 "concentrate",
 "libloragw-sys",
+"longfi-hotspot",
 "loragw",
 "messages",
 ]
