@@ -23,7 +23,7 @@ fn main() {
                     }
                     let _ = gps.parse(msg);
 
-                    if nmea_flag == true && ubx_flag == true {
+                    if nmea_flag == true || ubx_flag == true {
                         exit(0x00);
                     }
                 }
