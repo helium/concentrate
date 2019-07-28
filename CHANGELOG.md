@@ -19,12 +19,15 @@ Bug fixes:
   A bugfix.
 -->
 
-0.1.9 (2019-07-27)
+0.1.9 (2019-07-28)
 ==================
 Feature enhancements:
 
 * [#26](https://github.com/helium/concentrate/pull/26):
   Add built in self test.
+
+* [#23](https://github.com/helium/concentrate/pull/23):
+  LongFi App for Concentrate.
 
 0.1.8 (2019-07-23)
 ==================
