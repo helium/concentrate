@@ -1,7 +1,6 @@
-use super::{LongFiPkt, LongFiResponse};
+use super::LongFiResponse;
 use messages as msg;
 use msg::LongFiSpreading as Spreading;
-use protobuf::{parse_from_bytes, Message};
 use rand::Rng;
 use std::collections::VecDeque;
 use std::{thread, time};
@@ -176,7 +175,7 @@ impl LongFiSender {
         }
     }
 
-    pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
+    pub fn tx_resp(&mut self, _tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
         debug!("[LongFi] Radio Ready - packet was sent");
 
         let mut clear_pending_fragments = false;
@@ -228,7 +227,7 @@ impl LongFiSender {
     pub fn tx_uplink(
         &mut self,
         tx_uplink: &msg::LongFiTxUplinkPacket,
-        id: u32,
+        _id: u32,
     ) -> Option<LongFiResponse> {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
@@ -246,7 +245,7 @@ impl LongFiSender {
                 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
 
             // if there was remainder, we need a final fragment
-            if (remaining_len % payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0) {
+            if remaining_len % payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0 {
                 num_fragments += 1;
             }
         }

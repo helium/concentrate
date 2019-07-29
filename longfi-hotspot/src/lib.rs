@@ -47,7 +47,7 @@ impl LongFi {
             Some(resp) => match resp {
                 msg::RadioResp_oneof_kind::tx(tx) => self.sender.tx_resp(tx),
                 msg::RadioResp_oneof_kind::rx_packet(rx) => self.parser.parse(rx),
-                msg::RadioResp_oneof_kind::parse_err(parse_err) => None,
+                msg::RadioResp_oneof_kind::parse_err(_parse_err) => None,
             },
             None => None,
         }
@@ -59,7 +59,6 @@ impl LongFi {
                 msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => {
                     self.sender.tx_uplink(tx_uplink, req.id)
                 }
-                _ => None,
             },
             None => None,
         }
@@ -93,23 +92,6 @@ pub struct LongFiPkt {
 }
 
 impl LongFiPkt {
-    fn from_req(req: &messages::LongFiTxUplinkPacket) -> LongFiPkt {
-        LongFiPkt {
-            oui: req.oui,
-            device_id: req.device_id as u16,
-            packet_id: 0,
-            mac: 0x00,
-            payload: req.payload.to_vec(),
-            num_fragments: 0,
-            fragment_cnt: 0,
-            quality: Default::default(),
-            timestamp: 0,
-            snr: 0.0,
-            rssi: 0.0,
-            spreading: Spreading::SF_INVALID,
-        }
-    }
-
     pub fn get_quality_string(&self) -> String {
         let mut quality = String::from("");
 
@@ -157,7 +139,7 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
 impl core::fmt::Debug for LongFiPkt {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        let mut quality = self.get_quality_string();
+        let quality = self.get_quality_string();
 
         write!(
             f,

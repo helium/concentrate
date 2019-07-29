@@ -8,8 +8,6 @@ use protobuf::{parse_from_bytes, Message};
 use std::net::{IpAddr, SocketAddr};
 use std::time::Duration;
 
-use super::print_at_level;
-
 const PACKET_RECV_EVENT: Token = Token(0);
 const PACKET_TIMEOUT: Token = Token(1);
 const PACKET_SEND_EVENT: Token = Token(2);
@@ -23,13 +21,13 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 }
 
 pub fn longfi(
-    print_level: u8,
+    _print_level: u8,
     in_port: u16,
     out_port: u16,
     radio_ip: Option<IpAddr>,
     longfi_out_port: u16,
     longfi_in_port: u16,
-    longfi_ip: Option<IpAddr>,
+    _longfi_ip: Option<IpAddr>,
 ) -> AppResult {
     let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;
@@ -169,7 +167,7 @@ pub fn longfi(
                     }
                     LongFiResponse::RadioReq(msg) => {
                         debug!("[LongFi] Sending fragment to radio via UDP");
-                        msg_send(msg, &socket, &addr_out);
+                        msg_send(msg, &socket, &addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {
                         msg_send(resp, &longfi_socket, &longfi_addr_out)?;

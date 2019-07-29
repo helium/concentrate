@@ -1,5 +1,4 @@
 use super::{LongFiPkt, LongFiResponse, Quality};
-use messages as msg;
 
 const PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET: usize = 9;
 const PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET: usize = 11;
