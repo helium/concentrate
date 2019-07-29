@@ -69,6 +69,12 @@ impl LongFi {
     }
 }
 
+impl Default for LongFi {
+    fn default() -> LongFi {
+        LongFi::new()
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Quality {
     CrcOk,
@@ -126,8 +132,8 @@ impl Into<LongFiRxPacket> for LongFiPkt {
             rssi: self.rssi,
             snr: self.snr,
             oui: self.oui as u32,
-            device_id: self.device_id as u32,
-            mac: self.mac as u32,
+            device_id: u32::from(self.device_id),
+            mac: u32::from(self.mac),
             payload: self.payload,
             spreading: self.spreading,
             // special fields
@@ -155,7 +161,6 @@ impl PartialEq for LongFiPkt {
     fn eq(&self, other: &Self) -> bool {
         if (self.oui == other.oui)
             && (self.device_id == other.device_id)
-            && (self.device_id == other.device_id)
             && (self.payload.len() == other.payload.len())
         {
             for (pos, e) in self.payload.iter().enumerate() {
@@ -163,9 +168,9 @@ impl PartialEq for LongFiPkt {
                     return false;
                 }
             }
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 }

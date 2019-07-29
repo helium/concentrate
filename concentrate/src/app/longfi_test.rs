@@ -56,7 +56,7 @@ pub fn longfi_test(_print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port:
     let tx_req = msg::LongFiTxUplinkPacket {
         disable_encoding: false,
         disable_fragmentation: false,
-        oui: 0xBEEFFEED,
+        oui: 0xBEEF_FEED,
         device_id: 0xABCD,
         spreading: msg::LongFiSpreading::SF10,
         payload,
@@ -80,33 +80,23 @@ pub fn longfi_test(_print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port:
 
         for event in &events {
             // handle epoll events
-            let _maybe_response = match event.token() {
-                PACKET_RECV_EVENT => {
-                    // packet received from server
-                    let sz = socket.recv(&mut read_buf)?;
+            if event.token() == PACKET_RECV_EVENT {
+                // packet received from server
+                let sz = socket.recv(&mut read_buf)?;
 
-                    // parse it into a raw packet
-                    if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
-                        match &rx.kind {
-                            Some(request) => match request {
-                                msg::LongFiResp_oneof_kind::rx(pkt) => {
-                                    println!("Received packet! Length = {}", pkt.payload.len());
-
-                                    for byte in &pkt.payload {
-                                        print!("{:} ", *byte as u8);
-                                    }
-                                    println!("");
-                                }
-                                _ => (),
-                            },
-                            None => (),
+                // parse it into a raw packet
+                if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
+                    if let Some(msg::LongFiResp_oneof_kind::rx(pkt)) = &rx.kind {
+                        println!("Received packet! Length = {}", pkt.payload.len());
+                        for byte in &pkt.payload {
+                            print!("{:} ", *byte as u8);
                         }
-                    } else {
-                        println!("Failed to parse LongFiResp!");
-                    }
+                        println!();
+                    };
+                } else {
+                    println!("Failed to parse LongFiResp!");
                 }
-                _ => (),
-            };
+            }
         }
     }
 }

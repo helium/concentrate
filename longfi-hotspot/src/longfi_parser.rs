@@ -23,7 +23,7 @@ impl LongFiParser {
 
             return Some(LongFiResponse::PktRx(pkt));
         }
-        return None;
+        None
     }
 
     pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {
@@ -52,14 +52,14 @@ impl LongFiParser {
                 quality.push(Quality::CrcFail);
             }
 
-            return Some(LongFiResponse::PktRx(LongFiPkt {
+            Some(LongFiResponse::PktRx(LongFiPkt {
                 packet_id: pkt.payload[0],
-                oui: (pkt.payload[1] as u32)
-                    | (pkt.payload[2] as u32) << 8
-                    | (pkt.payload[3] as u32) << 16
-                    | (pkt.payload[4] as u32) << 24,
-                device_id: (pkt.payload[5] as u16) | (pkt.payload[6] as u16) << 8,
-                mac: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
+                oui: (u32::from(pkt.payload[1]))
+                    | (u32::from(pkt.payload[2])) << 8
+                    | (u32::from(pkt.payload[3])) << 16
+                    | (u32::from(pkt.payload[4])) << 24,
+                device_id: (u16::from(pkt.payload[5])) | (u16::from(pkt.payload[6])) << 8,
+                mac: (u16::from(pkt.payload[7])) | (u16::from(pkt.payload[8])) << 8,
                 payload,
                 num_fragments: 1,
                 fragment_cnt: 1,
@@ -68,7 +68,7 @@ impl LongFiParser {
                 snr: pkt.snr,
                 rssi: pkt.rssi,
                 spreading: pkt.spreading.into(),
-            }));
+            }))
         }
         // means multi-fragment packet header
         else if pkt.payload[1] == 0 {
@@ -97,12 +97,12 @@ impl LongFiParser {
                     packet_id: packet_id as u8,
                     num_fragments: pkt.payload[2],
                     fragment_cnt: 1,
-                    oui: (pkt.payload[3] as u32)
-                        | (pkt.payload[4] as u32) << 8
-                        | (pkt.payload[5] as u32) << 16
-                        | (pkt.payload[6] as u32) << 24,
-                    device_id: (pkt.payload[7] as u16) | (pkt.payload[8] as u16) << 8,
-                    mac: (pkt.payload[9] as u16) | (pkt.payload[10] as u16) << 8,
+                    oui: (u32::from(pkt.payload[3]))
+                        | (u32::from(pkt.payload[4])) << 8
+                        | (u32::from(pkt.payload[5])) << 16
+                        | (u32::from(pkt.payload[6])) << 24,
+                    device_id: (u16::from(pkt.payload[7])) | (u16::from(pkt.payload[8])) << 8,
+                    mac: (u16::from(pkt.payload[9])) | (u16::from(pkt.payload[10])) << 8,
                     payload,
                     quality,
                     timestamp: 0,
@@ -112,7 +112,7 @@ impl LongFiParser {
                 }
             });
 
-            return Some(LongFiResponse::FragmentedPacketBegin(packet_id));
+            Some(LongFiResponse::FragmentedPacketBegin(packet_id))
         }
         // must be fragment
         else {
