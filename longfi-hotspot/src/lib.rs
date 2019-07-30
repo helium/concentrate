@@ -99,9 +99,9 @@ pub struct LongFiPkt {
 
 impl LongFiPkt {
     pub fn get_quality_string(&self) -> String {
-        let mut quality = String::from("");
+        let mut quality = String::new();
 
-        for i in self.quality.iter() {
+        for i in &self.quality {
             match i {
                 Quality::CrcOk => quality.push('O'),
                 Quality::CrcFail => quality.push('S'),
@@ -119,8 +119,8 @@ impl Into<LongFiRxPacket> for LongFiPkt {
     fn into(self) -> LongFiRxPacket {
         let mut crc_check = true;
 
-        for i in self.quality.iter() {
-            if i != &Quality::CrcOk {
+        for i in self.quality {
+            if i != Quality::CrcOk {
                 crc_check = false;
                 break;
             }
