@@ -61,8 +61,10 @@ fn go(args: cmdline::Args) -> AppResult {
         _ => None,
     };
 
+    use cmdline::Cmd::*;
+
     match args.cmd {
-        cmdline::Cmd::Serve { cfg_file } => {
+        Serve { cfg_file } => {
             let cfg = match cfg_file {
                 Some(path) => Some(fs::read_to_string(path)?),
                 None => None,
@@ -77,18 +79,16 @@ fn go(args: cmdline::Args) -> AppResult {
                 remote_ip,
             )
         }
-        cmdline::Cmd::Listen => app::listen(args.print_level, args.radio_publish_port),
-        cmdline::Cmd::LongFi => app::longfi(
+        Listen => app::listen(args.print_level, args.radio_publish_port),
+        LongFi => app::longfi(
             args.radio_publish_port,
             args.radio_listen_port,
             remote_ip,
             args.longfi_port_out,
             args.longfi_port_in,
         ),
-        cmdline::Cmd::LongFiTest => {
-            app::longfi_test(remote_ip, args.longfi_port_out, args.longfi_port_in)
-        }
-        cmdline::Cmd::Send {
+        LongFiTest => app::longfi_test(remote_ip, args.longfi_port_out, args.longfi_port_in),
+        Send {
             implicit,
             freq,
             radio,
@@ -110,7 +110,7 @@ fn go(args: cmdline::Args) -> AppResult {
             bandwidth,
             payload,
         ),
-        cmdline::Cmd::Bist => app::built_in_self_test(),
+        Bist => app::built_in_self_test(),
     }
 }
 
