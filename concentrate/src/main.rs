@@ -1,4 +1,4 @@
-#![forbid(clippy::panicking_unwrap)]
+#![forbid(clippy::panicking_unwrap, unsafe_code)]
 
 extern crate byteorder;
 #[cfg(feature = "log_env")]
@@ -13,15 +13,15 @@ extern crate protobuf;
 extern crate quick_error;
 #[cfg(any(feature = "log_env", feature = "log_sys"))]
 extern crate log_panics;
+extern crate mio;
+extern crate mio_extras;
+extern crate rand;
 extern crate serde;
 extern crate structopt;
 #[cfg(feature = "log_sys")]
 extern crate syslog;
 extern crate toml;
 
-extern crate mio;
-extern crate mio_extras;
-extern crate rand;
 mod app;
 mod cfg;
 mod cmdline;
