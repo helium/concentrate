@@ -112,16 +112,16 @@ mod test {
                                         }
                                         println!();
                                     }
-                                    _ => assert!(false, "Wrong radio request!"),
+                                    _ => panic!("Wrong radio request!"),
                                 };
                             }
-                            None => assert!(false, "Invalid protobuf message"),
+                            None => panic!("Invalid protobuf message"),
                         };
                     }
-                    _ => assert!(false, "Wrong LongFi response given!"),
+                    _ => panic!("Wrong LongFi response given!"),
                 };
             }
-            None => assert!(false, "No LongFi response given!"),
+            None => panic!("No LongFi response given!"),
         }
     }
 }
