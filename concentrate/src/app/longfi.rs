@@ -21,13 +21,11 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 }
 
 pub fn longfi(
-    _print_level: u8,
     in_port: u16,
     out_port: u16,
     radio_ip: Option<IpAddr>,
     longfi_out_port: u16,
     longfi_in_port: u16,
-    _longfi_ip: Option<IpAddr>,
 ) -> AppResult {
     let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;

@@ -175,7 +175,7 @@ impl LongFiSender {
         }
     }
 
-    pub fn tx_resp(&mut self, _tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
+    pub fn tx_resp(&mut self) -> Option<LongFiResponse> {
         debug!("[LongFi] Radio Ready - packet was sent");
 
         let mut clear_pending_fragments = false;
@@ -224,11 +224,7 @@ impl LongFiSender {
         ret
     }
 
-    pub fn tx_uplink(
-        &mut self,
-        tx_uplink: &msg::LongFiTxUplinkPacket,
-        _id: u32,
-    ) -> Option<LongFiResponse> {
+    pub fn tx_uplink(&mut self, tx_uplink: &msg::LongFiTxUplinkPacket) -> Option<LongFiResponse> {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
 

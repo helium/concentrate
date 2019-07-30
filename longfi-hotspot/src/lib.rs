@@ -45,9 +45,9 @@ impl LongFi {
     pub fn handle_response(&mut self, resp: &msg::RadioResp) -> Option<LongFiResponse> {
         match &resp.kind {
             Some(resp) => match resp {
-                msg::RadioResp_oneof_kind::tx(tx) => self.sender.tx_resp(tx),
+                msg::RadioResp_oneof_kind::tx(_) => self.sender.tx_resp(),
                 msg::RadioResp_oneof_kind::rx_packet(rx) => self.parser.parse(rx),
-                msg::RadioResp_oneof_kind::parse_err(_parse_err) => None,
+                msg::RadioResp_oneof_kind::parse_err(_) => None,
             },
             None => None,
         }
@@ -56,9 +56,7 @@ impl LongFi {
     pub fn handle_request(&mut self, req: &msg::LongFiReq) -> Option<LongFiResponse> {
         match &req.kind {
             Some(request) => match request {
-                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => {
-                    self.sender.tx_uplink(tx_uplink, req.id)
-                }
+                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => self.sender.tx_uplink(tx_uplink),
             },
             None => None,
         }

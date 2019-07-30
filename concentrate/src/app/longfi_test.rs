@@ -18,7 +18,7 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi_test(_print_level: u8, ip: Option<IpAddr>, out_port: u16, in_port: u16) -> AppResult {
+pub fn longfi_test(ip: Option<IpAddr>, out_port: u16, in_port: u16) -> AppResult {
     let (socket, addr_out) = {
         let addr_in;
         let addr_out;

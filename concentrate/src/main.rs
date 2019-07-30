@@ -79,27 +79,16 @@ fn go(args: cmdline::Args) -> AppResult {
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.radio_publish_port),
-        cmdline::Cmd::LongFi => {
-            let longfi_remote_ip = match IpAddr::from_str(&args.longfi_remote_ip) {
-                Ok(ip) => Some(ip),
-                _ => None,
-            };
-            app::longfi(
-                args.print_level,
-                args.radio_publish_port,
-                args.radio_listen_port,
-                remote_ip,
-                args.longfi_port_out,
-                args.longfi_port_in,
-                longfi_remote_ip,
-            )
-        }
-        cmdline::Cmd::LongFiTest => app::longfi_test(
-            args.print_level,
+        cmdline::Cmd::LongFi => app::longfi(
+            args.radio_publish_port,
+            args.radio_listen_port,
             remote_ip,
             args.longfi_port_out,
             args.longfi_port_in,
         ),
+        cmdline::Cmd::LongFiTest => {
+            app::longfi_test(remote_ip, args.longfi_port_out, args.longfi_port_in)
+        }
         cmdline::Cmd::Send {
             implicit,
             freq,
