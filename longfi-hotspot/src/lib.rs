@@ -159,18 +159,6 @@ impl core::fmt::Debug for LongFiPkt {
 
 impl PartialEq for LongFiPkt {
     fn eq(&self, other: &Self) -> bool {
-        if (self.oui == other.oui)
-            && (self.device_id == other.device_id)
-            && (self.payload.len() == other.payload.len())
-        {
-            for (pos, e) in self.payload.iter().enumerate() {
-                if *e != other.payload[pos] {
-                    return false;
-                }
-            }
-            true
-        } else {
-            false
-        }
+        self.oui == other.oui && self.device_id == other.device_id && self.payload == other.payload
     }
 }

@@ -34,9 +34,7 @@ mod test {
 
         let serialized_array: [u8; 9] = header_struct.into();
 
-        for (index, item) in serialized_array.iter().enumerate() {
-            assert_eq!(*item, expected_array[index]);
-        }
+        assert_eq!(expected_array, serialized_array);
     }
 
     #[test]
@@ -71,9 +69,7 @@ mod test {
 
         let serialized_array: [u8; 11] = header_struct.into();
 
-        for (index, item) in serialized_array.iter().enumerate() {
-            assert_eq!(*item, expected_array[index]);
-        }
+        assert_eq!(expected_array, serialized_array);
     }
 
     #[test]
