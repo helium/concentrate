@@ -1,5 +1,8 @@
 #[cfg(test)]
 mod test {
+    #![allow(unused_imports)]
+    // ^ Clippy triggers false-positive unused imports in this module,
+    // hence `allow` above.
     use longfi_sender::{PacketHeader, PacketHeaderMultipleFragments};
     use messages as msg;
     use msg::LongFiSpreading as Spreading;
