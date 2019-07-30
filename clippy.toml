@@ -1,0 +1,7 @@
+# This complexity is just a little higher than the most complex
+# function at the time of adding this config file. Ideally, we should
+# set the threshold even lower, but that would break current code.
+cognitive-complexity-threshold = 24
+# Prevents treating CamelCase names in doc comments as identifiers and
+# suggesting backticks
+doc-valid-idents = [ "LoRa" ]
