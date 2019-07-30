@@ -7,9 +7,6 @@ extern crate log;
 
 use messages as msg;
 
-#[macro_use]
-pub mod macros;
-
 #[cfg(test)]
 mod tests;
 

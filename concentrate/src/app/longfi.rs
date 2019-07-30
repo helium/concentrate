@@ -61,7 +61,10 @@ pub fn longfi(
 
     let poll = Poll::new().expect("Error initializing poll object");
     let mut timer: Timer<usize> = Timer::default();
-    let mut timeouts: [Option<Timeout>; 256] = array_of_none_256!();
+    let mut timeouts = (0..256)
+        .map(|_| None)
+        .collect::<Vec<Option<Timeout>>>()
+        .into_boxed_slice();
     poll.register(&timer, PACKET_TIMEOUT, Ready::readable(), PollOpt::edge())
         .unwrap();
 

@@ -4,13 +4,16 @@ const PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET: usize = 9;
 const PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET: usize = 11;
 const PAYLOAD_BEGIN_FRAGMENT_PACKET: usize = 4;
 pub struct LongFiParser {
-    fragmented_packets: [Option<LongFiPkt>; 256],
+    fragmented_packets: Box<[Option<LongFiPkt>]>,
 }
 
 impl LongFiParser {
     pub fn new() -> LongFiParser {
         LongFiParser {
-            fragmented_packets: array_of_none_256!(),
+            fragmented_packets: (0..256)
+                .map(|_| None)
+                .collect::<Vec<Option<LongFiPkt>>>()
+                .into_boxed_slice(),
         }
     }
 

@@ -5,7 +5,6 @@ extern crate byteorder;
 extern crate env_logger;
 #[macro_use]
 extern crate log;
-#[macro_use]
 extern crate longfi_hotspot;
 extern crate loragw;
 extern crate messages;
