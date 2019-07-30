@@ -1,12 +1,11 @@
-use crate::error::AppResult;
+use crate::{cmdline, error::AppResult};
 use longfi_hotspot::{LongFi, LongFiResponse};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use mio_extras::timer::{Timeout, Timer};
 use protobuf::{parse_from_bytes, Message};
-use std::net::{IpAddr, SocketAddr};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 const PACKET_RECV_EVENT: Token = Token(0);
 const PACKET_TIMEOUT: Token = Token(1);
@@ -20,27 +19,21 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi(
-    in_port: u16,
-    out_port: u16,
-    radio_ip: Option<IpAddr>,
-    longfi_out_port: u16,
-    longfi_in_port: u16,
-) -> AppResult {
+pub fn longfi(args: cmdline::LongFi) -> AppResult {
     let (socket, addr_out, longfi_socket, longfi_addr_out) = {
         let addr_in;
         let addr_out;
 
-        if let Some(remote_ip) = radio_ip {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
-            addr_out = SocketAddr::from((remote_ip, out_port));
+        if let Some(remote_ip) = args.radio_request_addr {
+            addr_in = SocketAddr::from(([0, 0, 0, 0], args.radio_response_port));
+            addr_out = SocketAddr::from((remote_ip, args.radio_request_port));
         } else {
-            addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
-            addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
+            addr_in = SocketAddr::from(([127, 0, 0, 1], args.radio_response_port));
+            addr_out = SocketAddr::from(([127, 0, 0, 1], args.radio_request_port));
         }
 
-        let longfi_addr_in = SocketAddr::from(([127, 0, 0, 1], longfi_in_port));
-        let longfi_addr_out = SocketAddr::from(([127, 0, 0, 1], longfi_out_port));
+        let longfi_addr_in = SocketAddr::from(([127, 0, 0, 1], args.longfi_listen_port));
+        let longfi_addr_out = SocketAddr::from(([127, 0, 0, 1], args.longfi_publish_port));
 
         assert_ne!(addr_in, addr_out);
         debug!("radio_addr_in : {}", addr_in);

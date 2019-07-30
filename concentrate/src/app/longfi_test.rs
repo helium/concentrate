@@ -1,9 +1,9 @@
-use crate::error::AppResult;
+use crate::{cmdline, error::AppResult};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 
 extern crate rand;
 use rand::Rng;
@@ -18,17 +18,17 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi_test(ip: Option<IpAddr>, out_port: u16, in_port: u16) -> AppResult {
+pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
     let (socket, addr_out) = {
         let addr_in;
         let addr_out;
 
-        if let Some(remote_ip) = ip {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
-            addr_out = SocketAddr::from((remote_ip, out_port));
+        if let Some(longfi_request_addr) = args.longfi_request_addr {
+            addr_in = SocketAddr::from(([0, 0, 0, 0], args.longfi_response_port));
+            addr_out = SocketAddr::from((longfi_request_addr, args.longfi_request_port));
         } else {
-            addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
-            addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
+            addr_in = SocketAddr::from(([127, 0, 0, 1], args.longfi_response_port));
+            addr_out = SocketAddr::from(([127, 0, 0, 1], args.longfi_response_port));
         }
 
         assert_ne!(addr_in, addr_out);
