@@ -94,7 +94,7 @@ pub struct LongFiPkt {
 }
 
 impl LongFiPkt {
-    pub fn get_quality_string(&self) -> String {
+    pub fn quality_string(&self) -> String {
         let mut quality = String::new();
 
         for i in &self.quality {
@@ -141,7 +141,7 @@ impl From<LongFiPkt> for LongFiRxPacket {
 
 impl core::fmt::Debug for LongFiPkt {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        let quality = self.get_quality_string();
+        let quality = self.quality_string();
 
         write!(
             f,
