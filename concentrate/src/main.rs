@@ -1,11 +1,10 @@
-#![forbid(clippy::panicking_unwrap)]
+#![forbid(clippy::panicking_unwrap, unsafe_code)]
 
 extern crate byteorder;
 #[cfg(feature = "log_env")]
 extern crate env_logger;
 #[macro_use]
 extern crate log;
-#[macro_use]
 extern crate longfi_hotspot;
 extern crate loragw;
 extern crate messages;
@@ -14,15 +13,15 @@ extern crate protobuf;
 extern crate quick_error;
 #[cfg(any(feature = "log_env", feature = "log_sys"))]
 extern crate log_panics;
+extern crate mio;
+extern crate mio_extras;
+extern crate rand;
 extern crate serde;
 extern crate structopt;
 #[cfg(feature = "log_sys")]
 extern crate syslog;
 extern crate toml;
 
-extern crate mio;
-extern crate mio_extras;
-extern crate rand;
 mod app;
 mod cfg;
 mod cmdline;
@@ -79,27 +78,16 @@ fn go(args: cmdline::Args) -> AppResult {
             )
         }
         cmdline::Cmd::Listen => app::listen(args.print_level, args.radio_publish_port),
-        cmdline::Cmd::LongFi => {
-            let longfi_remote_ip = match IpAddr::from_str(&args.longfi_remote_ip) {
-                Ok(ip) => Some(ip),
-                _ => None,
-            };
-            app::longfi(
-                args.print_level,
-                args.radio_publish_port,
-                args.radio_listen_port,
-                remote_ip,
-                args.longfi_port_out,
-                args.longfi_port_in,
-                longfi_remote_ip,
-            )
-        }
-        cmdline::Cmd::LongFiTest => app::longfi_test(
-            args.print_level,
+        cmdline::Cmd::LongFi => app::longfi(
+            args.radio_publish_port,
+            args.radio_listen_port,
             remote_ip,
             args.longfi_port_out,
             args.longfi_port_in,
         ),
+        cmdline::Cmd::LongFiTest => {
+            app::longfi_test(remote_ip, args.longfi_port_out, args.longfi_port_in)
+        }
         cmdline::Cmd::Send {
             implicit,
             freq,

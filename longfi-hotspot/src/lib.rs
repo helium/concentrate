@@ -4,11 +4,9 @@ extern crate protobuf;
 extern crate rand;
 #[macro_use]
 extern crate log;
+use std::convert::From;
 
 use messages as msg;
-
-#[macro_use]
-pub mod macros;
 
 #[cfg(test)]
 mod tests;
@@ -45,9 +43,9 @@ impl LongFi {
     pub fn handle_response(&mut self, resp: &msg::RadioResp) -> Option<LongFiResponse> {
         match &resp.kind {
             Some(resp) => match resp {
-                msg::RadioResp_oneof_kind::tx(tx) => self.sender.tx_resp(tx),
+                msg::RadioResp_oneof_kind::tx(_) => self.sender.tx_resp(),
                 msg::RadioResp_oneof_kind::rx_packet(rx) => self.parser.parse(rx),
-                msg::RadioResp_oneof_kind::parse_err(parse_err) => None,
+                msg::RadioResp_oneof_kind::parse_err(_) => None,
             },
             None => None,
         }
@@ -56,10 +54,7 @@ impl LongFi {
     pub fn handle_request(&mut self, req: &msg::LongFiReq) -> Option<LongFiResponse> {
         match &req.kind {
             Some(request) => match request {
-                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => {
-                    self.sender.tx_uplink(tx_uplink, req.id)
-                }
-                _ => None,
+                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => self.sender.tx_uplink(tx_uplink),
             },
             None => None,
         }
@@ -67,6 +62,12 @@ impl LongFi {
 
     pub fn parser_timeout(&mut self, index: usize) -> Option<LongFiResponse> {
         self.parser.timeout(index)
+    }
+}
+
+impl Default for LongFi {
+    fn default() -> LongFi {
+        LongFi::new()
     }
 }
 
@@ -93,27 +94,10 @@ pub struct LongFiPkt {
 }
 
 impl LongFiPkt {
-    fn from_req(req: &messages::LongFiTxUplinkPacket) -> LongFiPkt {
-        LongFiPkt {
-            oui: req.oui,
-            device_id: req.device_id as u16,
-            packet_id: 0,
-            mac: 0x00,
-            payload: req.payload.to_vec(),
-            num_fragments: 0,
-            fragment_cnt: 0,
-            quality: Default::default(),
-            timestamp: 0,
-            snr: 0.0,
-            rssi: 0.0,
-            spreading: Spreading::SF_INVALID,
-        }
-    }
+    pub fn quality_string(&self) -> String {
+        let mut quality = String::new();
 
-    pub fn get_quality_string(&self) -> String {
-        let mut quality = String::from("");
-
-        for i in self.quality.iter() {
+        for i in &self.quality {
             match i {
                 Quality::CrcOk => quality.push('O'),
                 Quality::CrcFail => quality.push('S'),
@@ -127,12 +111,12 @@ impl LongFiPkt {
 
 use messages::LongFiRxPacket;
 
-impl Into<LongFiRxPacket> for LongFiPkt {
-    fn into(self) -> LongFiRxPacket {
+impl From<LongFiPkt> for LongFiRxPacket {
+    fn from(other: LongFiPkt) -> LongFiRxPacket {
         let mut crc_check = true;
 
-        for i in self.quality.iter() {
-            if i != &Quality::CrcOk {
+        for i in other.quality {
+            if i != Quality::CrcOk {
                 crc_check = false;
                 break;
             }
@@ -140,14 +124,14 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
         LongFiRxPacket {
             crc_check,
-            timestamp: self.timestamp,
-            rssi: self.rssi,
-            snr: self.snr,
-            oui: self.oui as u32,
-            device_id: self.device_id as u32,
-            mac: self.mac as u32,
-            payload: self.payload,
-            spreading: self.spreading,
+            timestamp: other.timestamp,
+            rssi: other.rssi,
+            snr: other.snr,
+            oui: other.oui as u32,
+            device_id: u32::from(other.device_id),
+            mac: u32::from(other.mac),
+            payload: other.payload,
+            spreading: other.spreading,
             // special fields
             unknown_fields: Default::default(),
             cached_size: Default::default(),
@@ -157,7 +141,7 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
 impl core::fmt::Debug for LongFiPkt {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        let mut quality = self.get_quality_string();
+        let quality = self.quality_string();
 
         write!(
             f,
@@ -171,19 +155,6 @@ impl core::fmt::Debug for LongFiPkt {
 
 impl PartialEq for LongFiPkt {
     fn eq(&self, other: &Self) -> bool {
-        if (self.oui == other.oui)
-            && (self.device_id == other.device_id)
-            && (self.device_id == other.device_id)
-            && (self.payload.len() == other.payload.len())
-        {
-            for (pos, e) in self.payload.iter().enumerate() {
-                if *e != other.payload[pos] {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        self.oui == other.oui && self.device_id == other.device_id && self.payload == other.payload
     }
 }

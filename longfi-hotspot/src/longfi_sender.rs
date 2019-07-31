@@ -1,7 +1,6 @@
-use super::{LongFiPkt, LongFiResponse};
+use super::LongFiResponse;
 use messages as msg;
 use msg::LongFiSpreading as Spreading;
-use protobuf::{parse_from_bytes, Message};
 use rand::Rng;
 use std::collections::VecDeque;
 use std::{thread, time};
@@ -57,7 +56,7 @@ impl PacketHeaderMultipleFragments {
         PacketHeaderMultipleFragments {
             packet_id,
             fragment_num: 0,
-            num_fragments: num_fragments,
+            num_fragments,
             oui: tx_uplink.oui,
             device_id: tx_uplink.device_id as u16,
             mac: 0x00,
@@ -106,9 +105,9 @@ pub struct LongFiSender {
     pending_fragments: Option<VecDeque<msg::RadioReq>>,
 }
 
-const RADIO_1: u32 = 920600000;
-const RADIO_2: u32 = 916600000;
-const FREQ_SPACING: u32 = 200000;
+const RADIO_1: u32 = 920_600_000;
+const RADIO_2: u32 = 916_600_000;
+const FREQ_SPACING: u32 = 200_000;
 const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
 
 const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS] = [
@@ -169,14 +168,14 @@ impl LongFiSender {
                 invert_polarity: false,
                 omit_crc: false,
                 implicit_header: false,
-                payload: payload,
+                payload,
                 ..Default::default()
             })),
             ..Default::default()
         }
     }
 
-    pub fn tx_resp(&mut self, tx_resp: &msg::RadioTxResp) -> Option<LongFiResponse> {
+    pub fn tx_resp(&mut self) -> Option<LongFiResponse> {
         debug!("[LongFi] Radio Ready - packet was sent");
 
         let mut clear_pending_fragments = false;
@@ -187,7 +186,7 @@ impl LongFiSender {
                 debug!("[LongFi] Sending another fragment. {} remaining", vec.len());
                 let maybe_fragment = vec.pop_front();
 
-                if vec.len() == 0 {
+                if vec.is_empty() {
                     clear_pending_fragments = true;
                 }
 
@@ -225,11 +224,7 @@ impl LongFiSender {
         ret
     }
 
-    pub fn tx_uplink(
-        &mut self,
-        tx_uplink: &msg::LongFiTxUplinkPacket,
-        id: u32,
-    ) -> Option<LongFiResponse> {
+    pub fn tx_uplink(&mut self, tx_uplink: &msg::LongFiTxUplinkPacket) -> Option<LongFiResponse> {
         let mut num_fragments;
         let len = tx_uplink.payload.len();
 
@@ -246,7 +241,7 @@ impl LongFiSender {
                 1 + remaining_len / payload_bytes_in_subsequent_fragments(tx_uplink.spreading);
 
             // if there was remainder, we need a final fragment
-            if (remaining_len % payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0) {
+            if remaining_len % payload_bytes_in_subsequent_fragments(tx_uplink.spreading) != 0 {
                 num_fragments += 1;
             }
         }

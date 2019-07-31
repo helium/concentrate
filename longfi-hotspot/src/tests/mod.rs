@@ -1,14 +1,17 @@
 #[cfg(test)]
-mod tests {
+mod test {
+    #![allow(unused_imports)]
+    // ^ Clippy triggers false-positive unused imports in this module,
+    // hence `allow` above.
     use longfi_sender::{PacketHeader, PacketHeaderMultipleFragments};
     use messages as msg;
     use msg::LongFiSpreading as Spreading;
     use LongFi;
-    use LongFiResponse; //, LongFiResponse};
+    use LongFiResponse;
 
     #[test]
     fn test_header_serialization() {
-        let oui = 0x12345678;
+        let oui = 0x1234_5678;
         let device_id = 0x9ABC;
         let mac = 0xBEEF;
         let packet_id = 0xBB;
@@ -34,14 +37,12 @@ mod tests {
 
         let serialized_array: [u8; 9] = header_struct.into();
 
-        for (index, item) in serialized_array.iter().enumerate() {
-            assert_eq!(*item, expected_array[index]);
-        }
+        assert_eq!(expected_array, serialized_array);
     }
 
     #[test]
     fn test_multifragment_header_serialization() {
-        let oui = 0x12345678;
+        let oui = 0x1234_5678;
         let device_id = 0x9ABC;
         let mac = 0xBEEF;
         let packet_id = 0xBB;
@@ -71,9 +72,7 @@ mod tests {
 
         let serialized_array: [u8; 11] = header_struct.into();
 
-        for (index, item) in serialized_array.iter().enumerate() {
-            assert_eq!(*item, expected_array[index]);
-        }
+        assert_eq!(expected_array, serialized_array);
     }
 
     #[test]
@@ -85,10 +84,10 @@ mod tests {
         let uplink_req = msg::LongFiTxUplinkPacket {
             disable_encoding: false,
             disable_fragmentation: false,
-            oui: 0x12345678,
+            oui: 0x1234_5678,
             device_id: 0x9ABC,
             spreading: Spreading::SF7,
-            payload: payload,
+            payload,
             ..Default::default()
         };
 
@@ -111,18 +110,18 @@ mod tests {
                                         for byte in &tx.payload {
                                             print!("{:x} ", byte);
                                         }
-                                        println!("");
+                                        println!();
                                     }
-                                    _ => assert!(false, "Wrong radio request!"),
+                                    _ => panic!("Wrong radio request!"),
                                 };
                             }
-                            None => assert!(false, "Invalid protobuf message"),
+                            None => panic!("Invalid protobuf message"),
                         };
                     }
-                    _ => assert!(false, "Wrong LongFi response given!"),
+                    _ => panic!("Wrong LongFi response given!"),
                 };
             }
-            None => assert!(false, "No LongFi response given!"),
+            None => panic!("No LongFi response given!"),
         }
     }
 }
