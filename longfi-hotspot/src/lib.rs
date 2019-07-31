@@ -4,6 +4,7 @@ extern crate protobuf;
 extern crate rand;
 #[macro_use]
 extern crate log;
+use std::convert::From;
 
 use messages as msg;
 
@@ -110,11 +111,11 @@ impl LongFiPkt {
 
 use messages::LongFiRxPacket;
 
-impl Into<LongFiRxPacket> for LongFiPkt {
-    fn into(self) -> LongFiRxPacket {
+impl From<LongFiPkt> for LongFiRxPacket {
+    fn from(other: LongFiPkt) -> LongFiRxPacket {
         let mut crc_check = true;
 
-        for i in self.quality {
+        for i in other.quality {
             if i != Quality::CrcOk {
                 crc_check = false;
                 break;
@@ -123,14 +124,14 @@ impl Into<LongFiRxPacket> for LongFiPkt {
 
         LongFiRxPacket {
             crc_check,
-            timestamp: self.timestamp,
-            rssi: self.rssi,
-            snr: self.snr,
-            oui: self.oui as u32,
-            device_id: u32::from(self.device_id),
-            mac: u32::from(self.mac),
-            payload: self.payload,
-            spreading: self.spreading,
+            timestamp: other.timestamp,
+            rssi: other.rssi,
+            snr: other.snr,
+            oui: other.oui as u32,
+            device_id: u32::from(other.device_id),
+            mac: u32::from(other.mac),
+            payload: other.payload,
+            spreading: other.spreading,
             // special fields
             unknown_fields: Default::default(),
             cached_size: Default::default(),
