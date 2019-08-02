@@ -1,87 +1,181 @@
-use std::path::PathBuf;
-use structopt::StructOpt;
+use std::{net::SocketAddr, path::PathBuf};
+use structopt::{clap, StructOpt};
 
-#[derive(StructOpt)]
+#[derive(Debug, StructOpt)]
 pub enum Cmd {
-    /// Operate as a server between concentrator hardware and UDP clients.
-    #[structopt(name = "serve")]
-    Serve {
-        #[structopt(short = "c", long = "config", parse(from_os_str))]
-        cfg_file: Option<PathBuf>,
-    },
+    /// Built In Self Test. Configures, starts, then immediately stops
+    /// concentrator. Returns 1 on hardware failure.
+    #[structopt(name = "bist", raw(setting = "clap::AppSettings::Hidden"))]
+    Bist,
 
     /// Operate as a consumer of another instance running as the
     /// server. This mode is primarily meant for debugging and
     /// printing [de]serialized packets.
     #[structopt(name = "listen")]
-    Listen,
+    Listen(Listen),
 
-    /// longfi. This mode is primarily meant for testing and debugging
-    /// longfi device code
+    /// Operate as a LongFi server. Requires separate `concentrate
+    /// serve` instance.
     #[structopt(name = "longfi")]
-    LongFi,
+    LongFi(LongFi),
 
-    /// longfi. This mode is primarily meant for testing and debugging
-    /// longfi device code
-    #[structopt(name = "longfi-test")]
-    LongFiTest,
+    /// This mode is primarily meant for testing and debugging LongFi
+    /// device code.
+    #[structopt(name = "longfi-test", raw(setting = "clap::AppSettings::Hidden"))]
+    LongFiTest(LongFiTest),
 
     /// Transmit a packet using provided string as payload. Similar to
-    /// 'listen', requires another instance running in
-    /// 'serve' mode.
+    /// 'listen', requires another instance running in 'serve' mode.
     #[structopt(name = "send")]
-    Send {
-        /// Transmit with implicit header.
-        #[structopt(short = "i", long = "implicit")]
-        implicit: bool,
+    Send(Send),
 
-        /// Frequency to transmit packet on.
-        #[structopt(value_name = "Hz", short = "f", long = "freq")]
-        freq: f64,
-
-        /// Radio [0,1] to transmit on.
-        #[structopt(short = "r", long = "radio")]
-        radio: u8,
-
-        /// Transmit power.
-        #[structopt(value_name = "dBm", short = "p", long = "power", default_value = "0")]
-        power: i8,
-
-        /// Spreading factor [7,8,9,10,11,12].
-        #[structopt(
-            value_name = "SF",
-            short = "s",
-            long = "spreading",
-            default_value = "7"
-        )]
-        spreading: u8,
-
-        /// Coderate [5,6,7,8]. Actual coderate is 4/[VALUE].
-        #[structopt(short = "c", long = "coderate", default_value = "5")]
-        coderate: u8,
-
-        /// Bandwidth [7800,15600,31200,62500,125000,250000,500000]
-        #[structopt(
-            value_name = "Hz",
-            short = "b",
-            long = "bandwidth",
-            default_value = "125000"
-        )]
-        bandwidth: u32,
-
-        /// String payload.
-        payload: Option<String>,
-    },
-
-    /// Built In Self Test. Configures, starts, then immediately stops
-    /// concentrator. Returns 1 on hardware failure.
-    #[structopt(name = "bist")]
-    Bist,
+    /// Operate as a server between concentrator hardware and UDP
+    /// clients.
+    #[structopt(name = "serve")]
+    Serve(Serve),
 }
 
-#[derive(StructOpt)]
-pub struct Args {
-    /// Polling interval. How often to poll concentrator's FIFO for received packets.
+#[derive(Debug, StructOpt)]
+pub struct Listen {
+    /// Print packets. `-p` will print on a single line, and `-pp`
+    /// will pretty-print over several.
+    #[structopt(short = "p", parse(from_occurrences))]
+    pub print_level: u8,
+
+    /// Address on which to listen for received uplink packets.
+    #[structopt(
+        value_name = "ADDR",
+        short = "l",
+        long = "listen",
+        default_value = "127.0.0.1:31337"
+    )]
+    pub listen_addr_in: SocketAddr,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct LongFi {
+    /// Address on which to listen for to-be-transmitted downlink
+    /// packets.
+    #[structopt(
+        value_name = "ADDR",
+        long = "listen",
+        default_value = "127.0.0.1:31341"
+    )]
+    pub listen_addr_in: SocketAddr,
+
+    /// Address to publish received LongFi packets to.
+    #[structopt(
+        value_name = "ADDR",
+        long = "publish",
+        default_value = "127.0.0.1:31340"
+    )]
+    pub publish_addr_out: SocketAddr,
+
+    /// Address to send raw to-be-transmitted LoRa packets to.
+    #[structopt(
+        value_name = "ADDR",
+        long = "request",
+        default_value = "127.0.0.1:31338"
+    )]
+    pub request_addr_out: SocketAddr,
+
+    /// Address on which to listen for raw uplink packets.
+    #[structopt(
+        value_name = "ADDR",
+        long = "response",
+        default_value = "127.0.0.1:31337"
+    )]
+    pub response_addr_in: SocketAddr,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct LongFiTest {
+    /// Address to send LongFi requests to.
+    #[structopt(
+        value_name = "ADDR",
+        long = "request",
+        default_value = "127.0.0.1:31341"
+    )]
+    pub request_addr_out: SocketAddr,
+
+    /// Address on which to listen for LongFi responses.
+    #[structopt(
+        value_name = "ADDR",
+        long = "response",
+        default_value = "127.0.0.1:31340"
+    )]
+    pub response_addr_in: SocketAddr,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct Send {
+    /// Address to send raw LoRa packets to.
+    #[structopt(
+        value_name = "ADDR",
+        long = "request",
+        default_value = "127.0.0.1:31338"
+    )]
+    pub request_addr_out: SocketAddr,
+
+    /// Address on which to listen for transmit responses.
+    #[structopt(
+        value_name = "ADDR",
+        long = "response",
+        default_value = "127.0.0.1:31337"
+    )]
+    pub response_addr_in: SocketAddr,
+
+    /// Print packets. `-p` will print on a single line, and `-pp`
+    /// will pretty-print over several.
+    #[structopt(short = "p", parse(from_occurrences))]
+    pub print_level: u8,
+
+    /// Transmit with implicit header.
+    #[structopt(short = "i", long = "implicit")]
+    pub implicit: bool,
+
+    /// Frequency to transmit packet on.
+    #[structopt(value_name = "Hz", short = "f", long = "freq")]
+    pub freq: f64,
+
+    /// Radio [0,1] to transmit on.
+    #[structopt(short = "r", long = "radio")]
+    pub radio: u8,
+
+    /// Transmit power.
+    #[structopt(value_name = "dBm", short = "o", long = "power", default_value = "0")]
+    pub power: i8,
+
+    /// Spreading factor [7,8,9,10,11,12].
+    #[structopt(
+        value_name = "SF",
+        short = "s",
+        long = "spreading",
+        default_value = "7"
+    )]
+    pub spreading: u8,
+
+    /// Coderate [5,6,7,8]. Actual coderate is 4/[VALUE].
+    #[structopt(short = "c", long = "coderate", default_value = "5")]
+    pub coderate: u8,
+
+    /// Bandwidth [7800,15600,31200,62500,125000,250000,500000]
+    #[structopt(
+        value_name = "Hz",
+        short = "b",
+        long = "bandwidth",
+        default_value = "125000"
+    )]
+    pub bandwidth: u32,
+
+    /// String payload.
+    pub payload: Option<String>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct Serve {
+    /// Polling interval. How often to poll concentrator's FIFO for
+    /// received packets.
     #[structopt(
         value_name = "MILLISECONDS",
         short = "I",
@@ -90,64 +184,29 @@ pub struct Args {
     )]
     pub interval: u64,
 
-    /// Print packets. `-p` will print on a single line, and `-pp` will pretty-print over several.
+    /// Print packets. `-p` will print on a single line, and `-pp`
+    /// will pretty-print over several.
     #[structopt(short = "p", parse(from_occurrences))]
     pub print_level: u8,
 
-    /// Publish port. UDP port number to publish received packets to.
-    #[structopt(
-        value_name = "PORT",
-        short = "u",
-        long = "publish",
-        default_value = "31337"
-    )]
-    pub radio_publish_port: u16,
+    #[structopt(short = "c", long = "config", parse(from_os_str))]
+    pub cfg_file: Option<PathBuf>,
 
-    /// Listen port. UDP port number to listen for send packet TX requests.
+    /// Address on which to listen for requests.
     #[structopt(
-        value_name = "PORT",
+        value_name = "ADDR",
         short = "l",
         long = "listen",
-        default_value = "31338"
+        default_value = "127.0.0.1:31338"
     )]
-    pub radio_listen_port: u16,
+    pub listen_addr_in: SocketAddr,
 
-    /// Publish port. UDP port number to publish LongFi packets to
+    /// Address to send responses and received uplink packets to.
     #[structopt(
-        value_name = "LONGFI_PORT_OUT",
-        short = "o",
-        long = "longfi-out",
-        default_value = "31340"
+        value_name = "ADDR",
+        short = "u",
+        long = "publish",
+        default_value = "127.0.0.1:31337"
     )]
-    pub longfi_port_out: u16,
-
-    /// Listen port. UDP port number to listen for LongFi transmit requests
-    #[structopt(
-        value_name = "LONGFI_PORT_IN",
-        short = "i",
-        long = "longfi_in",
-        default_value = "31341"
-    )]
-    pub longfi_port_in: u16,
-
-    /// Remote IP for listening.
-    #[structopt(
-        value_name = "REMOTE_IP",
-        short = "r",
-        long = "remote-ip",
-        default_value = ""
-    )]
-    pub remote_ip: String,
-
-    /// Remote IP for listening.
-    #[structopt(
-        value_name = "LONGFI_CLIENT_IP",
-        short = "c",
-        long = "longfi-client-ip",
-        default_value = ""
-    )]
-    pub longfi_remote_ip: String,
-
-    #[structopt(subcommand)]
-    pub cmd: Cmd,
+    pub publish_addr_out: SocketAddr,
 }

@@ -1,12 +1,11 @@
-use crate::error::AppResult;
+use crate::{cmdline, error::AppResult};
 use longfi_hotspot::{LongFi, LongFiResponse};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use mio_extras::timer::{Timeout, Timer};
 use protobuf::{parse_from_bytes, Message};
-use std::net::{IpAddr, SocketAddr};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 const PACKET_RECV_EVENT: Token = Token(0);
 const PACKET_TIMEOUT: Token = Token(1);
@@ -20,39 +19,19 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi(
-    in_port: u16,
-    out_port: u16,
-    radio_ip: Option<IpAddr>,
-    longfi_out_port: u16,
-    longfi_in_port: u16,
-) -> AppResult {
-    let (socket, addr_out, longfi_socket, longfi_addr_out) = {
-        let addr_in;
-        let addr_out;
+pub fn longfi(args: cmdline::LongFi) -> AppResult {
+    let (radio_socket, longfi_socket) = {
+        assert_ne!(args.request_addr_out, args.response_addr_in);
+        debug!("request_addr_out : {}", args.request_addr_out);
+        debug!("response_addr_in: {}", args.response_addr_in);
 
-        if let Some(remote_ip) = radio_ip {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
-            addr_out = SocketAddr::from((remote_ip, out_port));
-        } else {
-            addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
-            addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
-        }
+        assert_ne!(args.listen_addr_in, args.publish_addr_out);
+        debug!("listen_addr_in : {}", args.listen_addr_in);
+        debug!("publish_addr_out: {}", args.publish_addr_out);
 
-        let longfi_addr_in = SocketAddr::from(([127, 0, 0, 1], longfi_in_port));
-        let longfi_addr_out = SocketAddr::from(([127, 0, 0, 1], longfi_out_port));
-
-        assert_ne!(addr_in, addr_out);
-        debug!("radio_addr_in : {}", addr_in);
-        debug!("radio_addr_out: {}", addr_out);
-
-        debug!("longfi_addr_in : {}", longfi_addr_in);
-        debug!("longfi_addr_out: {}", longfi_addr_out);
         (
-            UdpSocket::bind(&addr_in)?,
-            addr_out,
-            UdpSocket::bind(&longfi_addr_in)?,
-            longfi_addr_out,
+            UdpSocket::bind(&args.response_addr_in)?,
+            UdpSocket::bind(&args.listen_addr_in)?,
         )
     };
 
@@ -69,7 +48,7 @@ pub fn longfi(
         .unwrap();
 
     poll.register(
-        &socket,
+        &radio_socket,
         PACKET_RECV_EVENT,
         Ready::readable(),
         PollOpt::edge(),
@@ -94,7 +73,7 @@ pub fn longfi(
             let maybe_response = match event.token() {
                 PACKET_RECV_EVENT => {
                     // packet received from server
-                    let sz = socket.recv(&mut read_buf)?;
+                    let sz = radio_socket.recv(&mut read_buf)?;
                     // parse it into a raw packet
                     match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
                         // feed raw packet to longfi parser
@@ -152,7 +131,7 @@ pub fn longfi(
                                 ..Default::default()
                             };
                             // send to client
-                            msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                            msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
                             debug!(
@@ -168,10 +147,10 @@ pub fn longfi(
                     }
                     LongFiResponse::RadioReq(msg) => {
                         debug!("[LongFi] Sending fragment to radio via UDP");
-                        msg_send(msg, &socket, &addr_out)?;
+                        msg_send(msg, &radio_socket, &args.request_addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {
-                        msg_send(resp, &longfi_socket, &longfi_addr_out)?;
+                        msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
                     }
                 }
             }

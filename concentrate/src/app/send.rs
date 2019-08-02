@@ -1,37 +1,22 @@
 use super::{msg_send, print_at_level};
-use crate::error::{AppError, AppResult};
+use crate::{
+    cmdline,
+    error::{AppError, AppResult},
+};
 use messages as msg;
 use protobuf::parse_from_bytes;
-use std::{
-    error::Error,
-    io::ErrorKind,
-    net::{SocketAddr, UdpSocket},
-    time::Duration,
-};
+use std::{error::Error, io::ErrorKind, net::UdpSocket, time::Duration};
 
-#[allow(clippy::too_many_arguments)]
-pub fn send(
-    print_level: u8,
-    req_port: u16,
-    resp_port: u16,
-    implicit: bool,
-    freq: u32,
-    radio: u8,
-    power: i8,
-    spreading: u8,
-    coderate: u8,
-    bandwidth: u32,
-    payload: Option<String>,
-) -> AppResult {
+pub fn send(args: cmdline::Send) -> AppResult {
     let tx_req = msg::RadioTxReq {
-        freq,
-        radio: match radio {
+        freq: args.freq as u32,
+        radio: match args.radio {
             0 => msg::Radio::R0,
             1 => msg::Radio::R1,
             e => return Err(AppError::Generic(format!("{} is not a valid radio", e))),
         },
-        power: i32::from(power),
-        bandwidth: match bandwidth {
+        power: i32::from(args.power),
+        bandwidth: match args.bandwidth {
             7800 => msg::Bandwidth::BW7_8kHz,
             15600 => msg::Bandwidth::BW15_6kHz,
             31200 => msg::Bandwidth::BW31_2kHz,
@@ -43,7 +28,7 @@ pub fn send(
                 return Err(AppError::Generic(format!("{} is not a valid bandwidth", e)));
             }
         },
-        spreading: match spreading {
+        spreading: match args.spreading {
             7 => msg::Spreading::SF7,
             8 => msg::Spreading::SF8,
             9 => msg::Spreading::SF9,
@@ -57,7 +42,7 @@ pub fn send(
                 )));
             }
         },
-        coderate: match coderate {
+        coderate: match args.coderate {
             5 => msg::Coderate::CR4_5,
             6 => msg::Coderate::CR4_6,
             7 => msg::Coderate::CR4_7,
@@ -71,14 +56,14 @@ pub fn send(
         },
         invert_polarity: false,
         omit_crc: false,
-        implicit_header: implicit,
-        payload: payload.unwrap_or_default().into_bytes(),
+        implicit_header: args.implicit,
+        payload: args.payload.unwrap_or_default().into_bytes(),
         ..Default::default()
     };
     debug!("requesting to transmit {:#?}", tx_req);
 
-    let req_addr = SocketAddr::from(([127, 0, 0, 1], req_port));
-    let socket = UdpSocket::bind(SocketAddr::from(([127, 0, 0, 1], resp_port)))?;
+    let req_addr = args.request_addr_out;
+    let socket = UdpSocket::bind(&args.response_addr_in)?;
     socket.set_read_timeout(Some(Duration::from_millis(200)))?;
     msg_send(
         msg::RadioReq {
@@ -94,7 +79,7 @@ pub fn send(
     match socket.recv(&mut read_buf) {
         Ok(sz) => match parse_from_bytes::<msg::RadioResp>(&read_buf[..sz]) {
             Ok(resp) => {
-                print_at_level(print_level, &resp);
+                print_at_level(args.print_level, &resp);
                 Ok(())
             }
             Err(e) => {

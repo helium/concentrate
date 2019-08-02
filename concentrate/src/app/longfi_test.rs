@@ -1,9 +1,9 @@
-use crate::error::AppResult;
+use crate::{cmdline, error::AppResult};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 
 extern crate rand;
 use rand::Rng;
@@ -18,23 +18,12 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
     Ok(())
 }
 
-pub fn longfi_test(ip: Option<IpAddr>, out_port: u16, in_port: u16) -> AppResult {
-    let (socket, addr_out) = {
-        let addr_in;
-        let addr_out;
-
-        if let Some(remote_ip) = ip {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], in_port));
-            addr_out = SocketAddr::from((remote_ip, out_port));
-        } else {
-            addr_in = SocketAddr::from(([127, 0, 0, 1], in_port));
-            addr_out = SocketAddr::from(([127, 0, 0, 1], out_port));
-        }
-
-        assert_ne!(addr_in, addr_out);
-        debug!("addr_in : {}", addr_in);
-        debug!("addr_out: {}", addr_out);
-        (UdpSocket::bind(&addr_in)?, addr_out)
+pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
+    let socket = {
+        assert_ne!(args.request_addr_out, args.response_addr_in);
+        debug!("request_addr_out : {}", args.request_addr_out);
+        debug!("response_addr_in: {}", args.response_addr_in);
+        UdpSocket::bind(&args.response_addr_in)?
     };
 
     let mut read_buf = [0; 1024];
@@ -70,7 +59,7 @@ pub fn longfi_test(ip: Option<IpAddr>, out_port: u16, in_port: u16) -> AppResult
             ..Default::default()
         },
         &socket,
-        &addr_out,
+        &args.request_addr_out,
     )?;
 
     let mut events = Events::with_capacity(128);

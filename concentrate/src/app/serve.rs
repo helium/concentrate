@@ -1,52 +1,36 @@
 use super::{msg_send, print_at_level};
-use crate::{cfg, error::AppResult};
+use crate::{cfg, cmdline, error::AppResult};
 use loragw;
 use messages::*;
 use protobuf::parse_from_bytes;
 use std::{
     convert::{TryFrom, TryInto},
+    fs,
     io::ErrorKind,
-    net::{IpAddr, SocketAddr, UdpSocket},
+    net::UdpSocket,
+    path::PathBuf,
     time::Duration,
 };
 
-pub fn serve(
-    cfg: Option<&str>,
-    polling_interval: u64,
-    print_level: u8,
-    req_port: u16,
-    resp_port: u16,
-    ip: Option<IpAddr>,
-) -> AppResult {
-    let (socket, resp_addr) = {
-        let resp_addr;
-        let req_addr;
-
-        if let Some(remote_ip) = ip {
-            resp_addr = SocketAddr::from((remote_ip, resp_port));
-            req_addr = SocketAddr::from(([0, 0, 0, 0], req_port));
-        } else {
-            resp_addr = SocketAddr::from(([127, 0, 0, 1], resp_port));
-            req_addr = SocketAddr::from(([127, 0, 0, 1], req_port));
-        }
-
-        assert_ne!(req_addr, resp_addr);
-        debug!("req port: {}", req_addr);
-        debug!("resp port: {}", resp_addr);
-        (UdpSocket::bind(req_addr)?, resp_addr)
+pub fn serve(args: cmdline::Serve) -> AppResult {
+    let socket = {
+        assert_ne!(args.listen_addr_in, args.publish_addr_out);
+        debug!("listen addr: {}", args.listen_addr_in);
+        debug!("publish addr: {}", args.publish_addr_out);
+        UdpSocket::bind(args.listen_addr_in)?
     };
 
-    socket.set_read_timeout(Some(Duration::from_millis(polling_interval)))?;
+    socket.set_read_timeout(Some(Duration::from_millis(args.interval)))?;
     let mut req_buf = [0; 1024];
 
     let mut concentrator = loragw::Concentrator::open()?;
-    config(&mut concentrator, cfg)?;
+    config(&mut concentrator, args.cfg_file)?;
     concentrator.start()?;
 
     loop {
         while let Some(packets) = concentrator.receive()? {
             for pkt in packets {
-                print_at_level(print_level, &pkt);
+                print_at_level(args.print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
                     debug!("received {:?}", pkt);
                     let resp = RadioResp {
@@ -54,7 +38,7 @@ pub fn serve(
                         kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
                         ..Default::default()
                     };
-                    msg_send(resp, &socket, resp_addr)?;
+                    msg_send(resp, &socket, args.publish_addr_out)?;
                 }
             }
         }
@@ -109,7 +93,7 @@ pub fn serve(
                         }
                     }
                 };
-                msg_send(resp, &socket, resp_addr)?;
+                msg_send(resp, &socket, args.publish_addr_out)?;
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
             Err(e) => return Err(e.into()),
@@ -117,8 +101,15 @@ pub fn serve(
     }
 }
 
-fn config(concentrator: &mut loragw::Concentrator, cfg: Option<&str>) -> AppResult {
-    let cfg = cfg::Config::from_str_or_default(cfg)?;
+fn config(concentrator: &mut loragw::Concentrator, cfg: Option<PathBuf>) -> AppResult {
+    let cfg = match cfg {
+        Some(path) => {
+            let cfg_str = fs::read_to_string(path)?;
+            cfg::Config::from_str(&cfg_str)?
+        }
+        None => cfg::Config::from_str_or_default(None)?,
+    };
+
     debug!("configuring concentrator with {:?}", cfg);
 
     concentrator.config_board(&cfg.board.try_into()?)?;
