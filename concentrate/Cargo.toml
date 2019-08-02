@@ -4,7 +4,6 @@ version = "0.1.9"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 
 [dependencies]
-byteorder = "1"
 log = "0.4.6"
 longfi-hotspot = { path = "../longfi-hotspot" }
 loragw = { path = "../loragw" }

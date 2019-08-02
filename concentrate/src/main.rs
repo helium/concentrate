@@ -1,6 +1,5 @@
 #![forbid(clippy::panicking_unwrap, unsafe_code)]
 
-extern crate byteorder;
 #[cfg(feature = "log_env")]
 extern crate env_logger;
 #[macro_use]
