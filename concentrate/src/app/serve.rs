@@ -7,28 +7,17 @@ use std::{
     convert::{TryFrom, TryInto},
     fs,
     io::ErrorKind,
-    net::{SocketAddr, UdpSocket},
+    net::UdpSocket,
     path::PathBuf,
     time::Duration,
 };
 
 pub fn serve(args: cmdline::Serve) -> AppResult {
-    let (socket, resp_addr) = {
-        let resp_addr;
-        let req_addr;
-
-        if let Some(remote_ip) = args.remote_ip {
-            resp_addr = SocketAddr::from((remote_ip, args.publish_port));
-            req_addr = SocketAddr::from(([0, 0, 0, 0], args.listen_port));
-        } else {
-            resp_addr = SocketAddr::from(([127, 0, 0, 1], args.publish_port));
-            req_addr = SocketAddr::from(([127, 0, 0, 1], args.listen_port));
-        }
-
-        assert_ne!(req_addr, resp_addr);
-        debug!("req port: {}", req_addr);
-        debug!("resp port: {}", resp_addr);
-        (UdpSocket::bind(req_addr)?, resp_addr)
+    let socket = {
+        assert_ne!(args.listen_addr_in, args.publish_addr_out);
+        debug!("listen addr: {}", args.listen_addr_in);
+        debug!("publish addr: {}", args.publish_addr_out);
+        UdpSocket::bind(args.listen_addr_in)?
     };
 
     socket.set_read_timeout(Some(Duration::from_millis(args.interval)))?;
@@ -49,7 +38,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                         kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
                         ..Default::default()
                     };
-                    msg_send(resp, &socket, resp_addr)?;
+                    msg_send(resp, &socket, args.publish_addr_out)?;
                 }
             }
         }
@@ -104,7 +93,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                         }
                     }
                 };
-                msg_send(resp, &socket, resp_addr)?;
+                msg_send(resp, &socket, args.publish_addr_out)?;
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
             Err(e) => return Err(e.into()),

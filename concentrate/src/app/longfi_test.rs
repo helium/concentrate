@@ -19,22 +19,11 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 }
 
 pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
-    let (socket, addr_out) = {
-        let addr_in;
-        let addr_out;
-
-        if let Some(longfi_request_addr) = args.longfi_request_addr {
-            addr_in = SocketAddr::from(([0, 0, 0, 0], args.longfi_response_port));
-            addr_out = SocketAddr::from((longfi_request_addr, args.longfi_request_port));
-        } else {
-            addr_in = SocketAddr::from(([127, 0, 0, 1], args.longfi_response_port));
-            addr_out = SocketAddr::from(([127, 0, 0, 1], args.longfi_response_port));
-        }
-
-        assert_ne!(addr_in, addr_out);
-        debug!("addr_in : {}", addr_in);
-        debug!("addr_out: {}", addr_out);
-        (UdpSocket::bind(&addr_in)?, addr_out)
+    let socket = {
+        assert_ne!(args.request_addr_out, args.response_addr_in);
+        debug!("request_addr_out : {}", args.request_addr_out);
+        debug!("response_addr_in: {}", args.response_addr_in);
+        UdpSocket::bind(&args.response_addr_in)?
     };
 
     let mut read_buf = [0; 1024];
@@ -70,7 +59,7 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
             ..Default::default()
         },
         &socket,
-        &addr_out,
+        &args.request_addr_out,
     )?;
 
     let mut events = Events::with_capacity(128);

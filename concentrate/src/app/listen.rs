@@ -1,13 +1,11 @@
 use crate::{cmdline, error::AppResult};
 use messages as msg;
 use protobuf::parse_from_bytes;
-use std::net::{SocketAddr, UdpSocket};
+use std::net::UdpSocket;
 
 pub fn listen(args: cmdline::Listen) -> AppResult {
-    let listen_addr = SocketAddr::from(([0, 0, 0, 0], args.listen_port));
-
-    debug!("listening for responses on {}", listen_addr);
-    let socket = UdpSocket::bind(listen_addr)?;
+    debug!("listening for responses on {}", args.listen_addr_in);
+    let socket = UdpSocket::bind(args.listen_addr_in)?;
 
     let mut read_buf = [0; 1024];
 

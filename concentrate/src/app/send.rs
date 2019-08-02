@@ -5,12 +5,7 @@ use crate::{
 };
 use messages as msg;
 use protobuf::parse_from_bytes;
-use std::{
-    error::Error,
-    io::ErrorKind,
-    net::{SocketAddr, UdpSocket},
-    time::Duration,
-};
+use std::{error::Error, io::ErrorKind, net::UdpSocket, time::Duration};
 
 pub fn send(args: cmdline::Send) -> AppResult {
     let tx_req = msg::RadioTxReq {
@@ -67,8 +62,8 @@ pub fn send(args: cmdline::Send) -> AppResult {
     };
     debug!("requesting to transmit {:#?}", tx_req);
 
-    let req_addr = SocketAddr::from(([127, 0, 0, 1], args.request_port));
-    let socket = UdpSocket::bind(SocketAddr::from(([127, 0, 0, 1], args.response_port)))?;
+    let req_addr = args.request_addr_out;
+    let socket = UdpSocket::bind(&args.response_addr_in)?;
     socket.set_read_timeout(Some(Duration::from_millis(200)))?;
     msg_send(
         msg::RadioReq {
