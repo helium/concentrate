@@ -158,7 +158,7 @@ impl LongFiParser {
                     return Some(LongFiResponse::PktRx(pkt));
                 }
             }
-            None
+            Some(LongFiResponse::FragmentedPacketBegin(packet_id))
         }
     }
 }

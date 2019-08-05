@@ -71,7 +71,6 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
             // handle epoll events
             let maybe_response = match event.token() {
                 PACKET_RECV_EVENT => {
-                    debug!("Received packet");
                     // packet received from server
                     let sz = radio_socket.recv(&mut read_buf)?;
                     // parse it into a raw packet
@@ -143,6 +142,11 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                     // the parser got a header fragment and will continue parsing the packet
                     // NOTE: there is a known bug here where a new timeout configuration writes over the previous one
                     LongFiResponse::FragmentedPacketBegin(index) => {
+                        // packet received, cancel the timeout
+                        if let Some(timeout) = timeouts[index].take() {
+                            timer.cancel_timeout(&timeout);
+                        }
+
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {

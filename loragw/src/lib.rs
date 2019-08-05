@@ -140,7 +140,7 @@ impl Concentrator {
     pub fn transmit(&self, packet: TxPacket) -> Result {
         while self.transmit_status()? != TxStatus::Free {
             const SLEEP_TIME: time::Duration = time::Duration::from_millis(5);
-            trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
+            debug!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
             thread::sleep(SLEEP_TIME);
         }
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
