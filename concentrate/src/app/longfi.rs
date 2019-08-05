@@ -116,13 +116,13 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                             timer.cancel_timeout(&timeout);
                         }
 
-                        let quality_str = pkt.quality_string();
+                        debug!("[LongFi][app] Packet received: {:?}", pkt);
 
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
                             // transform it into a UDP msg for client
-                            debug!("Packet received, sending to client: {:?}", rx_packet);
+                            debug!("[LongFi][app] Sending to client");
 
                             let resp = msg::LongFiResp {
                                 id: 0,
@@ -133,10 +133,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                             msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
-                            debug!(
-                                "Packet received, with CRC error ({}), dropping: {:?}",
-                                quality_str, rx_packet
-                            );
+                            debug!("[LongFi][app] Dropping packet due to CRC error or missing fragments");
                         }
                     }
                     // the parser got a header fragment and will continue parsing the packet
@@ -150,7 +147,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {
-                        debug!("[LongFi] Sending fragment to radio via UDP");
+                        debug!("[LongFi][app] Sending fragment to radio via UDP");
                         msg_send(msg, &radio_socket, &args.radio_listen_addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {

@@ -145,9 +145,7 @@ impl core::fmt::Debug for LongFiPkt {
 
         write!(
             f,
-            "LongFiPkt {{ oui: 0x{:x}, device_id 0x{:x}, packet_id: 0x{:x}, mac: 0x{:x},
-            quality: {},
-            payload: {:?} }}",
+            "LongFiPkt {{ oui: 0x{:x}, device_id 0x{:x}, packet_id: 0x{:x}, mac: 0x{:x}, quality: {}, payload: {:?} }}",
             self.oui, self.device_id, self.packet_id, self.mac, quality, self.payload
         )
     }

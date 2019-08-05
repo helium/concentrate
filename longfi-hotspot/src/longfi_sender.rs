@@ -3,7 +3,6 @@ use messages as msg;
 use msg::LongFiSpreading as Spreading;
 use rand::Rng;
 use std::collections::VecDeque;
-use std::{thread, time};
 
 const SIZEOF_PACKET_HEADER: usize = std::mem::size_of::<PacketHeader>();
 const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize =
@@ -176,14 +175,14 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self) -> Option<LongFiResponse> {
-        debug!("Radio Ready - packet was sent");
+        debug!("[LongFi] Radio has signalled that packet was sent");
 
         let mut clear_pending_fragments = false;
 
         let ret = match &mut self.pending_fragments {
             // if there is a vector, we should have more fragments
             Some(vec) => {
-                debug!("Sending another fragment. {} remaining", vec.len());
+                debug!("[LongFi] Sending another fragment. {} remaining", vec.len());
                 let maybe_fragment = vec.pop_front();
 
                 if vec.is_empty() {
@@ -192,10 +191,15 @@ impl LongFiSender {
 
                 match maybe_fragment {
                     Some(fragment) => {
-                        debug!("Fragment: {:?}", fragment);
+                        match &fragment.kind {
+                            Some(req) => match req {
+                                msg::RadioReq_oneof_kind::tx(tx) => {
+                                    debug!("[LongFi] Fragment: {:?}", tx.payload);
+                                }
+                            },
+                            _ => (),
+                        }
 
-                        //let hundred_milliseconds = time::Duration::from_millis(50);
-                        //thread::sleep(hundred_milliseconds);
                         Some(LongFiResponse::RadioReq(fragment))
                     }
                     None => None,
@@ -204,7 +208,7 @@ impl LongFiSender {
             // if None, just completed a full packet
             None => match self.req_id.take() {
                 Some(id) => {
-                    debug!("Packet complete");
+                    debug!("[LongFi] All packet fragments transmitted");
                     Some(LongFiResponse::ClientResp(msg::LongFiResp {
                         id,
                         kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {
