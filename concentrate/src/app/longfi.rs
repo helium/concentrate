@@ -21,17 +21,16 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 
 pub fn longfi(args: cmdline::LongFi) -> AppResult {
     let (radio_socket, longfi_socket) = {
-        assert_ne!(args.request_addr_out, args.response_addr_in);
-        debug!("request_addr_out : {}", args.request_addr_out);
-        debug!("response_addr_in: {}", args.response_addr_in);
+        assert_ne!(args.radio_listen_addr_out, args.radio_publish_addr_in);
+        debug!("radio_listen_addr_out : {}", args.radio_listen_addr_out);
+        debug!("radio_publish_addr_in: {}", args.radio_publish_addr_in);
 
-        assert_ne!(args.listen_addr_in, args.publish_addr_out);
-        debug!("listen_addr_in : {}", args.listen_addr_in);
-        debug!("publish_addr_out: {}", args.publish_addr_out);
-
+        assert_ne!(args.longfi_publish_addr_out, args.longfi_listen_addr_in);
+        debug!("longfi_publish_addr_out : {}", args.longfi_publish_addr_out);
+        debug!("longfi_listen_addr_in: {}", args.longfi_listen_addr_in);
         (
-            UdpSocket::bind(&args.response_addr_in)?,
-            UdpSocket::bind(&args.listen_addr_in)?,
+            UdpSocket::bind(&args.radio_publish_addr_in)?,
+            UdpSocket::bind(&args.longfi_listen_addr_in)?,
         )
     };
 
@@ -72,6 +71,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
             // handle epoll events
             let maybe_response = match event.token() {
                 PACKET_RECV_EVENT => {
+                    debug!("Received packet");
                     // packet received from server
                     let sz = radio_socket.recv(&mut read_buf)?;
                     // parse it into a raw packet
@@ -131,7 +131,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                                 ..Default::default()
                             };
                             // send to client
-                            msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
+                            msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
                             debug!(
@@ -147,10 +147,10 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                     }
                     LongFiResponse::RadioReq(msg) => {
                         debug!("[LongFi] Sending fragment to radio via UDP");
-                        msg_send(msg, &radio_socket, &args.request_addr_out)?;
+                        msg_send(msg, &radio_socket, &args.radio_listen_addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {
-                        msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
+                        msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                     }
                 }
             }

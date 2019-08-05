@@ -47,13 +47,25 @@ concentrate -p listen
 ```
 
 ### Notes
+To build with `log_env`:
+```
+~/concentrate/concentrate$ cargo build --no-default-features --features log_env
+```
+
 For 10.76.100.10: 
+```
+./concentrate serve -p --publish 10.76.100.1:31337 --listen 0.0.0.0:31338
 
-./concentrate -p -r 10.76.100.1 -u 31335 -l 31336 serve
-./target/debug/concentrate -r 10.76.100.10 -u 31335 -l 31336 -o 31342 -i 31343 longfi
-./target/debug/concentrate -i 31342 -o 31343 longfi-test
+CONCENTRATE_LOG="debug" ./target/debug/concentrate longfi --radio-listen 10.76.100.10:31338 --radio-publish 0.0.0.0:31337 --longfi-listen 127.0.0.1:31341 --longfi-publish 127.0.0.1:31340
 
-For 10.76.100.11: 
-./concentrate -p -r 10.76.100.1 -u 31337 -l 31338 serve
-./target/debug/concentrate -r 10.76.100.11 -u 31337 -l 31338 -o 31340 -i 31341 longfi
-./target/debug/concentrate -i 31340 -o 31341 longfi-test
+./target/debug/concentrate longfi-test --publish 127.0.0.1:31340 --listen 127.0.0.1:31341
+```
+
+For 10.76.100.11:
+```
+./concentrate serve -p --publish 10.76.100.1:31330 --listen 0.0.0.0:31331
+
+CONCENTRATE_LOG="debug" ./target/debug/concentrate longfi --radio-listen 10.76.100.11:31331 --radio-publish 0.0.0.0:31330 --longfi-listen 127.0.0.1:31332 --longfi-publish 127.0.0.1:31333
+
+./target/debug/concentrate longfi-test --publish 127.0.0.1:31333 --listen 127.0.0.1:31332
+```

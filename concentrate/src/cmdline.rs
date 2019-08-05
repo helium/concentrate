@@ -58,34 +58,34 @@ pub struct LongFi {
     /// packets.
     #[structopt(
         value_name = "ADDR",
-        long = "listen",
+        long = "longfi-listen",
         default_value = "127.0.0.1:31341"
     )]
-    pub listen_addr_in: SocketAddr,
+    pub longfi_listen_addr_in: SocketAddr,
 
     /// Address to publish received LongFi packets to.
     #[structopt(
         value_name = "ADDR",
-        long = "publish",
+        long = "longfi-publish",
         default_value = "127.0.0.1:31340"
     )]
-    pub publish_addr_out: SocketAddr,
+    pub longfi_publish_addr_out: SocketAddr,
 
-    /// Address to send raw to-be-transmitted LoRa packets to.
+    /// Address to publish raw to-be-transmitted LoRa packets to.
     #[structopt(
         value_name = "ADDR",
-        long = "request",
+        long = "radio-listen",
         default_value = "127.0.0.1:31338"
     )]
-    pub request_addr_out: SocketAddr,
+    pub radio_listen_addr_out: SocketAddr,
 
     /// Address on which to listen for raw uplink packets.
     #[structopt(
         value_name = "ADDR",
-        long = "response",
+        long = "radio-publish",
         default_value = "127.0.0.1:31337"
     )]
-    pub response_addr_in: SocketAddr,
+    pub radio_publish_addr_in: SocketAddr,
 }
 
 #[derive(Debug, StructOpt)]
@@ -93,18 +93,18 @@ pub struct LongFiTest {
     /// Address to send LongFi requests to.
     #[structopt(
         value_name = "ADDR",
-        long = "request",
+        long = "listen",
         default_value = "127.0.0.1:31341"
     )]
-    pub request_addr_out: SocketAddr,
+    pub listen_addr_out: SocketAddr,
 
     /// Address on which to listen for LongFi responses.
     #[structopt(
         value_name = "ADDR",
-        long = "response",
+        long = "publish",
         default_value = "127.0.0.1:31340"
     )]
-    pub response_addr_in: SocketAddr,
+    pub publish_addr_in: SocketAddr,
 }
 
 #[derive(Debug, StructOpt)]
@@ -112,18 +112,18 @@ pub struct Send {
     /// Address to send raw LoRa packets to.
     #[structopt(
         value_name = "ADDR",
-        long = "request",
+        long = "listen",
         default_value = "127.0.0.1:31338"
     )]
-    pub request_addr_out: SocketAddr,
+    pub listen_addr_out: SocketAddr,
 
     /// Address on which to listen for transmit responses.
     #[structopt(
         value_name = "ADDR",
-        long = "response",
+        long = "publish",
         default_value = "127.0.0.1:31337"
     )]
-    pub response_addr_in: SocketAddr,
+    pub publish_addr_in: SocketAddr,
 
     /// Print packets. `-p` will print on a single line, and `-pp`
     /// will pretty-print over several.
