@@ -191,13 +191,11 @@ impl LongFiSender {
 
                 match maybe_fragment {
                     Some(fragment) => {
-                        match &fragment.kind {
-                            Some(req) => match req {
-                                msg::RadioReq_oneof_kind::tx(tx) => {
-                                    debug!("[LongFi] Fragment: {:?}", tx.payload);
-                                }
-                            },
-                            _ => (),
+                        // print the fragment payload nicely
+                        if let Some(msg) = &fragment.kind {
+                            if let msg::RadioReq_oneof_kind::tx(tx) = msg {
+                                debug!("[LongFi] Fragment: {:?}", tx.payload);
+                            }
                         }
 
                         Some(LongFiResponse::RadioReq(fragment))
