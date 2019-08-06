@@ -115,7 +115,7 @@ pub struct LongFiTest {
     )]
     pub num_bytes: usize,
 
-    /// number of bytes to transmit
+    /// disable fragmentation, making it so that bytes are all send monolithically
     #[structopt(short = "d", long = "disable-frag")]
     pub disable_fragmentation: bool,
 }
