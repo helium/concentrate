@@ -116,7 +116,7 @@ pub struct LongFiTest {
     pub num_bytes: usize,
 
     /// number of bytes to transmit
-    #[structopt(value_name = "FRAGMENTED", short = "d", long = "disable_frag")]
+    #[structopt(short = "d", long = "disable-frag")]
     pub disable_fragmentation: bool,
 }
 
