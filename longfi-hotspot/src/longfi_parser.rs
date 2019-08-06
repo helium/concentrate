@@ -115,7 +115,7 @@ impl LongFiParser {
                 }
             });
 
-            Some(LongFiResponse::FragmentedPacketBegin(packet_id))
+            Some(LongFiResponse::PktFragment(packet_id))
         }
         // must be fragment
         else {
@@ -158,7 +158,7 @@ impl LongFiParser {
                     return Some(LongFiResponse::PktRx(pkt));
                 }
             }
-            Some(LongFiResponse::FragmentedPacketBegin(packet_id))
+            Some(LongFiResponse::PktFragment(packet_id))
         }
     }
 }

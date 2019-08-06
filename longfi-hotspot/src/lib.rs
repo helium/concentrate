@@ -22,7 +22,7 @@ use msg::LongFiSpreading as Spreading;
 #[derive(Debug)]
 pub enum LongFiResponse {
     PktRx(LongFiPkt),
-    FragmentedPacketBegin(usize),
+    PktFragment(usize),
     RadioReq(msg::RadioReq),
     ClientResp(msg::LongFiResp),
 }
