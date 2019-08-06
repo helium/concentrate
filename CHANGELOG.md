@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.0 (2019-08-06)
+==================
+Bug fixes:
+
+* [#29](https://github.com/helium/concentrate/pull/29):
+  Fix LongFi [de]fragmentation.
+
 0.1.9 (2019-07-28)
 ==================
 Feature enhancements:
