@@ -3,7 +3,6 @@ use messages as msg;
 use msg::LongFiSpreading as Spreading;
 use rand::Rng;
 use std::collections::VecDeque;
-use std::{thread, time};
 
 const SIZEOF_PACKET_HEADER: usize = std::mem::size_of::<PacketHeader>();
 const SIZEOF_PACKET_HEADER_MULTIPLE_FRAGMENTS: usize =
@@ -176,7 +175,7 @@ impl LongFiSender {
     }
 
     pub fn tx_resp(&mut self) -> Option<LongFiResponse> {
-        debug!("[LongFi] Radio Ready - packet was sent");
+        debug!("[LongFi] Radio has signalled that packet was sent");
 
         let mut clear_pending_fragments = false;
 
@@ -192,10 +191,12 @@ impl LongFiSender {
 
                 match maybe_fragment {
                     Some(fragment) => {
-                        debug!("[LongFi] Fragment: {:?}", fragment);
+                        // print the fragment payload nicely
+                        if let Some(msg) = &fragment.kind {
+                            let msg::RadioReq_oneof_kind::tx(tx) = msg;
+                            debug!("[LongFi] Fragment: {:?}", tx.payload);
+                        }
 
-                        let quarter_second = time::Duration::from_millis(250);
-                        thread::sleep(quarter_second);
                         Some(LongFiResponse::RadioReq(fragment))
                     }
                     None => None,
@@ -204,7 +205,7 @@ impl LongFiSender {
             // if None, just completed a full packet
             None => match self.req_id.take() {
                 Some(id) => {
-                    debug!("[LongFi] Packet complete");
+                    debug!("[LongFi] All packet fragments transmitted");
                     Some(LongFiResponse::ClientResp(msg::LongFiResp {
                         id,
                         kind: Some(msg::LongFiResp_oneof_kind::tx_status(msg::LongFiTxStatus {

@@ -62,8 +62,8 @@ pub fn send(args: cmdline::Send) -> AppResult {
     };
     debug!("requesting to transmit {:#?}", tx_req);
 
-    let req_addr = args.request_addr_out;
-    let socket = UdpSocket::bind(&args.response_addr_in)?;
+    let req_addr = args.listen_addr_out;
+    let socket = UdpSocket::bind(&args.publish_addr_in)?;
     socket.set_read_timeout(Some(Duration::from_millis(200)))?;
     msg_send(
         msg::RadioReq {

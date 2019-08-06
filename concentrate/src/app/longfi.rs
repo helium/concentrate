@@ -21,17 +21,16 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 
 pub fn longfi(args: cmdline::LongFi) -> AppResult {
     let (radio_socket, longfi_socket) = {
-        assert_ne!(args.request_addr_out, args.response_addr_in);
-        debug!("request_addr_out : {}", args.request_addr_out);
-        debug!("response_addr_in: {}", args.response_addr_in);
+        assert_ne!(args.radio_listen_addr_out, args.radio_publish_addr_in);
+        debug!("radio_listen_addr_out : {}", args.radio_listen_addr_out);
+        debug!("radio_publish_addr_in: {}", args.radio_publish_addr_in);
 
-        assert_ne!(args.listen_addr_in, args.publish_addr_out);
-        debug!("listen_addr_in : {}", args.listen_addr_in);
-        debug!("publish_addr_out: {}", args.publish_addr_out);
-
+        assert_ne!(args.longfi_publish_addr_out, args.longfi_listen_addr_in);
+        debug!("longfi_publish_addr_out : {}", args.longfi_publish_addr_out);
+        debug!("longfi_listen_addr_in: {}", args.longfi_listen_addr_in);
         (
-            UdpSocket::bind(&args.response_addr_in)?,
-            UdpSocket::bind(&args.listen_addr_in)?,
+            UdpSocket::bind(&args.radio_publish_addr_in)?,
+            UdpSocket::bind(&args.longfi_listen_addr_in)?,
         )
     };
 
@@ -117,13 +116,13 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                             timer.cancel_timeout(&timeout);
                         }
 
-                        let quality_str = pkt.quality_string();
+                        debug!("[LongFi][app] Packet received: {:?}", pkt);
 
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
                             // transform it into a UDP msg for client
-                            debug!("Packet received, sending to client: {:?}", rx_packet);
+                            debug!("[LongFi][app] Sending to client");
 
                             let resp = msg::LongFiResp {
                                 id: 0,
@@ -131,26 +130,28 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                                 ..Default::default()
                             };
                             // send to client
-                            msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
+                            msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
-                            debug!(
-                                "Packet received, with CRC error ({}), dropping: {:?}",
-                                quality_str, rx_packet
-                            );
+                            debug!("[LongFi][app] Dropping packet due to CRC error or missing fragments");
                         }
                     }
                     // the parser got a header fragment and will continue parsing the packet
                     // NOTE: there is a known bug here where a new timeout configuration writes over the previous one
-                    LongFiResponse::FragmentedPacketBegin(index) => {
+                    LongFiResponse::PktFragment(index) => {
+                        // packet received, cancel the timeout
+                        if let Some(timeout) = timeouts[index].take() {
+                            timer.cancel_timeout(&timeout);
+                        }
+
                         timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {
-                        debug!("[LongFi] Sending fragment to radio via UDP");
-                        msg_send(msg, &radio_socket, &args.request_addr_out)?;
+                        debug!("[LongFi][app] Sending fragment to radio via UDP");
+                        msg_send(msg, &radio_socket, &args.radio_listen_addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {
-                        msg_send(resp, &longfi_socket, &args.publish_addr_out)?;
+                        msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                     }
                 }
             }

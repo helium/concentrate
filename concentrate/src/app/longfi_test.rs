@@ -20,10 +20,10 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 
 pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
     let socket = {
-        assert_ne!(args.request_addr_out, args.response_addr_in);
-        debug!("request_addr_out : {}", args.request_addr_out);
-        debug!("response_addr_in: {}", args.response_addr_in);
-        UdpSocket::bind(&args.response_addr_in)?
+        assert_ne!(args.listen_addr_out, args.publish_addr_in);
+        debug!("request_addr_out : {}", args.listen_addr_out);
+        debug!("response_addr_in: {}", args.publish_addr_in);
+        UdpSocket::bind(&args.publish_addr_in)?
     };
 
     let mut read_buf = [0; 1024];
@@ -39,12 +39,12 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
     .unwrap();
 
     let mut rng = rand::thread_rng();
-    let payload: Vec<u8> = (0..90).map(|_| rng.gen::<u8>()).collect();
+    let payload: Vec<u8> = (0..args.num_bytes).map(|_| rng.gen::<u8>()).collect();
 
     println!("sending packet: {:?}", payload);
     let tx_req = msg::LongFiTxUplinkPacket {
         disable_encoding: false,
-        disable_fragmentation: false,
+        disable_fragmentation: args.disable_fragmentation,
         oui: 0xBEEF_FEED,
         device_id: 0xABCD,
         spreading: msg::LongFiSpreading::SF10,
@@ -59,7 +59,7 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
             ..Default::default()
         },
         &socket,
-        &args.request_addr_out,
+        &args.listen_addr_out,
     )?;
 
     let mut events = Events::with_capacity(128);
