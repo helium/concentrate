@@ -193,9 +193,8 @@ impl LongFiSender {
                     Some(fragment) => {
                         // print the fragment payload nicely
                         if let Some(msg) = &fragment.kind {
-                            if let msg::RadioReq_oneof_kind::tx(tx) = msg {
-                                debug!("[LongFi] Fragment: {:?}", tx.payload);
-                            }
+                            let msg::RadioReq_oneof_kind::tx(tx) = msg;
+                            debug!("[LongFi] Fragment: {:?}", tx.payload);
                         }
 
                         Some(LongFiResponse::RadioReq(fragment))

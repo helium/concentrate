@@ -105,6 +105,19 @@ pub struct LongFiTest {
         default_value = "127.0.0.1:31340"
     )]
     pub publish_addr_in: SocketAddr,
+
+    /// number of bytes to transmit
+    #[structopt(
+        value_name = "NUM_BYTES",
+        short = "n",
+        long = "num-bytes",
+        default_value = "90"
+    )]
+    pub num_bytes: usize,
+
+    /// number of bytes to transmit
+    #[structopt(value_name = "FRAGMENTED", short = "d", long = "disable_frag")]
+    pub disable_fragmentation: bool,
 }
 
 #[derive(Debug, StructOpt)]

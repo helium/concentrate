@@ -39,12 +39,12 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
     .unwrap();
 
     let mut rng = rand::thread_rng();
-    let payload: Vec<u8> = (0..90).map(|_| rng.gen::<u8>()).collect();
+    let payload: Vec<u8> = (0..args.num_bytes).map(|_| rng.gen::<u8>()).collect();
 
     println!("sending packet: {:?}", payload);
     let tx_req = msg::LongFiTxUplinkPacket {
         disable_encoding: false,
-        disable_fragmentation: false,
+        disable_fragmentation: args.disable_fragmentation,
         oui: 0xBEEF_FEED,
         device_id: 0xABCD,
         spreading: msg::LongFiSpreading::SF10,
