@@ -1,8 +1,8 @@
 extern crate protobuf_codegen_pure;
 
 fn main() {
-    println!("cargo:rerun-if-changed=proto/longfi.proto");
-    println!("cargo:rerun-if-changed=proto/radio.proto");
+    println!("cargo:rerun-if-changed=proto/src/longfi.proto");
+    println!("cargo:rerun-if-changed=proto/src/radio.proto");
 
     protobuf_codegen_pure::run(protobuf_codegen_pure::Args {
         out_dir: "src",
