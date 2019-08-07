@@ -3,12 +3,10 @@ use longfi_hotspot::{LongFi, LongFiResponse};
 use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
-use mio_extras::timer::{Timeout, Timer};
 use protobuf::{parse_from_bytes, Message};
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
 const PACKET_RECV_EVENT: Token = Token(0);
-const PACKET_TIMEOUT: Token = Token(1);
 const PACKET_SEND_EVENT: Token = Token(2);
 
 fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppResult {
@@ -38,13 +36,6 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
     let mut longfi = LongFi::new();
 
     let poll = Poll::new().expect("Error initializing poll object");
-    let mut timer: Timer<usize> = Timer::default();
-    let mut timeouts = (0..256)
-        .map(|_| None)
-        .collect::<Vec<Option<Timeout>>>()
-        .into_boxed_slice();
-    poll.register(&timer, PACKET_TIMEOUT, Ready::readable(), PollOpt::edge())
-        .unwrap();
 
     poll.register(
         &radio_socket,
@@ -96,14 +87,6 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                         }
                     }
                 }
-                PACKET_TIMEOUT => {
-                    // packet has timed out, so cancel it
-                    if let Some(index) = timer.poll() {
-                        longfi.parser_timeout(index)
-                    } else {
-                        None
-                    }
-                }
                 _ => None,
             };
 
@@ -111,11 +94,6 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
             if let Some(response) = maybe_response {
                 match response {
                     LongFiResponse::PktRx(pkt) => {
-                        // packet received, cancel the timeout
-                        if let Some(timeout) = timeouts[pkt.packet_id as usize].take() {
-                            timer.cancel_timeout(&timeout);
-                        }
-
                         debug!("[LongFi][app] Packet received: {:?}", pkt);
 
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
@@ -135,16 +113,6 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                             // transform it into a UDP msg for client
                             debug!("[LongFi][app] Dropping packet due to CRC error or missing fragments");
                         }
-                    }
-                    // the parser got a header fragment and will continue parsing the packet
-                    // NOTE: there is a known bug here where a new timeout configuration writes over the previous one
-                    LongFiResponse::PktFragment(index) => {
-                        // packet received, cancel the timeout
-                        if let Some(timeout) = timeouts[index].take() {
-                            timer.cancel_timeout(&timeout);
-                        }
-
-                        timeouts[index] = Some(timer.set_timeout(Duration::new(4, 0), index));
                     }
                     LongFiResponse::RadioReq(msg) => {
                         debug!("[LongFi][app] Sending fragment to radio via UDP");
