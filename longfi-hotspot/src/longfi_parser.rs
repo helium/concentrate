@@ -129,6 +129,8 @@ impl LongFiParser {
             if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
                 let fragment_num = pkt.payload[1];
 
+                // If the fragment count is less than the fragment number of the fragment being processed, 
+                // we assume missed packet.
                 while std::cmp::min(fragment_num, fragmented_pkt.num_fragments)
                     > fragmented_pkt.fragment_cnt
                 {
@@ -136,6 +138,8 @@ impl LongFiParser {
                     fragmented_pkt.quality.push(Quality::Missed);
                 }
 
+                // If the fragment count equals the fragment number of the fragment being processed, 
+                // append payload
                 if fragment_num == fragmented_pkt.fragment_cnt {
                     if pkt.crc_check {
                         fragmented_pkt.quality.push(Quality::CrcOk);
