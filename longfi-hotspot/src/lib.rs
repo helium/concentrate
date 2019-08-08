@@ -90,6 +90,7 @@ pub struct LongFiPkt {
     rssi: f32,
     spreading: Spreading,
     quality: Vec<Quality>,
+    crc_fails: usize,
 }
 
 impl LongFiPkt {

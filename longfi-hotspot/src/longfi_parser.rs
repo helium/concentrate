@@ -73,6 +73,7 @@ impl LongFiParser {
                 snr: pkt.snr,
                 rssi: pkt.rssi,
                 spreading: pkt.spreading.into(),
+                crc_fails: 0,
             }))
         }
         // means multi-fragment packet header
@@ -115,6 +116,7 @@ impl LongFiParser {
                     snr: 0.0,
                     rssi: 0.0,
                     spreading: pkt.spreading.into(),
+                    crc_fails: 0,
                 }
             });
             None
@@ -128,6 +130,13 @@ impl LongFiParser {
             let mut ret = false;
             if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
                 let fragment_num = pkt.payload[1];
+
+                if fragment_num > fragmented_pkt.num_fragments || !pkt.crc_check {
+                    if !pkt.crc_check {
+                        fragmented_pkt.crc_fails += 1;
+                    }
+                    return None;
+                }
 
                 // If the fragment count is less than the fragment number of the fragment being processed,
                 // we assume missed packet.
