@@ -19,6 +19,14 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.3 (2019-08-08)
+==================
+Bug fixes:
+
+* [#34](https://github.com/helium/concentrate/pull/34):
+  Default poll interval changed from 100ms to 10ms.
+  Epoll triggering mode set to level instead of edge.
+
 0.2.2 (2019-08-08)
 ==================
 Bug fixes:
