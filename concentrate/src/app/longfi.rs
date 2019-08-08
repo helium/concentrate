@@ -41,7 +41,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
         &radio_socket,
         PACKET_RECV_EVENT,
         Ready::readable(),
-        PollOpt::edge(),
+        PollOpt::level(),
     )
     .unwrap();
 
@@ -49,7 +49,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
         &longfi_socket,
         PACKET_SEND_EVENT,
         Ready::readable(),
-        PollOpt::edge(),
+        PollOpt::level(),
     )
     .unwrap();
 

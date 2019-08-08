@@ -83,7 +83,7 @@ dependencies = [
 
 [[package]]
 name = "concentrate"
-version = "0.1.9"
+version = "0.2.3"
 dependencies = [
  "env_logger 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",

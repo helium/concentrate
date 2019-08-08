@@ -193,7 +193,7 @@ pub struct Serve {
         value_name = "MILLISECONDS",
         short = "I",
         long = "interval",
-        default_value = "100"
+        default_value = "10"
     )]
     pub interval: u64,
 
