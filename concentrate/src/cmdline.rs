@@ -118,6 +118,14 @@ pub struct LongFiTest {
     /// disable fragmentation, making it so that bytes are all send monolithically
     #[structopt(short = "d", long = "disable-frag")]
     pub disable_fragmentation: bool,
+
+    /// parse cargo fields and display nicely
+    #[structopt(short = "p", long = "parse-cargo")]
+    pub parse_cargo: bool,
+
+    /// set device id to filter by
+    #[structopt(short = "f", long = "filter-device-id")]
+    pub filter_device_id: Option<u32>,
 }
 
 #[derive(Debug, StructOpt)]

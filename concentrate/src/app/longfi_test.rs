@@ -76,11 +76,32 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
                 // parse it into a raw packet
                 if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
                     if let Some(msg::LongFiResp_oneof_kind::rx(pkt)) = &rx.kind {
-                        println!("Received packet! Length = {}", pkt.payload.len());
-                        for byte in &pkt.payload {
-                            print!("{:} ", *byte as u8);
+                        // filter by device id
+                        if args.filter_device_id != None {
+                            if args.filter_device_id == Some(pkt.device_id) {
+                                println!("Received packet! Length = {}", pkt.payload.len());
+                                // parse
+                                if args.parse_cargo {
+                                    print!("OUI: {}, device_id: {}, rssi: {}, payload: ", pkt.oui, pkt.device_id, pkt.rssi);
+                                }
+                                for byte in &pkt.payload {
+                                    print!("{:} ", *byte as u8);
+                                }
+                                println!();
+                            }
                         }
-                        println!();
+                        // no device filtering
+                        else { 
+                            println!("Received packet! Length = {}", pkt.payload.len());
+                            // parse
+                            if args.parse_cargo {
+                                print!("OUI: {}, device_id: {}, rssi: {}, payload: ", pkt.oui, pkt.device_id, pkt.rssi);
+                            }
+                            for byte in &pkt.payload {
+                                print!("{:} ", *byte as u8);
+                            }
+                            println!();
+                        }
                     };
                 } else {
                     println!("Failed to parse LongFiResp!");
