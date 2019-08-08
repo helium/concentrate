@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.2 (2019-08-08)
+==================
+Bug fixes:
+
+* [#31](https://github.com/helium/concentrate/pull/31):
+  Drop CRC errored fragments from reassembly
+
 0.2.1 (2019-08-07)
 ==================
 Bug fixes:
