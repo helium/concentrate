@@ -23,7 +23,7 @@ Bug fixes:
 ==================
 Bug fixes:
 
-* [#31](https://github.com/helium/concentrate/pull/31):
+* [#32](https://github.com/helium/concentrate/pull/32):
   Drop CRC errored fragments from reassembly
 
 0.2.1 (2019-08-07)
