@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.1 (2019-08-07)
+==================
+Bug fixes:
+
+* [#30](https://github.com/helium/concentrate/pull/30):
+  Remove LongFi parsing timeouts
+
 0.2.0 (2019-08-06)
 ==================
 Bug fixes:

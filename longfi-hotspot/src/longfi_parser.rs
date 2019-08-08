@@ -3,6 +3,8 @@ use super::{LongFiPkt, LongFiResponse, Quality};
 const PAYLOAD_BEGIN_SINGLE_FRAGMENT_PACKET: usize = 9;
 const PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET: usize = 11;
 const PAYLOAD_BEGIN_FRAGMENT_PACKET: usize = 4;
+const MAX_FRAGMENTS: u8 = 16;
+
 pub struct LongFiParser {
     fragmented_packets: Box<[Option<LongFiPkt>]>,
 }
@@ -78,6 +80,7 @@ impl LongFiParser {
             if pkt.payload.len() < PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET {
                 return None;
             }
+
             let len_copy = pkt.payload.len() - PAYLOAD_BEGIN_MULTI_FRAGMENT_PACKET;
 
             let mut payload: Vec<u8> = vec![0; len_copy];
@@ -98,7 +101,7 @@ impl LongFiParser {
             self.fragmented_packets[packet_id] = Some({
                 LongFiPkt {
                     packet_id: packet_id as u8,
-                    num_fragments: pkt.payload[2],
+                    num_fragments: std::cmp::min(pkt.payload[2], MAX_FRAGMENTS),
                     fragment_cnt: 1,
                     oui: (u32::from(pkt.payload[3]))
                         | (u32::from(pkt.payload[4])) << 8
@@ -114,8 +117,7 @@ impl LongFiParser {
                     spreading: pkt.spreading.into(),
                 }
             });
-
-            Some(LongFiResponse::PktFragment(packet_id))
+            None
         }
         // must be fragment
         else {
@@ -127,11 +129,17 @@ impl LongFiParser {
             if let Some(fragmented_pkt) = &mut self.fragmented_packets[packet_id] {
                 let fragment_num = pkt.payload[1];
 
-                while fragment_num > fragmented_pkt.fragment_cnt {
+                // If the fragment count is less than the fragment number of the fragment being processed,
+                // we assume missed packet.
+                while std::cmp::min(fragment_num, fragmented_pkt.num_fragments)
+                    > fragmented_pkt.fragment_cnt
+                {
                     fragmented_pkt.fragment_cnt += 1;
                     fragmented_pkt.quality.push(Quality::Missed);
                 }
 
+                // If the fragment count equals the fragment number of the fragment being processed,
+                // append payload
                 if fragment_num == fragmented_pkt.fragment_cnt {
                     if pkt.crc_check {
                         fragmented_pkt.quality.push(Quality::CrcOk);
@@ -158,7 +166,7 @@ impl LongFiParser {
                     return Some(LongFiResponse::PktRx(pkt));
                 }
             }
-            Some(LongFiResponse::PktFragment(packet_id))
+            None
         }
     }
 }
