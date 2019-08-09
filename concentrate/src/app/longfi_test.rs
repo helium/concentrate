@@ -76,15 +76,20 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
                 // parse it into a raw packet
                 if let Ok(rx) = parse_from_bytes::<msg::LongFiResp>(&read_buf[..sz]) {
                     if let Some(msg::LongFiResp_oneof_kind::rx(pkt)) = &rx.kind {
-                        
                         if let Some(id) = args.filter_device_id {
-                            if id != pkt.device_id{
+                            if id != pkt.device_id {
                                 break;
                             }
                         }
 
-                        print!("OUI: {}, device_id: {}, rssi: {}, length: {}, payload: ", pkt.oui, pkt.device_id, pkt.rssi, pkt.payload.len());
-                        
+                        print!(
+                            "OUI: {}, device_id: {}, rssi: {}, length: {}, payload: ",
+                            pkt.oui,
+                            pkt.device_id,
+                            pkt.rssi,
+                            pkt.payload.len()
+                        );
+
                         for byte in &pkt.payload {
                             print!("{:} ", *byte as u8);
                         }
