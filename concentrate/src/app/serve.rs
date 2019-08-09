@@ -174,6 +174,7 @@ fn gps_deframer(tty: fs::File, sender: mpsc::Sender<loragw::Frame>) {
     }
 }
 
+#[allow(dead_code)]
 fn prototimestamp_from_systemtime(sys_time: SystemTime) -> well_known_types::Timestamp {
     let unix_dur = sys_time
         .duration_since(UNIX_EPOCH)
