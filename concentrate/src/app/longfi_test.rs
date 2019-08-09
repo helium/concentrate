@@ -83,7 +83,7 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
                             }
                         }
 
-                        print!("OUI: {}, device_id: {}, rssi: {}, payload: ", pkt.oui, pkt.device_id, pkt.rssi);
+                        print!("OUI: {}, device_id: {}, rssi: {}, length: {}, payload: ", pkt.oui, pkt.device_id, pkt.rssi, pkt.payload.len());
                         
                         for byte in &pkt.payload {
                             print!("{:} ", *byte as u8);
