@@ -3,8 +3,8 @@ use messages as msg;
 use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
-use std::net::SocketAddr;
 use std::fmt;
+use std::net::SocketAddr;
 
 extern crate rand;
 use rand::Rng;
