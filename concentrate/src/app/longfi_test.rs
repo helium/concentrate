@@ -4,11 +4,24 @@ use mio::net::UdpSocket;
 use mio::{Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
 use std::net::SocketAddr;
+use std::fmt;
 
 extern crate rand;
 use rand::Rng;
 
 const PACKET_RECV_EVENT: Token = Token(0);
+
+struct Payload<T: AsRef<[u8]>>(T);
+
+impl<T: AsRef<[u8]>> fmt::Display for Payload<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0
+            .as_ref()
+            .iter()
+            .map(|elem| write!(f, "{:>3} ", elem))
+            .collect()
+    }
+}
 
 fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppResult {
     let mut enc_buf = Vec::new();
@@ -90,10 +103,7 @@ pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
                             pkt.payload.len()
                         );
 
-                        for byte in &pkt.payload {
-                            print!("{:} ", *byte as u8);
-                        }
-                        println!();
+                        println!("{}", Payload(pkt.payload.as_slice()));
                     }
                 } else {
                     println!("Failed to parse LongFiResp!");
