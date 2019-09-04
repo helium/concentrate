@@ -112,9 +112,9 @@ impl LongFiParser {
                     mac: (u16::from(pkt.payload[9])) | (u16::from(pkt.payload[10])) << 8,
                     payload,
                     quality,
-                    timestamp: 0,
-                    snr: 0.0,
-                    rssi: 0.0,
+                    timestamp: pkt.timestamp,
+                    snr: pkt.snr,
+                    rssi: pkt.rssi,
                     spreading: pkt.spreading.into(),
                     crc_fails: 0,
                 }
