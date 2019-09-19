@@ -109,7 +109,7 @@ impl Concentrator {
     pub fn receive_status(&self) -> Result<RxStatus> {
         const RX_STATUS: u8 = 2;
         let mut rx_status = 0xFE;
-        unsafe { hal_call!(lgw_status(RX_STATUS, &mut rx_status)) }?;
+        unsafe { hal_call!(lgw_status(0u8, RX_STATUS, &mut rx_status)) }?;
         rx_status.try_into()
     }
 
@@ -151,7 +151,7 @@ impl Concentrator {
     fn transmit_status(&self) -> Result<TxStatus> {
         const TX_STATUS: u8 = 1;
         let mut tx_status = 0xFE;
-        unsafe { hal_call!(lgw_status(TX_STATUS, &mut tx_status)) }?;
+        unsafe { hal_call!(lgw_status(0u8, TX_STATUS, &mut tx_status)) }?;
         tx_status.try_into()
     }
 }
