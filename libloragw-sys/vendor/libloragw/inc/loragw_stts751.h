@@ -4,10 +4,10 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2018 Semtech
+  (C)2019 Semtech
 
 Description:
-    TODO
+    Basic driver for ST ts751 temperature sensor
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
 */
@@ -33,7 +33,8 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 /* -------------------------------------------------------------------------- */
 /* --- PUBLIC CONSTANTS ----------------------------------------------------- */
 
-#define I2C_PORT_TEMP_SENSOR    0x39
+#define I2C_PORT_TEMP_SENSOR_0    0x39  /* STTS751-0DP3F */
+#define I2C_PORT_TEMP_SENSOR_1    0x3B  /* STTS751-1DP3F */
 
 /* -------------------------------------------------------------------------- */
 /* --- PUBLIC FUNCTIONS ----------------------------------------------------- */
@@ -43,14 +44,14 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 @param TODO
 @return TODO
 */
-int lgw_stts751_configure(void);
+int stts751_configure(int i2c_fd, uint8_t i2c_addr);
 
 /**
 @brief TODO
 @param TODO
 @return TODO
 */
-int lgw_stts751_get_temperature(float * temperature);
+int stts751_get_temperature(int i2c_fd, uint8_t i2c_addr, float * temperature);
 
 #endif
 

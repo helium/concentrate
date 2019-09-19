@@ -50,21 +50,22 @@ impl Concentrator {
     /// Configure the gateway board.
     pub fn config_board(&self, conf: &BoardConf) -> Result {
         log::debug!("conf: {:?}", conf);
-        unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
+        unsafe { hal_call!(lgw_board_setconf(&mut conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
         log::debug!("{:?}", conf);
-        unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
+        debug!("{:?}", conf);
+        unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, &mut conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
         log::debug!("chain: {}, conf: {:?}", chain, conf);
-        unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
+        unsafe { hal_call!(lgw_rxif_setconf(chain, &mut conf.into())) }?;
         Ok(())
     }
 
@@ -109,7 +110,16 @@ impl Concentrator {
     pub fn receive_status(&self) -> Result<RxStatus> {
         const RX_STATUS: u8 = 2;
         let mut rx_status = 0xFE;
-        unsafe { hal_call!(lgw_status(0u8, RX_STATUS, &mut rx_status)) }?;
+        unsafe {
+            hal_call!(lgw_status(
+                {
+                    warn!("remove hardcoded RF chain argument from status calls");
+                    0u8
+                },
+                RX_STATUS,
+                &mut rx_status
+            ))
+        }?;
         rx_status.try_into()
     }
 
@@ -136,7 +146,7 @@ impl Concentrator {
             log::trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
             thread::sleep(SLEEP_TIME);
         }
-        unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
+        unsafe { hal_call!(lgw_send(&mut packet.try_into()?)) }?;
         Ok(())
     }
 }
@@ -151,7 +161,16 @@ impl Concentrator {
     fn transmit_status(&self) -> Result<TxStatus> {
         const TX_STATUS: u8 = 1;
         let mut tx_status = 0xFE;
-        unsafe { hal_call!(lgw_status(0u8, TX_STATUS, &mut tx_status)) }?;
+        unsafe {
+            hal_call!(lgw_status(
+                {
+                    warn!("remove hardcoded RF chain argument from status calls");
+                    0u8
+                },
+                TX_STATUS,
+                &mut tx_status
+            ))
+        }?;
         tx_status.try_into()
     }
 }

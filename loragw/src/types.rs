@@ -1,6 +1,6 @@
 use crate::error;
 use crate::llg;
-use std::{convert::TryFrom, ffi::CString, fmt, time};
+use std::{convert::TryFrom, ffi::CString, fmt, os::raw::c_char, time};
 
 const MOD_LORA: u8 = 0x10;
 const MOD_FSK: u8 = 0x20;
@@ -27,7 +27,10 @@ impl TryFrom<&str> for RadioType {
             "SX1272" => RadioType::SX1272,
             "SX1276" => RadioType::SX1276,
             "SX1250" => RadioType::SX1250,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to RadioType", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -62,7 +65,10 @@ impl TryFrom<u32> for Spreading {
             11 => Spreading::SF11,
             12 => Spreading::SF12,
             0x7E => Spreading::Multi,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to Spreading", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -72,12 +78,12 @@ impl TryFrom<u32> for Spreading {
 pub enum Bandwidth {
     /// Auto bandwidth.
     Undefined = 0,
-    /// 500 kHz.
-    BW500kHz = 0x06,
-    /// 250 kHz.
-    BW250kHz = 0x05,
     /// 125 kHz.
-    BW125kHz = 0x04,
+    BW125kHz = 4,
+    /// 250 kHz.
+    BW250kHz = 5,
+    /// 500 kHz.
+    BW500kHz = 6,
 }
 
 impl TryFrom<u32> for Bandwidth {
@@ -85,10 +91,13 @@ impl TryFrom<u32> for Bandwidth {
     fn try_from(other: u32) -> Result<Self, error::Error> {
         Ok(match other {
             0 => Bandwidth::Undefined,
-            0x01 => Bandwidth::BW500kHz,
-            0x02 => Bandwidth::BW250kHz,
-            0x03 => Bandwidth::BW125kHz,
-            _ => return Err(error::Error::Data),
+            4 => Bandwidth::BW125kHz,
+            5 => Bandwidth::BW250kHz,
+            6 => Bandwidth::BW500kHz,
+            invalid => {
+                error!("unable to convert {:?} to Bandwidth", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -117,7 +126,10 @@ impl TryFrom<u32> for Coderate {
             0x02 => Coderate::Cr4_6,
             0x03 => Coderate::Cr4_7,
             0x04 => Coderate::Cr4_8,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to Coderate", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -178,8 +190,13 @@ impl From<&BoardConf> for llg::lgw_conf_board_s {
             full_duplex: false,
             spidev_path: {
                 let mut path = [0; 64];
-                let other_path = other.spidev_path.as_bytes_with_nul();
-                path[..other_path.len()].copy_from_slice(other_path);
+                // let other_path = other.spidev_path.as_bytes_with_nul();
+                for (dst, src) in path
+                    .iter_mut()
+                    .zip(other.spidev_path.as_bytes_with_nul().iter())
+                {
+                    *dst = *src as c_char
+                }
                 path
             },
         }
@@ -231,12 +248,14 @@ pub struct RxRFConf {
 
 impl From<&RxRFConf> for llg::lgw_conf_rxrf_s {
     fn from(other: &RxRFConf) -> Self {
+        warn!("add missing fields");
         llg::lgw_conf_rxrf_s {
             enable: other.enable,
             freq_hz: other.freq,
             rssi_offset: other.rssi_offset,
             type_: other.type_ as u32,
             tx_enable: other.tx_enable,
+            ..Default::default()
         }
     }
 }
@@ -362,7 +381,10 @@ impl TryFrom<u32> for CRCCheck {
             0x01 => CRCCheck::NoCRC,
             0x11 => CRCCheck::Fail,
             0x10 => CRCCheck::Pass,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to Radio", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -467,7 +489,10 @@ impl TryFrom<&llg::lgw_pkt_rx_s> for RxPacket {
                 crc: other.crc,
                 payload: other.payload[..other.size as usize].to_vec(),
             }),
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to RxPacket", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -575,6 +600,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();
+                    warn!("add missing fields");
                     Ok(llg::lgw_pkt_tx_s {
                         freq_hz: other.freq,
                         tx_mode: mode,
@@ -597,6 +623,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
                             buf[..other.payload.len()].copy_from_slice(other.payload.as_ref());
                             buf
                         },
+                        ..Default::default()
                     })
                 }
             }
@@ -606,6 +633,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();
+                    warn!("add missing fields");
                     Ok(llg::lgw_pkt_tx_s {
                         freq_hz: other.freq,
                         tx_mode: mode,
@@ -627,6 +655,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
                             buf[..other.payload.len()].copy_from_slice(other.payload.as_ref());
                             buf
                         },
+                        ..Default::default()
                     })
                 }
             }
@@ -688,7 +717,10 @@ impl TryFrom<u8> for TxStatus {
             2 => TxStatus::Free,
             3 => TxStatus::Scheduled,
             4 => TxStatus::Transmitting,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to TxStatus", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }
@@ -712,7 +744,10 @@ impl TryFrom<u8> for RxStatus {
             1 => RxStatus::Off,
             2 => RxStatus::On,
             3 => RxStatus::Suspended,
-            _ => return Err(error::Error::Data),
+            invalid => {
+                error!("unable to convert {:?} to RxStatus", invalid);
+                return Err(error::Error::Data);
+            }
         })
     }
 }

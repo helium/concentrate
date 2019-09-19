@@ -4,10 +4,10 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2018 Semtech
+  (C)2019 Semtech
 
 Description:
-    TODO
+    Functions used to handle LoRa concentrator SX1250 radios.
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
 */
@@ -24,12 +24,18 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #include "config.h"     /* library configuration options (dynamically generated) */
 
 /* -------------------------------------------------------------------------- */
+/* --- PUBLIC MACROS -------------------------------------------------------- */
+
+#define SX1250_FREQ_TO_REG(f) (uint32_t)((uint64_t)f * (1 << 25) / 32000000U)
+
+/* -------------------------------------------------------------------------- */
 /* --- PUBLIC CONSTANTS ----------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /* --- PUBLIC TYPES --------------------------------------------------------- */
 
 typedef enum {
+    CALIBRATE               = 0x89,
     CALIBRATE_IMAGE         = 0x98,
     CLR_IRQ_STATUS          = 0x02,
     STOP_TIMER_ON_PREAMBLE  = 0x9F,

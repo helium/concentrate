@@ -4,10 +4,10 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2018 Semtech
+  (C)2019 Semtech
 
 Description:
-    TODO
+    Functions used to handle LoRa concentrator SX1255/SX1257 radios.
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
 */
@@ -30,6 +30,12 @@ struct radio_reg_s
 	uint8_t offs; /* position of the register LSB (between 0 to 7) */
 	uint8_t leng; /* number of bits in the register */
 };
+
+/* -------------------------------------------------------------------------- */
+/* --- PUBLIC MACROS -------------------------------------------------------- */
+
+#define SX1257_FREQ_TO_REG(f)       (uint32_t)((uint64_t)f * (1 << 19) / 32000000U)
+#define SX1255_FREQ_TO_REG(f)       (uint32_t)((uint64_t)f * (1 << 20) / 32000000U)
 
 /* -------------------------------------------------------------------------- */
 /* --- PUBLIC CONSTANTS ----------------------------------------------------- */

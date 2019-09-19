@@ -24,6 +24,8 @@ fn main() {
         .file("vendor/libloragw/src/loragw_sx1250.c")
         .file("vendor/libloragw/src/loragw_sx125x.c")
         .file("vendor/libloragw/src/loragw_sx1302.c")
+        .file("vendor/libloragw/src/loragw_sx1302_rx.c")
+        .file("vendor/libloragw/src/loragw_sx1302_timestamp.c")
         .static_flag(true)
         .compile("loragw");
 }

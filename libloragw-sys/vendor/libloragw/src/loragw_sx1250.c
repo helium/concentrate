@@ -4,10 +4,10 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2018 Semtech
+  (C)2019 Semtech
 
 Description:
-    TODO
+    Functions used to handle LoRa concentrator SX1250 radios.
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
 */
@@ -37,7 +37,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #if DEBUG_RAD == 1
     #define DEBUG_MSG(str)                fprintf(stderr, str)
-    #define DEBUG_PRINTF(fmt, ...)        fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+    #define DEBUG_PRINTF(fmt, args...)    fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, args)
     #define CHECK_NULL(a)                if(a==NULL){fprintf(stderr,"%s:%d: ERROR: NULL POINTER AS ARGUMENT\n", __FUNCTION__, __LINE__);return LGW_SPI_ERROR;}
 #else
     #define DEBUG_MSG(str)
@@ -158,7 +158,6 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
 
     buff[0] = 0x00;
     sx1250_read_command(rf_chain, GET_STATUS, buff, 1);
-    DEBUG_PRINTF("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
 
     /* Run calibration */
     if ((freq_hz > 430E6) && (freq_hz < 440E6)) {
@@ -177,7 +176,7 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
         buff[0] = 0xE1;
         buff[1] = 0xE9;
     } else {
-        DEBUG_PRINTF("ERROR: failed to calibrate sx1250 radio, frequency range not supported (%u)\n", freq_hz);
+        printf("ERROR: failed to calibrate sx1250 radio, frequency range not supported (%u)\n", freq_hz);
         return -1;
     }
     sx1250_write_command(rf_chain, CALIBRATE_IMAGE, buff, 2);
@@ -189,9 +188,8 @@ int sx1250_calibrate(uint8_t rf_chain, uint32_t freq_hz) {
     buff[1] = 0x00;
     buff[2] = 0x00;
     sx1250_read_command(rf_chain, GET_DEVICE_ERRORS, buff, 3);
-    DEBUG_PRINTF("%s: get_device_errors: 0x%02X 0x%02X 0x%02X\n", __FUNCTION__, buff[0], buff[1], buff[2]);
     if (TAKE_N_BITS_FROM(buff[2], 4, 1) != 0) {
-        DEBUG_PRINTF("ERROR: sx1250 Image Calibration Error\n");
+        printf("ERROR: sx1250 Image Calibration Error\n");
         return -1;
     }
 
@@ -204,14 +202,36 @@ int sx1250_setup(uint8_t rf_chain, uint32_t freq_hz) {
     int32_t freq_reg;
     uint8_t buff[16];
 
-    /* Set Radio in Standby mode */
+    /* Set Radio in Standby for calibrations */
+    buff[0] = (uint8_t)STDBY_RC;
+    sx1250_write_command(rf_chain, SET_STANDBY, buff, 1);
+    wait_ms(10);
+
+    /* Get status to check Standby mode has been properly set */
+    buff[0] = 0x00;
+    sx1250_read_command(rf_chain, GET_STATUS, buff, 1);
+    if ((uint8_t)(TAKE_N_BITS_FROM(buff[0], 4, 3)) != 0x02) {
+        printf("ERROR: Failed to set SX1250_%u in STANDBY_RC mode\n", rf_chain);
+        return -1;
+    }
+
+    /* Run all calibrations (TCXO) */
+    buff[0] = 0x7F;
+    sx1250_write_command(rf_chain, CALIBRATE, buff, 1);
+    wait_ms(10);
+
+    /* Set Radio in Standby with XOSC ON */
     buff[0] = (uint8_t)STDBY_XOSC;
     sx1250_write_command(rf_chain, SET_STANDBY, buff, 1);
     wait_ms(10);
 
+    /* Get status to check Standby mode has been properly set */
     buff[0] = 0x00;
     sx1250_read_command(rf_chain, GET_STATUS, buff, 1);
-    DEBUG_PRINTF("%s: get_status: 0x%02X\n", __FUNCTION__, buff[0]);
+    if ((uint8_t)(TAKE_N_BITS_FROM(buff[0], 4, 3)) != 0x03) {
+        printf("ERROR: Failed to set SX1250_%u in STANDBY_XOSC mode\n", rf_chain);
+        return -1;
+    }
 
     /* Set Bitrate to maximum (to lower TX to FS switch time) */
     buff[0] = 0x06;

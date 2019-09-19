@@ -12,7 +12,7 @@ The generated bindings (`src/bindings.rs`) have to manually generated
 if the vendored code (`vendor/libloragw`) changes:
 
 ```
-bindgen vendor/libloragw/loragw_hal.h \
+bindgen vendor/libloragw/inc/loragw_hal.h \
     --with-derive-default \
     --whitelist-function "lgw_board_setconf" \
     --whitelist-function "lgw_rxrf_setconf" \

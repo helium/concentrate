@@ -123,20 +123,22 @@ mod tests {
             board: Board {
                 lorawan_public: false,
                 clksrc: 1,
+                spidev_path: CString::new("/dev/spidev0.0")
+                    .expect("path not representable as a C string"),
             },
             radios: Some(vec![
                 Radio {
                     id: 0,
                     freq: 916_600_000,
-                    rssi_offset: -169.0,
-                    type_: "SX1257".to_string(),
+                    rssi_offset: -207.0,
+                    type_: "SX1250".to_string(),
                     tx_enable: true,
                 },
                 Radio {
                     id: 1,
                     freq: 920_600_000,
-                    rssi_offset: -169.0,
-                    type_: "SX1257".to_string(),
+                    rssi_offset: -207.0,
+                    type_: "SX1250".to_string(),
                     tx_enable: false,
                 },
             ]),

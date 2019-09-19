@@ -4,7 +4,7 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2013 Semtech-Cycleo
+  (C)2019 Semtech
 
 Description:
     LoRa concentrator HAL auxiliary functions
@@ -31,7 +31,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 
 #if DEBUG_AUX == 1
     #define DEBUG_MSG(str)                fprintf(stderr, str)
-    #define DEBUG_PRINTF(fmt, ...)        fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+    #define DEBUG_PRINTF(fmt, args...)    fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, args)
 #else
     #define DEBUG_MSG(str)
     #define DEBUG_PRINTF(fmt, args...)

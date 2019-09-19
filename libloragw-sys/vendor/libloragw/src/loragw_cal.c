@@ -4,10 +4,10 @@
  \____ \| ___ |    (_   _) ___ |/ ___)  _ \
  _____) ) ____| | | || |_| ____( (___| | | |
 (______/|_____)_|_|_| \__)_____)\____)_| |_|
-  (C)2018 Semtech
+  (C)2019 Semtech
 
 Description:
-    TODO
+    LoRa concentrator radio calibration functions
 
 License: Revised BSD License, see LICENSE.TXT file include in the project
 */
@@ -46,7 +46,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #if DEBUG_CAL == 1
     #define DEBUG_MSG(str)                fprintf(stderr, str)
-    #define DEBUG_PRINTF(fmt, ...)        fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+    #define DEBUG_PRINTF(fmt, args...)    fprintf(stderr,"%s:%d: "fmt, __FUNCTION__, __LINE__, args)
     #define CHECK_NULL(a)                if(a==NULL){fprintf(stderr,"%s:%d: ERROR: NULL POINTER AS ARGUMENT\n", __FUNCTION__, __LINE__);return LGW_SPI_ERROR;}
 #else
     #define DEBUG_MSG(str)
@@ -104,10 +104,10 @@ int sx1302_cal_start(uint8_t version, struct lgw_conf_rxrf_s * rf_chain_cfg, str
 
     sx1302_agc_mailbox_read(0, &val);
     if (val != version) {
-        DEBUG_PRINTF("ERROR: wrong CAL fw version (%d)\n", val);
+        printf("ERROR: wrong CAL fw version (%d)\n", val);
         return LGW_HAL_ERROR;
     }
-    DEBUG_PRINTF("CAL FW VERSION: %d\n", val);
+    printf("CAL FW VERSION: %d\n", val);
 
     /* notify CAL that it can resume */
     sx1302_agc_mailbox_write(3, 0xFF);
@@ -115,7 +115,7 @@ int sx1302_cal_start(uint8_t version, struct lgw_conf_rxrf_s * rf_chain_cfg, str
     /* Wait for AGC to acknoledge */
     sx1302_agc_wait_status(0x00);
 
-    DEBUG_PRINTF("CAL: started\n");
+    printf("CAL: started\n");
 
     /* Run Rx image calibration */
     for (i = 0; i < LGW_RF_CHAIN_NB; i++) {
@@ -238,17 +238,17 @@ int sx1302_cal_start(uint8_t version, struct lgw_conf_rxrf_s * rf_chain_cfg, str
         }
     }
 
-    DEBUG_PRINTF("-------------------------------------------------------------------\n");
-    DEBUG_PRINTF("Radio calibration completed:\n");
-    DEBUG_PRINTF("  RadioA: amp:%d phi:%d\n", rf_rx_image_amp[0], rf_rx_image_phi[0]);
-    DEBUG_PRINTF("  RadioB: amp:%d phi:%d\n", rf_rx_image_amp[1], rf_rx_image_phi[1]);
+    printf("-------------------------------------------------------------------\n");
+    printf("Radio calibration completed:\n");
+    printf("  RadioA: amp:%d phi:%d\n", rf_rx_image_amp[0], rf_rx_image_phi[0]);
+    printf("  RadioB: amp:%d phi:%d\n", rf_rx_image_amp[1], rf_rx_image_phi[1]);
     for (k = 0; k < LGW_RF_CHAIN_NB; k++) {
-        DEBUG_PRINTF("  TX calibration params for rf_chain %d:\n", k);
+        printf("  TX calibration params for rf_chain %d:\n", k);
         for (i = 0; i < txgain_lut[k].size; i++) {
-            DEBUG_PRINTF("  -- power:%d\tdac:%u\tmix:%u\toffset_i:%d\toffset_q:%d\n", txgain_lut[k].lut[i].rf_power, txgain_lut[k].lut[i].dac_gain, txgain_lut[k].lut[i].mix_gain, txgain_lut[k].lut[i].offset_i, txgain_lut[k].lut[i].offset_q);
+            printf("  -- power:%d\tdac:%u\tmix:%u\toffset_i:%d\toffset_q:%d\n", txgain_lut[k].lut[i].rf_power, txgain_lut[k].lut[i].dac_gain, txgain_lut[k].lut[i].mix_gain, txgain_lut[k].lut[i].offset_i, txgain_lut[k].lut[i].offset_q);
         }
     }
-    DEBUG_PRINTF("-------------------------------------------------------------------\n");
+    printf("-------------------------------------------------------------------\n");
 
     return LGW_HAL_SUCCESS;
 }
@@ -263,7 +263,7 @@ int sx125x_cal_rx_image(uint8_t rf_chain, uint32_t freq_hz, bool use_loopback, u
     uint8_t rx_pll_locked, tx_pll_locked;
     uint8_t rx_threshold = 8; /* Used by AGC to set decimation gain to increase signal and its image: value is MSB => x * 256 */
 
-    DEBUG_PRINTF("\n%s: rf_chain:%u, freq_hz:%u, loopback:%d, radio_type:%d\n", __FUNCTION__, rf_chain, freq_hz, use_loopback, radio_type);
+    printf("\n%s: rf_chain:%u, freq_hz:%u, loopback:%d, radio_type:%d\n", __FUNCTION__, rf_chain, freq_hz, use_loopback, radio_type);
 
     /* Indentify which radio is transmitting the test tone */
     rx = rf_chain;
@@ -402,7 +402,7 @@ int sx125x_cal_rx_image(uint8_t rf_chain, uint32_t freq_hz, bool use_loopback, u
     sx1302_agc_wait_status((rf_chain == 0) ? 0x11 : 0x22);
     DEBUG_MSG("CAL: RX Calibration Done\n");
 
-    DEBUG_PRINTF("%s, RESULT: rf_chain:%u amp:%d phi:%d\n", __FUNCTION__, rf_chain, res->amp, res->phi);
+    printf("%s, RESULT: rf_chain:%u amp:%d phi:%d\n", __FUNCTION__, rf_chain, res->amp, res->phi);
 
     return LGW_HAL_SUCCESS;
 }
@@ -419,7 +419,7 @@ int sx125x_cal_tx_dc_offset(uint8_t rf_chain, uint32_t freq_hz, uint8_t dac_gain
     uint8_t tx_threshold = 64;
     int i;
 
-    DEBUG_PRINTF("\n%s: rf_chain:%u, freq_hz:%u, dac_gain:%u, mix_gain:%u, radio_type:%d\n", __FUNCTION__, rf_chain, freq_hz, dac_gain, mix_gain, radio_type);
+    printf("\n%s: rf_chain:%u, freq_hz:%u, dac_gain:%u, mix_gain:%u, radio_type:%d\n", __FUNCTION__, rf_chain, freq_hz, dac_gain, mix_gain, radio_type);
 
     /* Set PLL frequencies */
     rx_freq_hz = freq_hz - CAL_TX_TONE_FREQ_HZ;
@@ -579,7 +579,7 @@ int sx125x_cal_tx_dc_offset(uint8_t rf_chain, uint32_t freq_hz, uint8_t dac_gain
     int16_t offset_i_tmp = 0;
     int16_t offset_q_tmp = 0;
 
-    DEBUG_PRINTF("IQ sequence:");
+    printf("IQ sequence:");
     for (i = 0; i < 9; i++) {
         if (index[i] == 0) {
             offset_i_tmp = offset_i_tmp + 0;
@@ -598,9 +598,9 @@ int sx125x_cal_tx_dc_offset(uint8_t rf_chain, uint32_t freq_hz, uint8_t dac_gain
             offset_i_tmp = offset_i_tmp - lut_calib[i];
             offset_q_tmp = offset_q_tmp - lut_calib[i];
         }
-        DEBUG_PRINTF("i:%d q:%d\n", offset_i_tmp, offset_q_tmp);
+        printf("i:%d q:%d\n", offset_i_tmp, offset_q_tmp);
     }
-    DEBUG_PRINTF("\n");
+    printf("\n");
 
 #endif /* DEBUG_CAL */
     /* -----------------------------------------------*/
@@ -621,20 +621,20 @@ int sx125x_cal_tx_dc_offset(uint8_t rf_chain, uint32_t freq_hz, uint8_t dac_gain
     sx1302_agc_wait_status(0x0c + 20);
 
 #if DEBUG_CAL == 1
-    DEBUG_PRINTF("TX_SIG values returned by signal analyzer:\n");
+    printf("TX_SIG values returned by signal analyzer:\n");
     for (i = 0; i < 40; i++) {
         if (i%5 == 0) {
-            DEBUG_PRINTF("\n");
+            printf("\n");
         }
-        DEBUG_PRINTF("%u ", msb[i] * 256 + lsb[i]);
+        printf("%u ", msb[i] * 256 + lsb[i]);
     }
-    DEBUG_PRINTF("\n");
+    printf("\n");
 #endif /* DEBUG_CAL */
 
     sx1302_agc_mailbox_write(3, 0x0c + 20); /* sync */
     /* -----------------------------------------------*/
 
-    DEBUG_PRINTF("%s: RESULT: offset_i:%d offset_q:%d rej:%u\n", __FUNCTION__, res->offset_i, res->offset_q, res->rej);
+    printf("%s: RESULT: offset_i:%d offset_q:%d rej:%u\n", __FUNCTION__, res->offset_i, res->offset_q, res->rej);
 
     /* Wait for calibration to be completed */
     DEBUG_MSG("waiting for TX calibration to complete...\n");
@@ -875,11 +875,11 @@ void agc_cal_tx_dc_offset(uint8_t rf_chain, signed char freq, char amp_hal, char
         }
     }
 
-    DEBUG_PRINTF("dec_gain:%d\n", dec_gain);
+    printf("dec_gain:%d\n", dec_gain);
 
     // store the max results
     tx_sig_i16 = abs_corr_max_i16;
-    DEBUG_PRINTF("tx_sig:%d\n", tx_sig_i16);
+    printf("tx_sig:%d\n", tx_sig_i16);
 
     // Calbration algorithm
     offset_i = 0;
@@ -918,7 +918,7 @@ void agc_cal_tx_dc_offset(uint8_t rf_chain, signed char freq, char amp_hal, char
         lgw_reg_r(SX1302_REG_RADIO_FE_SIG_ANA_ABS_MSB_CORR_ABS_OUT, &abs_msb);
 
         abs_corr_min_i16 = abs_msb * 256 + abs_lsb;
-        DEBUG_PRINTF("abs_corr_min_i16:%d ", abs_corr_min_i16);
+        printf("abs_corr_min_i16:%d ", abs_corr_min_i16);
 
         idx = 0;
 
@@ -944,7 +944,7 @@ void agc_cal_tx_dc_offset(uint8_t rf_chain, signed char freq, char amp_hal, char
             lgw_reg_r(SX1302_REG_RADIO_FE_SIG_ANA_ABS_MSB_CORR_ABS_OUT, &abs_msb);
 
             abs_corr_i16 = abs_msb * 256 + abs_lsb;
-            DEBUG_PRINTF("abs_corr_i16:%d ", abs_corr_i16);
+            printf("abs_corr_i16:%d ", abs_corr_i16);
 
             if (abs_corr_i16 < abs_corr_min_i16) {
                 abs_corr_min_i16 = abs_corr_i16;
@@ -952,7 +952,7 @@ void agc_cal_tx_dc_offset(uint8_t rf_chain, signed char freq, char amp_hal, char
             }
         }
 
-        DEBUG_PRINTF("\n");
+        printf("\n");
         offset_i = offset_i_set[idx];
         offset_q = offset_q_set[idx];
     }
@@ -1030,13 +1030,13 @@ void agc_cal_tx_dc_offset(uint8_t rf_chain, signed char freq, char amp_hal, char
     offset_q = offset_q_set[idx];
 
     tx_dc_i16 = abs_corr_min_i16;
-    DEBUG_PRINTF("tx_dc:%d\n", tx_dc_i16);
+    printf("tx_dc:%d\n", tx_dc_i16);
 
     // Return results of calibration
     *rej = 20 * log10(tx_sig_i16/(tx_dc_i16 + 1));
     *offset_i_res = (int8_t)offset_i;
     *offset_q_res = (int8_t)offset_q;
-    DEBUG_PRINTF("offset_i:%d offset_q:%d rej:%u\n", offset_i, offset_q, *rej);
+    printf("offset_i:%d offset_q:%d rej:%u\n", offset_i, offset_q, *rej);
 }
 
 #endif /* TX_CALIB_DONE_BY_HAL */
