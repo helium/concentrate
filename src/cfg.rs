@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use toml;
 
-static DEFAULT_CFG_TOML: &str = include_str!("../../default_config.toml");
+static DEFAULT_CFG_TOML: &str = include_str!("../default_config.toml");
 
 /// Represents top-level configuration document.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
