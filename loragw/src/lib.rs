@@ -57,7 +57,6 @@ impl Concentrator {
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
         log::debug!("{:?}", conf);
-        debug!("{:?}", conf);
         unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, &mut conf.into())) }?;
         Ok(())
     }
@@ -113,7 +112,7 @@ impl Concentrator {
         unsafe {
             hal_call!(lgw_status(
                 {
-                    warn!("remove hardcoded RF chain argument from status calls");
+                    log::warn!("remove hardcoded RF chain argument from status calls");
                     0u8
                 },
                 RX_STATUS,
@@ -164,7 +163,7 @@ impl Concentrator {
         unsafe {
             hal_call!(lgw_status(
                 {
-                    warn!("remove hardcoded RF chain argument from status calls");
+                    log::warn!("remove hardcoded RF chain argument from status calls");
                     0u8
                 },
                 TX_STATUS,
