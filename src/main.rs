@@ -1,32 +1,11 @@
-#![forbid(clippy::panicking_unwrap, unsafe_code)]
-
-#[cfg(feature = "log_env")]
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-extern crate longfi_hotspot;
-extern crate loragw;
-extern crate messages;
-extern crate protobuf;
-#[macro_use]
-extern crate quick_error;
-#[cfg(any(feature = "log_env", feature = "log_sys"))]
-extern crate log_panics;
-extern crate mio;
-extern crate mio_extras;
-extern crate rand;
-extern crate serde;
-extern crate structopt;
-#[cfg(feature = "log_sys")]
-extern crate syslog;
-extern crate toml;
+#![forbid(unsafe_code)]
 
 mod app;
 mod cfg;
 mod cmdline;
 mod error;
 
-use error::AppResult;
+use crate::error::AppResult;
 use std::process;
 use structopt::StructOpt;
 
@@ -53,7 +32,7 @@ fn init_logging() {
 fn init_logging() {}
 
 fn go(cmd: cmdline::Cmd) -> AppResult {
-    use cmdline::Cmd::*;
+    use crate::cmdline::Cmd::*;
 
     match cmd {
         Bist => app::built_in_self_test(),

@@ -1,10 +1,12 @@
 extern crate loragw;
 extern crate protobuf;
 
+#[allow(bare_trait_objects)]
 mod longfi;
+#[allow(bare_trait_objects)]
 mod radio;
-pub use longfi::*;
-pub use radio::*;
+pub use crate::longfi::*;
+pub use crate::radio::*;
 
 impl From<loragw::Spreading> for Spreading {
     fn from(other: loragw::Spreading) -> Spreading {

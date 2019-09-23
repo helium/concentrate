@@ -60,7 +60,7 @@ pub fn send(args: cmdline::Send) -> AppResult {
         payload: args.payload.unwrap_or_default().into_bytes(),
         ..Default::default()
     };
-    debug!("requesting to transmit {:#?}", tx_req);
+    log::debug!("requesting to transmit {:#?}", tx_req);
 
     let req_addr = args.listen_addr_out;
     let socket = UdpSocket::bind(&args.publish_addr_in)?;
@@ -83,7 +83,7 @@ pub fn send(args: cmdline::Send) -> AppResult {
                 Ok(())
             }
             Err(e) => {
-                error!("{:?}", e);
+                log::error!("{:?}", e);
                 Err(AppError::Generic(e.description().into()))
             }
         },

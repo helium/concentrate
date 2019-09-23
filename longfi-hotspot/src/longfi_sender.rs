@@ -1,6 +1,6 @@
 use super::LongFiResponse;
+use crate::msg::LongFiSpreading as Spreading;
 use messages as msg;
-use msg::LongFiSpreading as Spreading;
 use rand::Rng;
 use std::collections::VecDeque;
 

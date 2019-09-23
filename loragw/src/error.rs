@@ -1,3 +1,5 @@
+use quick_error::quick_error;
+
 /// A common result type for this crate.
 pub type Result<T = ()> = ::std::result::Result<T, Error>;
 
@@ -33,9 +35,9 @@ quick_error! {
 /// - logs name of FFI function on error
 macro_rules! hal_call{
     ( $fn:ident ( $($arg:expr),* ) ) => {
-        match $crate::libloragw_sys::$fn ( $($arg),* ) {
+        match libloragw_sys::$fn ( $($arg),* ) {
             -1 => {
-                error!("HAL call {} returned an error", stringify!($fn));
+                log::error!("HAL call {} returned an error", stringify!($fn));
                 Err($crate::error::Error::HAL)
             }
             val if val >= 0 => Ok(val as usize),

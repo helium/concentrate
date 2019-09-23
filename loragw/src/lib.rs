@@ -1,23 +1,15 @@
+#![deny(missing_docs)]
+
 //! This crate provides a high-level interface which serves as
 //! building-block for creating LoRa gateways using the
 //! [SX1301](https://www.semtech.com/products/wireless-rf/lora-gateways/sx1301)
 //! concentrator chip.
 
-#![deny(missing_docs)]
-
-#[macro_use]
-extern crate quick_error;
-extern crate libloragw_sys;
-#[macro_use]
-extern crate log;
-#[cfg(test)]
-#[cfg_attr(test, macro_use)]
-extern crate lazy_static;
-
 #[macro_use]
 mod error;
 mod types;
-pub use error::*;
+pub use crate::error::*;
+pub use crate::types::*;
 use libloragw_sys as llg;
 use std::{
     cell::Cell,
@@ -27,7 +19,6 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
     thread, time,
 };
-pub use types::*;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
 // This is not a great solution, since another process has its
@@ -48,7 +39,7 @@ impl Concentrator {
     pub fn open() -> Result<Self> {
         // We can only 'open' one instance
         if GW_IS_OPEN.compare_and_swap(false, true, Ordering::Acquire) {
-            error!("concentrator busy");
+            log::error!("concentrator busy");
             return Err(Error::Busy);
         }
         Ok(Concentrator {
@@ -58,21 +49,21 @@ impl Concentrator {
 
     /// Configure the gateway board.
     pub fn config_board(&self, conf: &BoardConf) -> Result {
-        debug!("conf: {:?}", conf);
+        log::debug!("conf: {:?}", conf);
         unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
-        debug!("{:?}", conf);
+        log::debug!("{:?}", conf);
         unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
-        debug!("chain: {}, conf: {:?}", chain, conf);
+        log::debug!("chain: {}, conf: {:?}", chain, conf);
         unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
         Ok(())
     }
@@ -80,13 +71,13 @@ impl Concentrator {
     /// Configure the Tx gain LUT.
     pub fn config_tx_gain(&self, gains: &[TxGain]) -> Result {
         if gains.is_empty() || gains.len() > 16 {
-            error!(
+            log::error!(
                 "gain table must contain 1 to 16 entries, {} provided",
                 gains.len()
             );
             return Err(Error::Size);
         }
-        debug!("gains: {:?}", gains);
+        log::debug!("gains: {:?}", gains);
         let mut lut = TxGainLUT::default();
         lut.lut[..gains.len()].clone_from_slice(gains);
         lut.size = gains.len() as u8;
@@ -100,14 +91,14 @@ impl Concentrator {
 
     /// according to previously set parameters.
     pub fn start(&self) -> Result {
-        info!("starting concentrator");
+        log::info!("starting concentrator");
         unsafe { hal_call!(lgw_start()) }?;
         Ok(())
     }
 
     /// Stop the LoRa concentrator and disconnect it.
     pub fn stop(&self) -> Result {
-        info!("stopping concentrator");
+        log::info!("stopping concentrator");
         unsafe { hal_call!(lgw_stop()) }?;
         Ok(())
     }
@@ -140,7 +131,7 @@ impl Concentrator {
     pub fn transmit(&self, packet: TxPacket) -> Result {
         while self.transmit_status()? != TxStatus::Free {
             const SLEEP_TIME: time::Duration = time::Duration::from_millis(5);
-            trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
+            log::trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
             thread::sleep(SLEEP_TIME);
         }
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
@@ -165,7 +156,7 @@ impl Concentrator {
 
 impl ops::Drop for Concentrator {
     fn drop(&mut self) {
-        info!("closing concentrator");
+        log::info!("closing concentrator");
         GW_IS_OPEN.store(false, Ordering::Release);
     }
 }
@@ -173,6 +164,7 @@ impl ops::Drop for Concentrator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lazy_static::lazy_static;
     use std::sync::Mutex;
 
     lazy_static! {

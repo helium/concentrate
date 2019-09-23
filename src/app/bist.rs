@@ -1,4 +1,4 @@
-use crate::{cfg, error::AppResult, loragw};
+use crate::{cfg, error::AppResult};
 use std::convert::{TryFrom, TryInto};
 
 pub fn built_in_self_test() -> AppResult {
