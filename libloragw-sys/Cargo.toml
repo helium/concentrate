@@ -1,6 +1,7 @@
 [package]
 name = "libloragw-sys"
 version = "0.1.0"
+edition = "2018"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 build = "build.rs"
 

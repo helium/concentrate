@@ -14,10 +14,10 @@ mod tests;
 mod longfi_parser;
 mod longfi_sender;
 
-use longfi_parser::LongFiParser;
-use longfi_sender::LongFiSender;
+use crate::longfi_parser::LongFiParser;
+use crate::longfi_sender::LongFiSender;
 
-use msg::LongFiSpreading as Spreading;
+use crate::msg::LongFiSpreading as Spreading;
 
 #[derive(Debug)]
 pub enum LongFiResponse {

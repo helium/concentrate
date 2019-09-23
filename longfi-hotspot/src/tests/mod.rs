@@ -3,11 +3,11 @@ mod test {
     #![allow(unused_imports)]
     // ^ Clippy triggers false-positive unused imports in this module,
     // hence `allow` above.
-    use longfi_sender::{PacketHeader, PacketHeaderMultipleFragments};
+    use crate::longfi_sender::{PacketHeader, PacketHeaderMultipleFragments};
+    use crate::msg::LongFiSpreading as Spreading;
+    use crate::LongFi;
+    use crate::LongFiResponse;
     use messages as msg;
-    use msg::LongFiSpreading as Spreading;
-    use LongFi;
-    use LongFiResponse;
 
     #[test]
     fn test_header_serialization() {

@@ -1,7 +1,9 @@
 use crate::error::AppResult;
 use protobuf::Message;
-use std::fmt;
-use std::net::{SocketAddr, UdpSocket};
+use std::{
+    fmt,
+    net::{SocketAddr, UdpSocket},
+};
 
 mod bist;
 mod listen;

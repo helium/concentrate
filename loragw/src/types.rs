@@ -1,8 +1,6 @@
 use crate::error;
 use crate::llg;
-use std::convert::TryFrom;
-use std::fmt;
-use std::time;
+use std::{convert::TryFrom, fmt, time};
 
 const MOD_LORA: u8 = 0x10;
 const MOD_FSK: u8 = 0x20;
@@ -488,7 +486,7 @@ pub enum TxMode {
 
 impl From<TxMode> for (u8, u32) {
     fn from(other: TxMode) -> (u8, u32) {
-        use TxMode::*;
+        use crate::TxMode::*;
         match other {
             Immediate => (0, 0),
             Timestamp(delay) => (1, delay.as_micros() as u32),
@@ -571,7 +569,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
         match other {
             TxPacket::LoRa(other) => {
                 if other.payload.len() > 256 {
-                    error!("attempt to send {} byte payload", other.payload.len());
+                    log::error!("attempt to send {} byte payload", other.payload.len());
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();
@@ -601,7 +599,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
             }
             TxPacket::FSK(other) => {
                 if other.payload.len() > 256 {
-                    error!("attempt to send {} byte payload", other.payload.len());
+                    log::error!("attempt to send {} byte payload", other.payload.len());
                     Err(error::Error::Size)
                 } else {
                     let (mode, delay) = other.mode.into();

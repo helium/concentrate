@@ -15,8 +15,8 @@ use std::{
 pub fn serve(args: cmdline::Serve) -> AppResult {
     let socket = {
         assert_ne!(args.listen_addr_in, args.publish_addr_out);
-        debug!("listen addr: {}", args.listen_addr_in);
-        debug!("publish addr: {}", args.publish_addr_out);
+        log::debug!("listen addr: {}", args.listen_addr_in);
+        log::debug!("publish addr: {}", args.publish_addr_out);
         UdpSocket::bind(args.listen_addr_in)?
     };
 
@@ -32,7 +32,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
             for pkt in packets {
                 print_at_level(args.print_level, &pkt);
                 if let loragw::RxPacket::LoRa(pkt) = pkt {
-                    debug!("received {:?}", pkt);
+                    log::debug!("received {:?}", pkt);
                     let resp = RadioResp {
                         id: 0,
                         kind: Some(RadioResp_oneof_kind::rx_packet(pkt.into())),
@@ -54,7 +54,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                             ..
                         } => {
                             let pkt = req.into();
-                            debug!("transmitting {:?}", pkt);
+                            log::debug!("transmitting {:?}", pkt);
                             match concentrator.transmit(loragw::TxPacket::LoRa(pkt)) {
                                 Ok(()) => RadioResp {
                                     id,
@@ -76,7 +76,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                         }
                         // Invalid request
                         RadioReq { id, kind: None, .. } => {
-                            error!("request {} empty", id);
+                            log::error!("request {} empty", id);
                             RadioResp {
                                 id,
                                 kind: None,
@@ -85,7 +85,7 @@ pub fn serve(args: cmdline::Serve) -> AppResult {
                         }
                     },
                     Err(e) => {
-                        error!("parse Req error {:?} from {:x?}", e, &req_buf[..sz]);
+                        log::error!("parse Req error {:?} from {:x?}", e, &req_buf[..sz]);
                         RadioResp {
                             id: 0,
                             kind: Some(RadioResp_oneof_kind::parse_err(Vec::from(&req_buf[..sz]))),
@@ -110,7 +110,7 @@ fn config(concentrator: &mut loragw::Concentrator, cfg: Option<PathBuf>) -> AppR
         None => cfg::Config::from_str_or_default(None)?,
     };
 
-    debug!("configuring concentrator with {:?}", cfg);
+    log::debug!("configuring concentrator with {:?}", cfg);
 
     concentrator.config_board(&cfg.board.try_into()?)?;
 

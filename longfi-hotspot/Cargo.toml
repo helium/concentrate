@@ -1,6 +1,7 @@
 [package]
 name = "longfi-hotspot"
 version = "0.1.0"
+edition = "2018"
 authors = ["Louis Thiery <louis@helium.com>"]
 
 [dependencies]

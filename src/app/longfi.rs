@@ -1,8 +1,7 @@
 use crate::{cmdline, error::AppResult};
 use longfi_hotspot::{LongFi, LongFiResponse};
 use messages as msg;
-use mio::net::UdpSocket;
-use mio::{Events, Poll, PollOpt, Ready, Token};
+use mio::{net::UdpSocket, Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
 use std::net::SocketAddr;
 
@@ -20,12 +19,12 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 pub fn longfi(args: cmdline::LongFi) -> AppResult {
     let (radio_socket, longfi_socket) = {
         assert_ne!(args.radio_listen_addr_out, args.radio_publish_addr_in);
-        debug!("radio_listen_addr_out : {}", args.radio_listen_addr_out);
-        debug!("radio_publish_addr_in: {}", args.radio_publish_addr_in);
+        log::debug!("radio_listen_addr_out : {}", args.radio_listen_addr_out);
+        log::debug!("radio_publish_addr_in: {}", args.radio_publish_addr_in);
 
         assert_ne!(args.longfi_publish_addr_out, args.longfi_listen_addr_in);
-        debug!("longfi_publish_addr_out : {}", args.longfi_publish_addr_out);
-        debug!("longfi_listen_addr_in: {}", args.longfi_listen_addr_in);
+        log::debug!("longfi_publish_addr_out : {}", args.longfi_publish_addr_out);
+        log::debug!("longfi_listen_addr_in: {}", args.longfi_listen_addr_in);
         (
             UdpSocket::bind(&args.radio_publish_addr_in)?,
             UdpSocket::bind(&args.longfi_listen_addr_in)?,
@@ -69,7 +68,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                         // feed raw packet to longfi parser
                         Ok(resp) => longfi.handle_response(&resp),
                         Err(e) => {
-                            error!("{:?}", e);
+                            log::error!("{:?}", e);
                             None
                         }
                     }
@@ -82,7 +81,7 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                         // feed transmit request to LongFi
                         Ok(req) => longfi.handle_request(&req),
                         Err(e) => {
-                            error!("{:?}", e);
+                            log::error!("{:?}", e);
                             None
                         }
                     }
@@ -94,13 +93,13 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
             if let Some(response) = maybe_response {
                 match response {
                     LongFiResponse::PktRx(pkt) => {
-                        debug!("[LongFi][app] Packet received: {:?}", pkt);
+                        log::debug!("[LongFi][app] Packet received: {:?}", pkt);
 
                         let rx_packet: msg::LongFiRxPacket = pkt.into();
                         // only forward a packet to client if CRC pass on every fragment
                         if rx_packet.crc_check {
                             // transform it into a UDP msg for client
-                            debug!("[LongFi][app] Sending to client");
+                            log::debug!("[LongFi][app] Sending to client");
 
                             let resp = msg::LongFiResp {
                                 id: 0,
@@ -111,11 +110,11 @@ pub fn longfi(args: cmdline::LongFi) -> AppResult {
                             msg_send(resp, &longfi_socket, &args.longfi_publish_addr_out)?;
                         } else {
                             // transform it into a UDP msg for client
-                            debug!("[LongFi][app] Dropping packet due to CRC error or missing fragments");
+                            log::debug!("[LongFi][app] Dropping packet due to CRC error or missing fragments");
                         }
                     }
                     LongFiResponse::RadioReq(msg) => {
-                        debug!("[LongFi][app] Sending fragment to radio via UDP");
+                        log::debug!("[LongFi][app] Sending fragment to radio via UDP");
                         msg_send(msg, &radio_socket, &args.radio_listen_addr_out)?;
                     }
                     LongFiResponse::ClientResp(resp) => {

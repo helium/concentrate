@@ -1,11 +1,10 @@
 use crate::{cmdline, error::AppResult};
+use log;
 use messages as msg;
-use mio::net::UdpSocket;
-use mio::{Events, Poll, PollOpt, Ready, Token};
+use mio::{net::UdpSocket, Events, Poll, PollOpt, Ready, Token};
 use protobuf::{parse_from_bytes, Message};
 use std::net::SocketAddr;
 
-extern crate rand;
 use rand::Rng;
 
 const PACKET_RECV_EVENT: Token = Token(0);
@@ -21,8 +20,8 @@ fn msg_send<T: Message>(msg: T, socket: &UdpSocket, addr: &SocketAddr) -> AppRes
 pub fn longfi_test(args: cmdline::LongFiTest) -> AppResult {
     let socket = {
         assert_ne!(args.listen_addr_out, args.publish_addr_in);
-        debug!("request_addr_out : {}", args.listen_addr_out);
-        debug!("response_addr_in: {}", args.publish_addr_in);
+        log::debug!("request_addr_out : {}", args.listen_addr_out);
+        log::debug!("response_addr_in: {}", args.publish_addr_in);
         UdpSocket::bind(&args.publish_addr_in)?
     };
 
