@@ -19,6 +19,21 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.4 (2019-10-01)
+==================
+Bug fixes:
+
+* [#36](https://github.com/helium/concentrate/pull/36):
+  Take timestamp, snr, rssi from first fragment.
+
+Feature enhancements:
+
+* [#37](https://github.com/helium/concentrate/pull/37):
+  Make `concentrate` executable the root level project.
+
+* [#38](https://github.com/helium/concentrate/pull/38):
+  Upgrade to the 2018 edition.
+
 0.2.3 (2019-08-08)
 ==================
 Bug fixes:
