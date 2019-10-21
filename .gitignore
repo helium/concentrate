@@ -3,4 +3,5 @@
 # ignore generated code
 /messages/src/longfi.rs
 /messages/src/radio.rs
-
+build-script-target
+lfc-sys/longfi-core/build

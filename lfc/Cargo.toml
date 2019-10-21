@@ -1,0 +1,8 @@
+[package]
+name = "lfc"
+version = "0.1.0"
+edition = "2018"
+authors = ["Louis Thiery <louis@helium.com>"]
+
+[dependencies]
+lfc-sys = { path = "../lfc-sys" }
