@@ -56,7 +56,6 @@ impl LongFi {
             None => None,
         }
     }
-
 }
 
 impl Default for LongFi {

@@ -11,6 +11,3 @@ mio             = "0.6"
 protobuf = "2.5.0"
 rand = "0.3"
 log = "0.4.6"
-
-[dev-dependencies]
-lazy_static = "*"

@@ -14,8 +14,6 @@ impl LongFiParser {
         }
     }
 
-        
-
     pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {
         None
     }

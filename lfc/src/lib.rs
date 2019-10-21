@@ -1,19 +1,19 @@
 extern crate messages;
+use lfc_sys;
+use lfc_sys::cursor as Cursor;
+use lfc_sys::lfc;
+use lfc_sys::lfc_dg_des as LfcDatagram;
+use lfc_sys::lfc_dg_type as LfcDg;
+use lfc_sys::lfc_res as LfcResp;
+use lfc_sys::lfc_user_cfg as LfcUserCfg;
 use messages as msg;
 use msg::LongFiSpreading as Spreading;
-use lfc_sys;
-use lfc_sys::lfc;
-use lfc_sys::lfc_user_cfg as LfcUserCfg;
-use lfc_sys::lfc_dg_des as LfcDatagram;
-use lfc_sys::cursor as Cursor;
-use lfc_sys::lfc_res as LfcResp;
-use lfc_sys::lfc_dg_type as LfcDg;
 use std::ffi::c_void;
 
 struct LongFiCore {
     cb_data: usize,
     key: [u8; 16],
-    c_handle: Option<lfc>
+    c_handle: Option<lfc>,
 }
 
 impl LongFiCore {
@@ -23,15 +23,15 @@ impl LongFiCore {
             key: [0; 16],
             cb_data: 0,
         };
-        ret.c_handle = Some( lfc {
-           seq: 0,
-           cfg: LfcUserCfg {
-             cb_data: ret.cb_data as *mut c_void,
-             key: ret.key[0] as *mut c_void,
-             oui: 0x0,
-             did: 0x1,
-             key_len: 16,
-           }
+        ret.c_handle = Some(lfc {
+            seq: 0,
+            cfg: LfcUserCfg {
+                cb_data: ret.cb_data as *mut c_void,
+                key: ret.key[0] as *mut c_void,
+                oui: 0x0,
+                did: 0x1,
+                key_len: 16,
+            },
         });
         ret
     }
@@ -58,12 +58,10 @@ impl LongFiCore {
             response = lfc_sys::lfc_dg__des(&mut output, &mut input);
         }
 
-        let quality: Vec<Quality> = vec![
-            match pkt.crc_check {
-                true => Quality::CrcOk,
-                false => Quality::CrcFail
-            }
-        ];
+        let quality: Vec<Quality> = vec![match pkt.crc_check {
+            true => Quality::CrcOk,
+            false => Quality::CrcFail,
+        }];
 
         match response {
             LfcResp::lfc_res_ok => {
@@ -71,25 +69,24 @@ impl LongFiCore {
                     LfcDg::lfc_dg_type_monolithic => {
                         let monolithic = unsafe { output.__bindgen_anon_1.monolithic.as_ref() };
                         Some(LongFiPkt {
-                                oui: monolithic.oui,//output.monolithic.oui,
-                                device_id: monolithic.did,
-                                packet_id: 0,
-                                mac: monolithic.fp,
-                                payload: buf.to_vec(),
-                                num_fragments: 1,
-                                fragment_cnt: 1,
-                                timestamp: pkt.timestamp,
-                                snr: pkt.snr,
-                                rssi: pkt.rssi,
-                                spreading: Spreading::SF10,
-                                quality,
-                                crc_fails: 0,
+                            oui: monolithic.oui, //output.monolithic.oui,
+                            device_id: monolithic.did,
+                            packet_id: 0,
+                            mac: monolithic.fp,
+                            payload: buf.to_vec(),
+                            num_fragments: 1,
+                            fragment_cnt: 1,
+                            timestamp: pkt.timestamp,
+                            snr: pkt.snr,
+                            rssi: pkt.rssi,
+                            spreading: Spreading::SF10,
+                            quality,
+                            crc_fails: 0,
                         })
                     }
                     _ => None,
                 }
-
-            },
+            }
             LfcResp::lfc_res_err_exception => None,
             LfcResp::lfc_res_err_nomem => None,
             LfcResp::lfc_res_invalid_type => None,
@@ -98,14 +95,12 @@ impl LongFiCore {
     }
 }
 
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Quality {
     CrcOk,
     CrcFail,
     Missed,
 }
-
 
 pub struct LongFiPkt {
     oui: u32,
