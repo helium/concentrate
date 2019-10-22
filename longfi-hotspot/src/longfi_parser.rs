@@ -1,17 +1,12 @@
-use super::{LongFiPkt, LongFiResponse};
+use super::LongFiResponse;
 use lfc;
 
 pub struct LongFiParser {
-    fragmented_packets: Box<[Option<LongFiPkt>]>,
 }
 
 impl LongFiParser {
     pub fn new() -> LongFiParser {
         LongFiParser {
-            fragmented_packets: (0..256)
-                .map(|_| None)
-                .collect::<Vec<Option<LongFiPkt>>>()
-                .into_boxed_slice(),
         }
     }
 
