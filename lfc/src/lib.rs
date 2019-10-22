@@ -72,7 +72,7 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
                     oui: monolithic.oui,
                     device_id: monolithic.did,
                     packet_id: 0,
-                    mac: monolithic.fp,
+                    fingerprint: monolithic.fp,
                     payload,
                     timestamp: pkt.timestamp,
                     snr: pkt.snr,
@@ -116,16 +116,16 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
 
 pub fn serialize(
     rng: &mut rand::ThreadRng,
-    pkt: &msg::LongFiTxUplinkPacket,
+    pkt: &msg::LongFiTxPacket,
 ) -> Option<msg::RadioReq> {
     let mut input = unsafe { core::mem::zeroed::<MonolithicDg>() };
 
     input.flags = DgFlags {
-        downlink: true,
-        should_ack: false,
-        cts_rts: false,
-        priority: false,
-        ldpc: false,
+        downlink: pkt.downlink,
+        should_ack: pkt.should_ack,
+        cts_rts: pkt.cts,
+        priority: pkt.priority,
+        ldpc: pkt.ldpc,
     };
 
     input.oui = ONION_OUI;
@@ -182,7 +182,7 @@ pub struct LongFiPkt {
     oui: u32,
     device_id: u32,
     pub packet_id: u8,
-    mac: u32,
+    fingerprint: u32,
     payload: Vec<u8>,
     timestamp: u64,
     snr: f32,
@@ -227,7 +227,7 @@ impl From<LongFiPkt> for LongFiRxPacket {
             snr: other.snr,
             oui: other.oui as u32,
             device_id: other.device_id,
-            mac: other.mac,
+            fingerprint: other.fingerprint,
             payload: other.payload,
             spreading: other.spreading,
             // special fields
@@ -243,8 +243,8 @@ impl core::fmt::Debug for LongFiPkt {
 
         write!(
             f,
-            "LongFiPkt {{ oui: 0x{:x}, device_id 0x{:x}, packet_id: 0x{:x}, mac: 0x{:x}, quality: {}, crc_fails: {}, payload: {:?} }}",
-            self.oui, self.device_id, self.packet_id, self.mac, quality, self.crc_fails, self.payload
+            "LongFiPkt {{ oui: 0x{:x}, device_id 0x{:x}, packet_id: 0x{:x}, fingerprint: 0x{:x}, quality: {}, crc_fails: {}, payload: {:?} }}",
+            self.oui, self.device_id, self.packet_id, self.fingerprint, quality, self.crc_fails, self.payload
         )
     }
 }

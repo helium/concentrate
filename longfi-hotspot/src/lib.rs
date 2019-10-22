@@ -51,7 +51,7 @@ impl LongFi {
     pub fn handle_request(&mut self, req: &msg::LongFiReq) -> Option<LongFiResponse> {
         match &req.kind {
             Some(request) => match request {
-                msg::LongFiReq_oneof_kind::tx_uplink(tx_uplink) => self.sender.tx_uplink(tx_uplink),
+                msg::LongFiReq_oneof_kind::tx(tx) => self.sender.transmit(tx),
             },
             None => None,
         }

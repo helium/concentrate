@@ -69,7 +69,7 @@ impl LongFiSender {
         ret
     }
 
-    pub fn tx_uplink(&mut self, tx_uplink: &msg::LongFiTxUplinkPacket) -> Option<LongFiResponse> {
+    pub fn transmit(&mut self, tx_uplink: &msg::LongFiTxPacket) -> Option<LongFiResponse> {
         if let Some(pkt) = lfc::serialize(&mut self.rng, tx_uplink) {
             Some(LongFiResponse::RadioReq(pkt))
         } else {
