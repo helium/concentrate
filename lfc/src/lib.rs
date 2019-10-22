@@ -114,6 +114,9 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
             //error!("Invalid datagram flags.");
             None
         }
+        LfcResp::lfc_res_err_addr => {
+            None
+        }
     }
 }
 
