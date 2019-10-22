@@ -114,10 +114,7 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
     }
 }
 
-pub fn serialize(
-    rng: &mut rand::ThreadRng,
-    pkt: &msg::LongFiTxPacket,
-) -> Option<msg::RadioReq> {
+pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxPacket) -> Option<msg::RadioReq> {
     let mut input = unsafe { core::mem::zeroed::<MonolithicDg>() };
 
     input.flags = DgFlags {
