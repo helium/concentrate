@@ -54,10 +54,10 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
     }
 
     let quality: Vec<Quality> = vec![if pkt.crc_check {
-        Quality::CrcOk } else {
-            Quality::CrcFail
-        }
-    ];
+        Quality::CrcOk
+    } else {
+        Quality::CrcFail
+    }];
 
     match response {
         LfcResp::lfc_res_ok => {
