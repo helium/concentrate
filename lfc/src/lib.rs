@@ -38,13 +38,14 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
 
     let mut buf = [0u8; 1024];
     let len = pkt.payload.len();
+    println!("Packet len {}", len);
     for (idx, element) in pkt.payload.iter().enumerate() {
         buf[idx] = *element;
     }
 
     let mut input = Cursor {
-        buf: buf[0] as *mut u8,
-        len,
+        buf: buf.as_mut_ptr() as *mut u8,
+        len: 1024,
         pos: len,
     };
 
@@ -78,10 +79,37 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
                         crc_fails: 0,
                     })
                 }
-                _ => None,
+                LfcDg::lfc_dg_type_frame_start => {
+                    println!("Frame Start");
+                    None
+                },
+                LfcDg::lfc_dg_type_frame_data => {
+                    println!("Frame Data");
+                    None
+                },
+                LfcDg::lfc_dg_type_ack => {
+                    println!("ACK");
+                    None
+                },
             }
-        }
-        _ => None,
+        },
+        LfcResp::lfc_res_err_exception => {
+            println!("Generic, exceptional error");
+            None
+        },
+        LfcResp::lfc_res_err_nomem => {
+            println!("Provided buffer is too small for request.");
+            None
+        },
+        LfcResp::lfc_res_invalid_type => {
+            println!("Invalid datagram type");
+            None
+        },
+        LfcResp::lfc_res_invalid_flags => {
+            println!("Invalid datagram flags.");
+            None
+        },
+ 
     }
 }
 
