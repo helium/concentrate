@@ -1,13 +1,11 @@
 use super::LongFiResponse;
 use lfc;
 
-pub struct LongFiParser {
-}
+pub struct LongFiParser {}
 
 impl LongFiParser {
     pub fn new() -> LongFiParser {
-        LongFiParser {
-        }
+        LongFiParser {}
     }
 
     pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {

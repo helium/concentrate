@@ -1,7 +1,7 @@
 use super::LongFiResponse;
+use lfc;
 use messages as msg;
 use std::collections::VecDeque;
-use lfc;
 
 pub struct LongFiSender {
     rng: rand::ThreadRng,

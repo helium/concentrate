@@ -44,7 +44,7 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
 
     let mut input = Cursor {
         buf: buf[0] as *mut u8,
-        len: len,
+        len,
         pos: len,
     };
 
@@ -53,10 +53,11 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
         response = lfc_sys::lfc_dg__des(&mut output, &mut input);
     }
 
-    let quality: Vec<Quality> = vec![match pkt.crc_check {
-        true => Quality::CrcOk,
-        false => Quality::CrcFail,
-    }];
+    let quality: Vec<Quality> = vec![if pkt.crc_check {
+        Quality::CrcOk } else {
+            Quality::CrcFail
+        }
+    ];
 
     match response {
         LfcResp::lfc_res_ok => {
@@ -84,8 +85,10 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
     }
 }
 
-pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxUplinkPacket) -> Option<msg::RadioReq> {
-
+pub fn serialize(
+    rng: &mut rand::ThreadRng,
+    pkt: &msg::LongFiTxUplinkPacket,
+) -> Option<msg::RadioReq> {
     let mut input = unsafe { core::mem::zeroed::<MonolithicDg>() };
 
     input.flags = DgFlags {
@@ -101,7 +104,7 @@ pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxUplinkPacket) -> 
     input.fp = 0x0;
     input.seq = 0x0;
     input.pay_len = pkt.payload.len();
-    
+
     for (idx, element) in pkt.payload.iter().enumerate() {
         input.pay[idx] = *element;
     }
@@ -115,35 +118,30 @@ pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxUplinkPacket) -> 
 
     let response;
     unsafe {
-        response = lfc_sys::lfc_dg_monolithic__ser(&mut input, &mut cursor);
+        response = lfc_sys::lfc_dg_monolithic__ser(&input, &mut cursor);
     }
 
     match response {
-        LfcResp::lfc_res_ok => {
-
-            Some(msg::RadioReq {
-                    id: 0xfe,
-                    kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
-                        freq: CHANNEL[rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
-                        radio: msg::Radio::R0,
-                        power: 28,
-                        bandwidth: msg::Bandwidth::BW125kHz,
-                        spreading: msg::Spreading::SF10,
-                        coderate: msg::Coderate::CR4_5,
-                        invert_polarity: false,
-                        omit_crc: false,
-                        implicit_header: false,
-                        payload: buf.to_vec(),
-                        ..Default::default()
-                    })),
-                    ..Default::default()
-                })
-        }
+        LfcResp::lfc_res_ok => Some(msg::RadioReq {
+            id: 0xfe,
+            kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
+                freq: CHANNEL[rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
+                radio: msg::Radio::R0,
+                power: 28,
+                bandwidth: msg::Bandwidth::BW125kHz,
+                spreading: msg::Spreading::SF10,
+                coderate: msg::Coderate::CR4_5,
+                invert_polarity: false,
+                omit_crc: false,
+                implicit_header: false,
+                payload: buf.to_vec(),
+                ..Default::default()
+            })),
+            ..Default::default()
+        }),
         _ => None,
     }
-
 }
-
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Quality {
@@ -199,8 +197,8 @@ impl From<LongFiPkt> for LongFiRxPacket {
             rssi: other.rssi,
             snr: other.snr,
             oui: other.oui as u32,
-            device_id: u32::from(other.device_id),
-            mac: u32::from(other.mac),
+            device_id: other.device_id,
+            mac: other.mac,
             payload: other.payload,
             spreading: other.spreading,
             // special fields
