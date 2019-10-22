@@ -6,7 +6,10 @@ fn main() {
 
     protobuf_codegen_pure::run(protobuf_codegen_pure::Args {
         out_dir: "src",
-        input: &["proto/src/hotspot_protocol/longfi.proto", "proto/src/hotspot_protocol/radio.proto"],
+        input: &[
+            "proto/src/hotspot_protocol/longfi.proto",
+            "proto/src/hotspot_protocol/radio.proto",
+        ],
 
         includes: &["proto"],
         customize: protobuf_codegen_pure::Customize {
