@@ -1,105 +1,154 @@
 extern crate messages;
 use lfc_sys;
 use lfc_sys::cursor as Cursor;
-use lfc_sys::lfc;
 use lfc_sys::lfc_dg_des as LfcDatagram;
+use lfc_sys::lfc_dg_monolithic as MonolithicDg;
+use lfc_sys::lfc_dg_monolithic_lfc_dg_monolithic_flags as DgFlags;
 use lfc_sys::lfc_dg_type as LfcDg;
 use lfc_sys::lfc_res as LfcResp;
-use lfc_sys::lfc_user_cfg as LfcUserCfg;
 use messages as msg;
 use msg::LongFiSpreading as Spreading;
-use std::ffi::c_void;
+use rand;
+use rand::Rng;
 
-struct LongFiCore {
-    cb_data: usize,
-    key: [u8; 16],
-    c_handle: Option<lfc>,
-}
+const ONION_OUI: u32 = 0;
+const ONION_DID: u32 = 1;
 
-impl LongFiCore {
-    pub fn new() -> LongFiCore {
-        let mut ret = LongFiCore {
-            c_handle: None,
-            key: [0; 16],
-            cb_data: 0,
-        };
-        ret.c_handle = Some(lfc {
-            seq: 0,
-            cfg: LfcUserCfg {
-                cb_data: ret.cb_data as *mut c_void,
-                key: ret.key[0] as *mut c_void,
-                oui: 0x0,
-                did: 0x1,
-                key_len: 16,
-            },
-        });
-        ret
+const RADIO_1: u32 = 920_600_000;
+const RADIO_2: u32 = 916_600_000;
+const FREQ_SPACING: u32 = 200_000;
+const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
+
+const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS as usize] = [
+    RADIO_1 - FREQ_SPACING * 2,
+    RADIO_1 - FREQ_SPACING,
+    RADIO_1,
+    RADIO_2 - FREQ_SPACING * 2,
+    RADIO_2 - FREQ_SPACING,
+    RADIO_2,
+    RADIO_2 + FREQ_SPACING,
+    RADIO_2 + FREQ_SPACING * 2,
+];
+
+pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
+    let mut output;
+    unsafe {
+        output = core::mem::zeroed::<LfcDatagram>();
     }
 
-    pub fn parse(&self, pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
-        let mut output;
-        unsafe {
-            output = core::mem::zeroed::<LfcDatagram>();
-        }
+    let mut buf = [0u8; 1024];
+    let len = pkt.payload.len();
+    for (idx, element) in pkt.payload.iter().enumerate() {
+        buf[idx] = *element;
+    }
 
-        let mut buf = [0u8; 1024];
-        for i in (0..pkt.payload.len()) {
-            buf[i] = pkt.payload[i];
-        }
+    let mut input = Cursor {
+        buf: buf[0] as *mut u8,
+        len: len,
+        pos: len,
+    };
 
-        let mut input = Cursor {
-            buf: buf[0] as *mut u8,
-            len: pkt.payload.len(),
-            pos: pkt.payload.len(),
-        };
+    let response;
+    unsafe {
+        response = lfc_sys::lfc_dg__des(&mut output, &mut input);
+    }
 
-        let response;
-        unsafe {
-            response = lfc_sys::lfc_dg__des(&mut output, &mut input);
-        }
+    let quality: Vec<Quality> = vec![match pkt.crc_check {
+        true => Quality::CrcOk,
+        false => Quality::CrcFail,
+    }];
 
-        let quality: Vec<Quality> = vec![match pkt.crc_check {
-            true => Quality::CrcOk,
-            false => Quality::CrcFail,
-        }];
-
-        match response {
-            LfcResp::lfc_res_ok => {
-                match output.type_ {
-                    LfcDg::lfc_dg_type_monolithic => {
-                        let monolithic = unsafe { output.__bindgen_anon_1.monolithic.as_ref() };
-                        Some(LongFiPkt {
-                            oui: monolithic.oui, //output.monolithic.oui,
-                            device_id: monolithic.did,
-                            packet_id: 0,
-                            mac: monolithic.fp,
-                            payload: buf.to_vec(),
-                            num_fragments: 1,
-                            fragment_cnt: 1,
-                            timestamp: pkt.timestamp,
-                            snr: pkt.snr,
-                            rssi: pkt.rssi,
-                            spreading: Spreading::SF10,
-                            quality,
-                            crc_fails: 0,
-                        })
-                    }
-                    _ => None,
+    match response {
+        LfcResp::lfc_res_ok => {
+            match output.type_ {
+                LfcDg::lfc_dg_type_monolithic => {
+                    let monolithic = unsafe { output.__bindgen_anon_1.monolithic.as_ref() };
+                    Some(LongFiPkt {
+                        oui: monolithic.oui, //output.monolithic.oui,
+                        device_id: monolithic.did,
+                        packet_id: 0,
+                        mac: monolithic.fp,
+                        payload: buf.to_vec(),
+                        timestamp: pkt.timestamp,
+                        snr: pkt.snr,
+                        rssi: pkt.rssi,
+                        spreading: Spreading::SF10,
+                        quality,
+                        crc_fails: 0,
+                    })
                 }
+                _ => None,
             }
-            LfcResp::lfc_res_err_exception => None,
-            LfcResp::lfc_res_err_nomem => None,
-            LfcResp::lfc_res_invalid_type => None,
-            LfcResp::lfc_res_invalid_flags => None,
         }
+        _ => None,
     }
 }
+
+pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxUplinkPacket) -> Option<msg::RadioReq> {
+
+    let mut input = unsafe { core::mem::zeroed::<MonolithicDg>() };
+
+    input.flags = DgFlags {
+        downlink: true,
+        should_ack: false,
+        cts_rts: false,
+        priority: false,
+        ldpc: false,
+    };
+
+    input.oui = ONION_OUI;
+    input.did = ONION_DID;
+    input.fp = 0x0;
+    input.seq = 0x0;
+    input.pay_len = pkt.payload.len();
+    
+    for (idx, element) in pkt.payload.iter().enumerate() {
+        input.pay[idx] = *element;
+    }
+
+    let buf = [0u8; 1024];
+    let mut cursor = Cursor {
+        buf: buf[0] as *mut u8,
+        len: 1024,
+        pos: 0,
+    };
+
+    let response;
+    unsafe {
+        response = lfc_sys::lfc_dg_monolithic__ser(&mut input, &mut cursor);
+    }
+
+    match response {
+        LfcResp::lfc_res_ok => {
+
+            Some(msg::RadioReq {
+                    id: 0xfe,
+                    kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
+                        freq: CHANNEL[rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
+                        radio: msg::Radio::R0,
+                        power: 28,
+                        bandwidth: msg::Bandwidth::BW125kHz,
+                        spreading: msg::Spreading::SF10,
+                        coderate: msg::Coderate::CR4_5,
+                        invert_polarity: false,
+                        omit_crc: false,
+                        implicit_header: false,
+                        payload: buf.to_vec(),
+                        ..Default::default()
+                    })),
+                    ..Default::default()
+                })
+        }
+        _ => None,
+    }
+
+}
+
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Quality {
     CrcOk,
     CrcFail,
-    Missed,
 }
 
 pub struct LongFiPkt {
@@ -108,8 +157,6 @@ pub struct LongFiPkt {
     pub packet_id: u8,
     mac: u32,
     payload: Vec<u8>,
-    num_fragments: u8,
-    fragment_cnt: u8,
     timestamp: u64,
     snr: f32,
     rssi: f32,
@@ -126,7 +173,6 @@ impl LongFiPkt {
             match i {
                 Quality::CrcOk => quality.push('O'),
                 Quality::CrcFail => quality.push('S'),
-                Quality::Missed => quality.push('X'),
             }
         }
 

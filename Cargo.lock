@@ -269,6 +269,7 @@ version = "0.1.0"
 dependencies = [
  "lfc-sys 0.1.0",
  "messages 0.1.0",
+ "rand 0.3.23 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

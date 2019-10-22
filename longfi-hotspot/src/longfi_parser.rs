@@ -1,4 +1,5 @@
 use super::{LongFiPkt, LongFiResponse};
+use lfc;
 
 pub struct LongFiParser {
     fragmented_packets: Box<[Option<LongFiPkt>]>,
@@ -15,6 +16,10 @@ impl LongFiParser {
     }
 
     pub fn parse(&mut self, pkt: &messages::RadioRxPacket) -> Option<LongFiResponse> {
-        None
+        if let Some(req) = lfc::parse(pkt) {
+            Some(LongFiResponse::PktRx(req))
+        } else {
+            None
+        }
     }
 }

@@ -7,3 +7,4 @@ authors = ["Louis Thiery <louis@helium.com>"]
 [dependencies]
 lfc-sys = { path = "../lfc-sys" }
 messages = { path = "../messages" }
+rand = "0.3"
