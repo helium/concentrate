@@ -38,15 +38,15 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
 
     let mut buf = [0u8; 1024];
     let len = pkt.payload.len();
-    println!("Packet len {}", len);
+
     for (idx, element) in pkt.payload.iter().enumerate() {
         buf[idx] = *element;
     }
 
     let mut input = Cursor {
         buf: buf.as_mut_ptr() as *mut u8,
-        len: 1024,
-        pos: len,
+        len,
+        pos: 0,
     };
 
     let response;
@@ -61,55 +61,56 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
     }];
 
     match response {
-        LfcResp::lfc_res_ok => {
-            match output.type_ {
-                LfcDg::lfc_dg_type_monolithic => {
-                    let monolithic = unsafe { output.__bindgen_anon_1.monolithic.as_ref() };
-                    Some(LongFiPkt {
-                        oui: monolithic.oui, //output.monolithic.oui,
-                        device_id: monolithic.did,
-                        packet_id: 0,
-                        mac: monolithic.fp,
-                        payload: buf.to_vec(),
-                        timestamp: pkt.timestamp,
-                        snr: pkt.snr,
-                        rssi: pkt.rssi,
-                        spreading: Spreading::SF10,
-                        quality,
-                        crc_fails: 0,
-                    })
-                }
-                LfcDg::lfc_dg_type_frame_start => {
-                    println!("Frame Start");
-                    None
-                },
-                LfcDg::lfc_dg_type_frame_data => {
-                    println!("Frame Data");
-                    None
-                },
-                LfcDg::lfc_dg_type_ack => {
-                    println!("ACK");
-                    None
-                },
+        LfcResp::lfc_res_ok => match output.type_ {
+            LfcDg::lfc_dg_type_monolithic => {
+                let monolithic = unsafe { output.__bindgen_anon_1.monolithic.as_ref() };
+
+                let mut payload = monolithic.pay.to_vec();
+                payload.resize(monolithic.pay_len, 0);
+
+                Some(LongFiPkt {
+                    oui: monolithic.oui,
+                    device_id: monolithic.did,
+                    packet_id: 0,
+                    mac: monolithic.fp,
+                    payload,
+                    timestamp: pkt.timestamp,
+                    snr: pkt.snr,
+                    rssi: pkt.rssi,
+                    spreading: Spreading::SF10,
+                    quality,
+                    crc_fails: 0,
+                })
+            }
+            LfcDg::lfc_dg_type_frame_start => {
+                //error!("Frame Start");
+                None
+            }
+            LfcDg::lfc_dg_type_frame_data => {
+                //error!("Frame Data");
+                None
+            }
+            LfcDg::lfc_dg_type_ack => {
+                //error!("ACK");
+                None
             }
         },
         LfcResp::lfc_res_err_exception => {
-            println!("Generic, exceptional error");
+            //error!("Generic, exceptional error");
             None
-        },
+        }
         LfcResp::lfc_res_err_nomem => {
-            println!("Provided buffer is too small for request.");
+            //error!("Provided buffer is too small for request.");
             None
-        },
+        }
         LfcResp::lfc_res_invalid_type => {
-            println!("Invalid datagram type");
+            //error!("Invalid datagram type");
             None
-        },
+        }
         LfcResp::lfc_res_invalid_flags => {
-            println!("Invalid datagram flags.");
+            //error!("Invalid datagram flags.");
             None
-        },
- 
+        }
     }
 }
 
@@ -137,9 +138,9 @@ pub fn serialize(
         input.pay[idx] = *element;
     }
 
-    let buf = [0u8; 1024];
+    let mut buf = [0u8; 1024];
     let mut cursor = Cursor {
-        buf: buf[0] as *mut u8,
+        buf: buf.as_mut_ptr() as *mut u8,
         len: 1024,
         pos: 0,
     };
