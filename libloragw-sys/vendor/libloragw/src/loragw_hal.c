@@ -40,7 +40,6 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 #include "loragw_sx1250.h"
 #include "loragw_sx125x.h"
 #include "loragw_sx1302.h"
-#include "loragw_stts751.h"
 #include "loragw_debug.h"
 
 /* -------------------------------------------------------------------------- */
@@ -178,10 +177,6 @@ static lgw_context_t lgw_context = {
 
 /* File handle to write debug logs */
 FILE * log_file = NULL;
-
-/* I2C temperature sensor handles */
-static int     ts_fd = -1;
-static uint8_t ts_addr = 0xFF;
 
 /* -------------------------------------------------------------------------- */
 /* --- PRIVATE FUNCTIONS DECLARATION ---------------------------------------- */
@@ -716,22 +711,22 @@ int lgw_start(void) {
     dbg_init_gpio();
 #endif
 
-    /* Try to configure temperature sensor STTS751-0DP3F */
-    ts_addr = I2C_PORT_TEMP_SENSOR_0;
-    i2c_linuxdev_open(I2C_DEVICE, ts_addr, &ts_fd);
-    err = stts751_configure(ts_fd, ts_addr);
-    if (err != LGW_I2C_SUCCESS) {
-        i2c_linuxdev_close(ts_fd);
-        ts_fd = -1;
-        /* Not found, try to configure temperature sensor STTS751-1DP3F */
-        ts_addr = I2C_PORT_TEMP_SENSOR_1;
-        i2c_linuxdev_open(I2C_DEVICE, ts_addr, &ts_fd);
-        err = stts751_configure(ts_fd, ts_addr);
-        if (err != LGW_I2C_SUCCESS) {
-            printf("ERROR: failed to configure the temperature sensor\n");
-            return LGW_HAL_ERROR;
-        }
-    }
+    // /* Try to configure temperature sensor STTS751-0DP3F */
+    // ts_addr = I2C_PORT_TEMP_SENSOR_0;
+    // i2c_linuxdev_open(I2C_DEVICE, ts_addr, &ts_fd);
+    // err = stts751_configure(ts_fd, ts_addr);
+    // if (err != LGW_I2C_SUCCESS) {
+    //     i2c_linuxdev_close(ts_fd);
+    //     ts_fd = -1;
+    //      Not found, try to configure temperature sensor STTS751-1DP3F 
+    //     ts_addr = I2C_PORT_TEMP_SENSOR_1;
+    //     i2c_linuxdev_open(I2C_DEVICE, ts_addr, &ts_fd);
+    //     err = stts751_configure(ts_fd, ts_addr);
+    //     if (err != LGW_I2C_SUCCESS) {
+    //         printf("ERROR: failed to configure the temperature sensor\n");
+    //         return LGW_HAL_ERROR;
+    //     }
+    // }
 
     /* set hal state */
     CONTEXT_STARTED = true;
@@ -742,7 +737,7 @@ int lgw_start(void) {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 int lgw_stop(void) {
-    int i, err;
+    int i;
 
     DEBUG_MSG("INFO: aborting TX\n");
     for (i = 0; i < LGW_RF_CHAIN_NB; i++) {
@@ -759,10 +754,6 @@ int lgw_stop(void) {
     lgw_disconnect();
 
     DEBUG_MSG("INFO: Closing I2C\n");
-    err = i2c_linuxdev_close(ts_fd);
-    if (err != 0) {
-        printf("ERROR: failed to close I2C device (err=%i)\n", err);
-    }
 
     CONTEXT_STARTED = false;
     return LGW_HAL_SUCCESS;
@@ -775,7 +766,8 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
     uint16_t sz = 0;
     uint16_t nb_pkt_found = 0;
     uint16_t nb_pkt_dropped = 0;
-    float current_temperature, rssi_temperature_offset;
+    float current_temperature = 30.0;
+    float rssi_temperature_offset;
 
     /* Check that AGC/ARB firmwares are not corrupted, and update internal counter */
     /* WARNING: this needs to be called regularly by the upper layer */
@@ -794,13 +786,13 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
         return 0;
     }
 
-    /* Get the current temperature for further RSSI compensation : TODO */
-    res = stts751_get_temperature(ts_fd, ts_addr, &current_temperature);
-    if (res != LGW_I2C_SUCCESS) {
-        printf("ERROR: failed to get current temperature\n");
-        return LGW_HAL_ERROR;
-    }
-    DEBUG_PRINTF("INFO: current temperature is %f C\n", current_temperature);
+    // /* Get the current temperature for further RSSI compensation : TODO */
+    // res = stts751_get_temperature(ts_fd, ts_addr, &current_temperature);
+    // if (res != LGW_I2C_SUCCESS) {
+    //     printf("ERROR: failed to get current temperature\n");
+    //     return LGW_HAL_ERROR;
+    // }
+    DEBUG_PRINTF("INFO: current [hardcoded] temperature is %f C\n", current_temperature);
 
     /* Iterate on the RX buffer to get parsed packets */
     res = LGW_REG_SUCCESS;
@@ -981,10 +973,10 @@ int lgw_get_eui(uint64_t* eui) {
 
 int lgw_get_temperature(float* temperature) {
     CHECK_NULL(temperature);
-
-    if (stts751_get_temperature(ts_fd, ts_addr, temperature) != LGW_I2C_SUCCESS) {
-        return LGW_HAL_ERROR;
-    }
+    *temperature = 30.0;
+    // if (stts751_get_temperature(ts_fd, ts_addr, temperature) != LGW_I2C_SUCCESS) {
+    //     return LGW_HAL_ERROR;
+    // }
 
     return LGW_HAL_SUCCESS;
 }
