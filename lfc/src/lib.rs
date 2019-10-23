@@ -73,6 +73,7 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
                     device_id: monolithic.did,
                     packet_id: 0,
                     fingerprint: monolithic.fp,
+                    sequence: monolithic.seq,
                     payload,
                     timestamp: pkt.timestamp,
                     snr: pkt.snr,
@@ -182,6 +183,7 @@ pub struct LongFiPkt {
     device_id: u32,
     pub packet_id: u8,
     fingerprint: u32,
+    sequence: u32,
     payload: Vec<u8>,
     timestamp: u64,
     snr: f32,
@@ -228,6 +230,7 @@ impl From<LongFiPkt> for LongFiRxPacket {
             device_id: other.device_id,
             fingerprint: other.fingerprint,
             payload: other.payload,
+            sequence: other.sequence,
             spreading: other.spreading,
             // special fields
             unknown_fields: Default::default(),
