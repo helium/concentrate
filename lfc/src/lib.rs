@@ -151,23 +151,27 @@ pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxPacket) -> Option
     }
 
     match response {
-        LfcResp::lfc_res_ok => Some(msg::RadioReq {
-            id: 0xfe,
-            kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
-                freq: CHANNEL[rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
-                radio: msg::Radio::R0,
-                power: 28,
-                bandwidth: msg::Bandwidth::BW125kHz,
-                spreading: msg::Spreading::SF10,
-                coderate: msg::Coderate::CR4_5,
-                invert_polarity: false,
-                omit_crc: false,
-                implicit_header: false,
-                payload: buf.to_vec(),
+        LfcResp::lfc_res_ok => {
+            let mut payload = monolithic.pay.to_vec();
+            payload.resize(monolithic.pay_len, 0);
+            Some(msg::RadioReq {
+                id: 0xfe,
+                kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
+                    freq: CHANNEL[rng.gen::<usize>() % LONGFI_NUM_UPLINK_CHANNELS],
+                    radio: msg::Radio::R0,
+                    power: 28,
+                    bandwidth: msg::Bandwidth::BW125kHz,
+                    spreading: msg::Spreading::SF10,
+                    coderate: msg::Coderate::CR4_5,
+                    invert_polarity: false,
+                    omit_crc: false,
+                    implicit_header: false,
+                    payload,
+                    ..Default::default()
+                })),
                 ..Default::default()
-            })),
-            ..Default::default()
-        }),
+            })
+        },
         _ => None,
     }
 }
