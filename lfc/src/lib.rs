@@ -152,8 +152,8 @@ pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxPacket) -> Option
 
     match response {
         LfcResp::lfc_res_ok => {
-            let mut payload = monolithic.pay.to_vec();
-            payload.resize(monolithic.pay_len, 0);
+            let mut payload = buf.to_vec();
+            payload.resize(cursor.pos, 0);
             Some(msg::RadioReq {
                 id: 0xfe,
                 kind: Some(msg::RadioReq_oneof_kind::tx(msg::RadioTxReq {
