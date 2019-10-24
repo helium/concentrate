@@ -171,7 +171,7 @@ pub fn serialize(rng: &mut rand::ThreadRng, pkt: &msg::LongFiTxPacket) -> Option
                 })),
                 ..Default::default()
             })
-        },
+        }
         _ => None,
     }
 }
