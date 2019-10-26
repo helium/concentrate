@@ -21,7 +21,7 @@ radio = 0
 if = -300_000
 
 [[multirate_channels]]
-radio =  )
+radio = 0
 if = -100_000
 
 [[multirate_channels]]
