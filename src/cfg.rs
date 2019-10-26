@@ -121,14 +121,14 @@ mod tests {
             radios: Some(vec![
                 Radio {
                     id: 0,
-                    freq: 916_600_000,
+                    freq: 916_400_000,
                     rssi_offset: -169.0,
                     type_: "SX1257".to_string(),
                     tx_enable: true,
                 },
                 Radio {
                     id: 1,
-                    freq: 920_600_000,
+                    freq: 917_200_000,
                     rssi_offset: -169.0,
                     type_: "SX1257".to_string(),
                     tx_enable: false,
@@ -136,30 +136,36 @@ mod tests {
             ]),
             multirate_channels: Some(vec![
                 MultirateLoraChannel {
+                    radio: 0,
+                    if_: -300_000,
+                },
+                MultirateLoraChannel {
+                    radio: 0,
+                    if_: -100_000,
+                },
+                MultirateLoraChannel {
+                    radio: 0,
+                    if_: 100_000,
+                },
+                MultirateLoraChannel {
+                    radio: 0,
+                    if_: 300_000,
+                },
+                MultirateLoraChannel {
                     radio: 1,
-                    if_: -400_000,
+                    if_: -300_000,
                 },
                 MultirateLoraChannel {
                     radio: 1,
-                    if_: -200_000,
-                },
-                MultirateLoraChannel { radio: 1, if_: 0 },
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: -400_000,
+                    if_: -100_000,
                 },
                 MultirateLoraChannel {
-                    radio: 0,
-                    if_: -200_000,
-                },
-                MultirateLoraChannel { radio: 0, if_: 0 },
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: 200_000,
+                    radio: 1,
+                    if_: 100_000,
                 },
                 MultirateLoraChannel {
-                    radio: 0,
-                    if_: 400_000,
+                    radio: 1,
+                    if_: 300_000,
                 },
             ]),
             tx_gains: Some(vec![
