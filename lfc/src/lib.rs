@@ -14,20 +14,17 @@ use rand::Rng;
 const ONION_OUI: u32 = 0;
 const ONION_DID: u32 = 1;
 
-const RADIO_1: u32 = 920_600_000;
-const RADIO_2: u32 = 916_600_000;
-const FREQ_SPACING: u32 = 200_000;
 const LONGFI_NUM_UPLINK_CHANNELS: usize = 8;
 
 const CHANNEL: [u32; LONGFI_NUM_UPLINK_CHANNELS as usize] = [
-    RADIO_1 - FREQ_SPACING * 2,
-    RADIO_1 - FREQ_SPACING,
-    RADIO_1,
-    RADIO_2 - FREQ_SPACING * 2,
-    RADIO_2 - FREQ_SPACING,
-    RADIO_2,
-    RADIO_2 + FREQ_SPACING,
-    RADIO_2 + FREQ_SPACING * 2,
+    916_000_000,
+    916_200_000,
+    916_400_000,
+    916_600_000,
+    916_800_000,
+    917_000_000,
+    917_200_000,
+    917_400_000,
 ];
 
 pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
