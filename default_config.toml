@@ -5,14 +5,14 @@ clksrc = 1
 [[radios]]
 id = 0
 type = 'SX1257'
-freq = 916_400_000
+freq = 916_300_000
 rssi_offset = -169.0
 tx_enable = true
 
 [[radios]]
 id = 1
 type = 'SX1257'
-freq = 917_200_000
+freq = 917_100_000
 rssi_offset = -169.0
 tx_enable = false
 
