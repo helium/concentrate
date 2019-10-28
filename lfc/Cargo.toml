@@ -1,14 +1,10 @@
 [package]
-name = "longfi-hotspot"
+name = "lfc"
 version = "0.1.0"
 edition = "2018"
 authors = ["Louis Thiery <louis@helium.com>"]
 
 [dependencies]
-lfc = {path = "../lfc"}
+lfc-sys = { path = "../lfc-sys" }
 messages = { path = "../messages" }
-mio = "0.6"
-protobuf = "2.5.0"
-log = "0.4.6"
 rand = "0.3"
-

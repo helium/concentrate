@@ -5,48 +5,48 @@ clksrc = 1
 [[radios]]
 id = 0
 type = 'SX1257'
-freq = 916_600_000
+freq = 916_300_000
 rssi_offset = -169.0
 tx_enable = true
 
 [[radios]]
 id = 1
 type = 'SX1257'
-freq = 920_600_000
+freq = 917_100_000
 rssi_offset = -169.0
 tx_enable = false
 
 [[multirate_channels]]
+radio = 0
+if = -300_000
+
+[[multirate_channels]]
+radio = 0
+if = -100_000
+
+[[multirate_channels]]
+radio = 0
+if = 100_000
+
+[[multirate_channels]]
+radio = 0
+if = 300_000
+
+[[multirate_channels]]
 radio = 1
-if = -400_000
-
-[[multirate_channels]]
-radio =  1
-if = -200_000
+if = -300_000
 
 [[multirate_channels]]
 radio = 1
-if = 0
+if = -100_000
 
 [[multirate_channels]]
-radio = 0
-if = -400_000
+radio = 1
+if = 100_000
 
 [[multirate_channels]]
-radio = 0
-if = -200_000
-
-[[multirate_channels]]
-radio = 0
-if = 0
-
-[[multirate_channels]]
-radio = 0
-if = 200_000
-
-[[multirate_channels]]
-radio = 0
-if = 400_000
+radio = 1
+if = 300_000
 
 [[tx_gains]]
 dbm = -11

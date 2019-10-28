@@ -2,3 +2,6 @@
 	path = messages/proto
 	url = https://github.com/helium/proto.git
 	branch = master
+[submodule "lfc-sys/longfi-core"]
+	path = lfc-sys/longfi-core
+	url = git@github.com:helium/longfi-core.git
