@@ -121,14 +121,14 @@ mod tests {
             radios: Some(vec![
                 Radio {
                     id: 0,
-                    freq: 916_400_000,
+                    freq: 916_300_000,
                     rssi_offset: -169.0,
                     type_: "SX1257".to_string(),
                     tx_enable: true,
                 },
                 Radio {
                     id: 1,
-                    freq: 917_200_000,
+                    freq: 917_100_000,
                     rssi_offset: -169.0,
                     type_: "SX1257".to_string(),
                     tx_enable: false,
