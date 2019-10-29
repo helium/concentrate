@@ -4,4 +4,4 @@
 	branch = master
 [submodule "lfc-sys/longfi-core"]
 	path = lfc-sys/longfi-core
-	url = https://github.com:helium/longfi-core.git
+	url = https://github.com/helium/longfi-core.git
