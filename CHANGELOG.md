@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.5 (2019-11-07)
+==================
+Feature enhancements:
+
+* [#45](https://github.com/helium/concentrate/pull/45):
+  Add tag bits to proto message.
+
 0.2.4 (2019-10-01)
 ==================
 Bug fixes:
