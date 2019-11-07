@@ -78,6 +78,7 @@ pub fn parse(pkt: &messages::RadioRxPacket) -> Option<LongFiPkt> {
                     spreading: Spreading::SF10,
                     quality,
                     crc_fails: 0,
+                    tag_bits: monolitic_tag_bits(monolithic),
                 })
             }
             LfcDg::lfc_dg_type_frame_start => {
@@ -192,6 +193,7 @@ pub struct LongFiPkt {
     spreading: Spreading,
     quality: Vec<Quality>,
     crc_fails: usize,
+    tag_bits: u16,
 }
 
 impl LongFiPkt {
@@ -227,12 +229,13 @@ impl From<LongFiPkt> for LongFiRxPacket {
             timestamp: other.timestamp,
             rssi: other.rssi,
             snr: other.snr,
-            oui: other.oui as u32,
+            oui: other.oui,
             device_id: other.device_id,
             fingerprint: other.fingerprint,
             payload: other.payload,
             sequence: other.sequence,
             spreading: other.spreading,
+            tag_bits: u32::from(other.tag_bits),
             // special fields
             unknown_fields: Default::default(),
             cached_size: Default::default(),
@@ -256,4 +259,15 @@ impl PartialEq for LongFiPkt {
     fn eq(&self, other: &Self) -> bool {
         self.oui == other.oui && self.device_id == other.device_id && self.payload == other.payload
     }
+}
+
+fn monolitic_tag_bits(dg: &MonolithicDg) -> u16 {
+    let tag_bits = (LfcDg::lfc_dg_type_monolithic as u16) << 6
+        | (dg.flags.ldpc as u16) << 4
+        | (dg.flags.priority as u16) << 3
+        | (dg.flags.cts_rts as u16) << 2
+        | (dg.flags.should_ack as u16) << 1
+        | dg.flags.downlink as u16;
+    debug_assert_eq!(0, tag_bits & 0b1111_0000_0000_0000);
+    tag_bits
 }
