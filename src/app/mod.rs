@@ -20,10 +20,10 @@ pub use self::send::*;
 pub use self::serve::*;
 
 fn print_at_level<T: fmt::Debug>(print_level: u8, pkt: &T) {
-    if print_level > 1 {
-        println!("{:#?}\n", pkt);
-    } else if print_level == 1 {
-        println!("{:?}\n", pkt);
+    match print_level {
+        0 => (),
+        1 => println!("{:?}\n", pkt),
+        _ => println!("{:#?}\n", pkt),
     }
 }
 
