@@ -19,7 +19,7 @@ Bug fixes:
   A bugfix.
 -->
 
-0.2.5 (2019-11-07)
+0.2.6 (2019-11-08)
 ==================
 Feature enhancements:
 
