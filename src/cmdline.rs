@@ -33,6 +33,11 @@ pub enum Cmd {
     /// clients.
     #[structopt(name = "serve")]
     Serve(Serve),
+
+    /// Check connection to concentrator chip and immediately exit
+    /// with status code.
+    #[structopt(name = "connect")]
+    Connect,
 }
 
 #[derive(Debug, StructOpt)]

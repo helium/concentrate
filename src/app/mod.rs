@@ -6,6 +6,7 @@ use std::{
 };
 
 mod bist;
+mod connect;
 mod listen;
 mod longfi;
 mod longfi_test;
@@ -13,6 +14,7 @@ mod send;
 mod serve;
 
 pub use self::bist::*;
+pub use self::connect::*;
 pub use self::listen::*;
 pub use self::longfi::*;
 pub use self::longfi_test::*;

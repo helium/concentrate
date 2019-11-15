@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+next-release
+==================
+Feature enhancements:
+
+* [#46](https://github.com/helium/concentrate/pull/46):
+  Add connect `subcommand`.
+
 0.2.6 (2019-11-08)
 ==================
 Feature enhancements:
