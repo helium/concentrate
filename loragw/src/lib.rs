@@ -137,6 +137,15 @@ impl Concentrator {
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
         Ok(())
     }
+
+    /// Attempt to connect to concentrator.
+    ///
+    /// This function is intended to check if we the concentrator chip
+    /// exists and is the correct version.
+    pub fn connect(&self) -> Result {
+        unsafe { hal_call!(lgw_connect(false, 0)) }?;
+        Ok(())
+    }
 }
 
 // Private functions.

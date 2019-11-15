@@ -36,6 +36,7 @@ fn go(cmd: cmdline::Cmd) -> AppResult {
 
     match cmd {
         Bist => app::built_in_self_test(),
+        Connect => app::connect(),
         Listen(args) => app::listen(args),
         LongFi(args) => app::longfi(args),
         LongFiTest(args) => app::longfi_test(args),
