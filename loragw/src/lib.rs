@@ -14,6 +14,7 @@ use libloragw_sys as llg;
 use std::{
     cell::Cell,
     convert::{TryFrom, TryInto},
+    ffi::CStr,
     marker::PhantomData,
     ops,
     sync::atomic::{AtomicBool, Ordering},
@@ -153,8 +154,8 @@ impl Concentrator {
     ///
     /// This function is intended to check if we the concentrator chip
     /// exists and is the correct version.
-    pub fn connect(&self) -> Result {
-        unsafe { hal_call!(lgw_connect(false, 0)) }?;
+    pub fn connect(&self, spidev_path: &CStr) -> Result {
+        unsafe { hal_call!(lgw_connect(spidev_path.as_ptr())) }?;
         Ok(())
     }
 }
