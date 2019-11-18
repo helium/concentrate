@@ -1,6 +1,6 @@
 [package]
 name = "concentrate"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2018"
 authors = ["Jay Kickliter <jay@kickliter.com>", "Louis Thiery <louis@helium.com>"]
 
