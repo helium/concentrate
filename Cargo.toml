@@ -30,10 +30,18 @@ optional = true
 version = "2.0.0"
 optional = true
 
+# NOTE: configuring concentrate's hardware support (SX1301
+# v.s. SX1302) is not ideal. In fact, it's pretty horrible. Ideally,
+# we'd be able to link both `libloragw` `-sys` crates at the same
+# time, but we're prevented due to c linkgage and the external
+# libraries' ecessive use of non fake-namespaced c globals. We still
+# have other options, and will revisit those options in the future.
 [features]
 default = ["log_sys"]
 log_env = ["env_logger", "log-panics"]
 log_sys = ["syslog", "log-panics"]
+sx1301  = ["loragw/sx1301"]
+sx1302  = ["loragw/sx1302"]
 
 [workspace]
 members = [

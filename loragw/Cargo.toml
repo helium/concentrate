@@ -4,10 +4,21 @@ version = "0.2.0"
 edition = "2018"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 
+[features]
+sx1301 = ["libloragw-sx1301-sys"]
+sx1302 = ["libloragw-sx1302-sys"]
+
 [dependencies]
-llg = { package = "libloragw-sx1301-sys", path = "../libloragw-sx1301-sys" }
 log = "0.4.6"
 quick-error = "1.2.2"
+
+[dependencies.libloragw-sx1301-sys]
+optional = true
+path = "../libloragw-sx1301-sys"
+
+[dependencies.libloragw-sx1302-sys]
+optional = true
+path = "../libloragw-sx1302-sys"
 
 [dev-dependencies]
 lazy_static = "*"

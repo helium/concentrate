@@ -30,12 +30,12 @@ quick_error! {
     }
 }
 
-/// Wraps a `libloragw-sx1301-sys` function call and:
+/// Wraps a `libloragw-sys` function call and:
 /// - wraps the return code in a `Result`
 /// - logs name of FFI function on error
 macro_rules! hal_call{
     ( $fn:ident ( $($arg:expr),* ) ) => {
-        match llg::$fn ( $($arg),* ) {
+        match crate::llg::$fn ( $($arg),* ) {
             -1 => {
                 log::error!("HAL call {} returned an error", stringify!($fn));
                 Err($crate::error::Error::HAL)

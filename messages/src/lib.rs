@@ -63,9 +63,13 @@ impl From<longfi::LongFiSpreading> for Spreading {
 impl From<loragw::Bandwidth> for Bandwidth {
     fn from(other: loragw::Bandwidth) -> Bandwidth {
         match other {
+            #[cfg(feature = "sx1301")]
             loragw::Bandwidth::BW7_8kHz => Bandwidth::BW7_8kHz,
+            #[cfg(feature = "sx1301")]
             loragw::Bandwidth::BW15_6kHz => Bandwidth::BW15_6kHz,
+            #[cfg(feature = "sx1301")]
             loragw::Bandwidth::BW31_2kHz => Bandwidth::BW31_2kHz,
+            #[cfg(feature = "sx1301")]
             loragw::Bandwidth::BW62_5kHz => Bandwidth::BW62_5kHz,
             loragw::Bandwidth::BW125kHz => Bandwidth::BW125kHz,
             loragw::Bandwidth::BW250kHz => Bandwidth::BW250kHz,
@@ -78,9 +82,13 @@ impl From<loragw::Bandwidth> for Bandwidth {
 impl From<Bandwidth> for loragw::Bandwidth {
     fn from(other: Bandwidth) -> loragw::Bandwidth {
         match other {
+            #[cfg(feature = "sx1301")]
             Bandwidth::BW7_8kHz => loragw::Bandwidth::BW7_8kHz,
+            #[cfg(feature = "sx1301")]
             Bandwidth::BW15_6kHz => loragw::Bandwidth::BW15_6kHz,
+            #[cfg(feature = "sx1301")]
             Bandwidth::BW31_2kHz => loragw::Bandwidth::BW31_2kHz,
+            #[cfg(feature = "sx1301")]
             Bandwidth::BW62_5kHz => loragw::Bandwidth::BW62_5kHz,
             Bandwidth::BW125kHz => loragw::Bandwidth::BW125kHz,
             Bandwidth::BW250kHz => loragw::Bandwidth::BW250kHz,
