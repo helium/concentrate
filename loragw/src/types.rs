@@ -1,5 +1,5 @@
 use crate::error;
-use crate::llg;
+use llg;
 use std::{convert::TryFrom, fmt, time};
 
 const MOD_LORA: u8 = 0x10;
