@@ -38,6 +38,7 @@ log_sys = ["syslog", "log-panics"]
 [workspace]
 members = [
 "libloragw-sx1301-sys",
+"libloragw-sx1302-sys",
 "longfi-hotspot",
 "loragw",
 "messages",

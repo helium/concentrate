@@ -1,0 +1,9 @@
+[package]
+name = "libloragw-sx1302-sys"
+version = "0.1.0"
+edition = "2018"
+authors = ["Jay Kickliter <jay@kickliter.com>"]
+build = "build.rs"
+
+[build-dependencies]
+cc = "1.0.37"
