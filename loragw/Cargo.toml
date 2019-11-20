@@ -5,7 +5,7 @@ edition = "2018"
 authors = ["Jay Kickliter <jay@kickliter.com>"]
 
 [dependencies]
-libloragw-sys = { path = "../libloragw-sys" }
+libloragw-sx1301-sys = { path = "../libloragw-sx1301-sys" }
 log = "0.4.6"
 quick-error = "1.2.2"
 

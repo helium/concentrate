@@ -10,7 +10,7 @@ mod error;
 mod types;
 pub use crate::error::*;
 pub use crate::types::*;
-use libloragw_sys as llg;
+use libloragw_sx1301_sys as llg;
 use std::{
     cell::Cell,
     convert::{TryFrom, TryInto},
