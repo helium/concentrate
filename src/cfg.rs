@@ -1,9 +1,13 @@
 use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
+use std::{convert::TryFrom, ffi::CString};
 use toml;
 
-static DEFAULT_CFG_TOML: &str = include_str!("../default_config.toml");
+#[cfg(feature = "sx1301")]
+static DEFAULT_CFG_TOML: &str = include_str!("../default_config_sx1301.toml");
+
+#[cfg(feature = "sx1302")]
+static DEFAULT_CFG_TOML: &str = include_str!("../default_config_sx1302.toml");
 
 /// Represents top-level configuration document.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -28,8 +32,7 @@ impl Config {
 pub struct Board {
     pub lorawan_public: bool,
     pub clksrc: u32,
-    #[cfg(feature = "sx1302")]
-    pub spidev_path: ::std::ffi::CString,
+    pub spidev_path: CString,
 }
 
 impl TryFrom<Board> for loragw::BoardConf {
@@ -38,7 +41,6 @@ impl TryFrom<Board> for loragw::BoardConf {
         Ok(Self {
             lorawan_public: other.lorawan_public,
             clksrc: loragw::Radio::try_from(other.clksrc)?,
-            #[cfg(feature = "sx1302")]
             spidev_path: other.spidev_path,
         })
     }
@@ -113,166 +115,5 @@ impl From<TxGain> for loragw::TxGain {
             #[cfg(feature = "sx1302")]
             pwr_id: 0,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_deserialize_radioconfig() {
-        let parsed_config = toml::from_str::<Config>(DEFAULT_CFG_TOML).unwrap();
-        let reference_config = Config {
-            board: Board {
-                lorawan_public: false,
-                clksrc: 1,
-                spidev_path: CString::new("/dev/spidev0.0")
-                    .expect("path not representable as a C string"),
-            },
-            radios: Some(vec![
-                Radio {
-                    id: 0,
-                    freq: 916_300_000,
-                    rssi_offset: -207.0,
-                    type_: "SX1250".to_string(),
-                    tx_enable: true,
-                },
-                Radio {
-                    id: 1,
-                    freq: 917_100_000,
-                    rssi_offset: -207.0,
-                    type_: "SX1250".to_string(),
-                    tx_enable: false,
-                },
-            ]),
-            multirate_channels: Some(vec![
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: -300_000,
-                },
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: -100_000,
-                },
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: 100_000,
-                },
-                MultirateLoraChannel {
-                    radio: 0,
-                    if_: 300_000,
-                },
-                MultirateLoraChannel {
-                    radio: 1,
-                    if_: -300_000,
-                },
-                MultirateLoraChannel {
-                    radio: 1,
-                    if_: -100_000,
-                },
-                MultirateLoraChannel {
-                    radio: 1,
-                    if_: 100_000,
-                },
-                MultirateLoraChannel {
-                    radio: 1,
-                    if_: 300_000,
-                },
-            ]),
-            tx_gains: Some(vec![
-                TxGain {
-                    rf_power: -11,
-                    dig_gain: 3,
-                    pa_gain: 0,
-                    mix_gain: 8,
-                },
-                TxGain {
-                    rf_power: -7,
-                    dig_gain: 3,
-                    pa_gain: 0,
-                    mix_gain: 10,
-                },
-                TxGain {
-                    rf_power: -4,
-                    dig_gain: 1,
-                    pa_gain: 0,
-                    mix_gain: 10,
-                },
-                TxGain {
-                    rf_power: -1,
-                    dig_gain: 2,
-                    pa_gain: 0,
-                    mix_gain: 14,
-                },
-                TxGain {
-                    rf_power: 3,
-                    dig_gain: 3,
-                    pa_gain: 1,
-                    mix_gain: 10,
-                },
-                TxGain {
-                    rf_power: 9,
-                    dig_gain: 2,
-                    pa_gain: 1,
-                    mix_gain: 12,
-                },
-                TxGain {
-                    rf_power: 10,
-                    dig_gain: 1,
-                    pa_gain: 1,
-                    mix_gain: 12,
-                },
-                TxGain {
-                    rf_power: 11,
-                    dig_gain: 0,
-                    pa_gain: 1,
-                    mix_gain: 12,
-                },
-                TxGain {
-                    rf_power: 12,
-                    dig_gain: 2,
-                    pa_gain: 1,
-                    mix_gain: 14,
-                },
-                TxGain {
-                    rf_power: 15,
-                    dig_gain: 1,
-                    pa_gain: 2,
-                    mix_gain: 11,
-                },
-                TxGain {
-                    rf_power: 18,
-                    dig_gain: 1,
-                    pa_gain: 2,
-                    mix_gain: 13,
-                },
-                TxGain {
-                    rf_power: 19,
-                    dig_gain: 2,
-                    pa_gain: 2,
-                    mix_gain: 15,
-                },
-                TxGain {
-                    rf_power: 22,
-                    dig_gain: 2,
-                    pa_gain: 3,
-                    mix_gain: 10,
-                },
-                TxGain {
-                    rf_power: 23,
-                    dig_gain: 1,
-                    pa_gain: 3,
-                    mix_gain: 10,
-                },
-                TxGain {
-                    rf_power: 28,
-                    dig_gain: 1,
-                    pa_gain: 3,
-                    mix_gain: 14,
-                },
-            ]),
-        };
-        assert_eq!(reference_config, parsed_config);
     }
 }

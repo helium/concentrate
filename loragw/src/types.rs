@@ -179,7 +179,6 @@ pub struct BoardConf {
     /// Index of RF chain which provides clock to concentrator.
     pub clksrc: Radio,
     /// Path to SPI device.
-    #[cfg(feature = "sx1302")]
     pub spidev_path: ::std::ffi::CString,
 }
 
