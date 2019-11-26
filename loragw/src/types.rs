@@ -675,6 +675,7 @@ pub struct TxPacketFSK {
 impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
     type Error = error::Error;
 
+    #[cfg_attr(feature = "sx1301", allow(clippy::needless_update))]
     fn try_from(other: TxPacket) -> Result<Self, error::Error> {
         match other {
             TxPacket::LoRa(other) => {
