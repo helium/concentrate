@@ -6,8 +6,11 @@ env:
 
 rust:
   - stable
-  - beta
   - nightly
+
+env:
+  - FEATURES=sx1301
+  - FEATURES=sx1302
 
 matrix:
   fast_finish: true
@@ -18,9 +21,4 @@ before_script:
   - rustup component add clippy
   - rustup component add rustfmt
 
-script:
-  - cargo build
-  - cargo test
-  - cargo clippy -- -D clippy::all
-  - cargo run -- --help
-  - cargo fmt -- --check
+script: ci/script.sh

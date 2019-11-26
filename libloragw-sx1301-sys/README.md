@@ -1,4 +1,4 @@
-# `libloragw-sys`
+# `libloragw-sx1301-sys`
 
 Low-level bindings to Semtech's
 [`libloragw`](https://github.com/Lora-net/lora_gateway/tree/master/libloragw),

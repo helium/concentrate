@@ -1,6 +1,7 @@
 [board]
 lorawan_public = false
 clksrc = 1
+spidev_path = "/dev/spidev0.0"
 
 [[radios]]
 id = 0

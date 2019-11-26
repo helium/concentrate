@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.8 (2019-11-26)
+==================
+Housekeeping:
+
+* [#47](https://github.com/helium/concentrate/pull/47):
+  Add SX1302 support.
+
 0.2.7 (2019-11-18)
 ==================
 Feature enhancements:

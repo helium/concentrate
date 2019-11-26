@@ -35,7 +35,7 @@ quick_error! {
 /// - logs name of FFI function on error
 macro_rules! hal_call{
     ( $fn:ident ( $($arg:expr),* ) ) => {
-        match libloragw_sys::$fn ( $($arg),* ) {
+        match crate::llg::$fn ( $($arg),* ) {
             -1 => {
                 log::error!("HAL call {} returned an error", stringify!($fn));
                 Err($crate::error::Error::HAL)

@@ -5,12 +5,17 @@
 //! [SX1301](https://www.semtech.com/products/wireless-rf/lora-gateways/sx1301)
 //! concentrator chip.
 
+#[cfg(not(any(feature = "sx1301", feature = "sx1302")))]
+compile_error!("Either feature \"sx1301\" or \"sx1302\" must be enabled for this crate.");
+
+#[cfg(all(feature = "sx1301", feature = "sx1302"))]
+compile_error!("Features \"sx1301\" or \"sx1302\" are mutually exclusive.");
+
 #[macro_use]
 mod error;
 mod types;
 pub use crate::error::*;
 pub use crate::types::*;
-use libloragw_sys as llg;
 use std::{
     cell::Cell,
     convert::{TryFrom, TryInto},
@@ -19,6 +24,12 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
     thread, time,
 };
+
+#[cfg(feature = "sx1301")]
+pub(crate) use libloragw_sx1301_sys as llg;
+
+#[cfg(feature = "sx1302")]
+pub(crate) use libloragw_sx1302_sys as llg;
 
 // Ensures we only have 0 or 1 gateway instances opened at a time.
 // This is not a great solution, since another process has its
@@ -50,21 +61,30 @@ impl Concentrator {
     /// Configure the gateway board.
     pub fn config_board(&self, conf: &BoardConf) -> Result {
         log::debug!("conf: {:?}", conf);
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_board_setconf(conf.into())) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe { hal_call!(lgw_board_setconf(&mut conf.into())) }?;
         Ok(())
     }
 
     /// Configure an RF chain.
     pub fn config_rx_rf(&self, conf: &RxRFConf) -> Result {
         log::debug!("{:?}", conf);
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, conf.into())) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe { hal_call!(lgw_rxrf_setconf(conf.radio as u8, &mut conf.into())) }?;
         Ok(())
     }
 
     /// Configure an IF chain + modem (must configure before start).
     pub fn config_channel(&self, chain: u8, conf: &ChannelConf) -> Result {
         log::debug!("chain: {}, conf: {:?}", chain, conf);
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_rxif_setconf(chain, conf.into())) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe { hal_call!(lgw_rxif_setconf(chain, &mut conf.into())) }?;
         Ok(())
     }
 
@@ -83,6 +103,9 @@ impl Concentrator {
         lut.size = gains.len() as u8;
         unsafe {
             hal_call!(lgw_txgain_setconf(
+                // TODO: de-hardcode
+                #[cfg(feature = "sx1302")]
+                0,
                 &mut lut as *mut TxGainLUT as *mut llg::lgw_tx_gain_lut_s
             ))
         }?;
@@ -107,7 +130,19 @@ impl Concentrator {
     pub fn receive_status(&self) -> Result<RxStatus> {
         const RX_STATUS: u8 = 2;
         let mut rx_status = 0xFE;
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_status(RX_STATUS, &mut rx_status)) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe {
+            hal_call!(lgw_status(
+                {
+                    log::warn!("remove hardcoded RF chain argument from status calls");
+                    0u8
+                },
+                RX_STATUS,
+                &mut rx_status
+            ))
+        }?;
         rx_status.try_into()
     }
 
@@ -134,7 +169,10 @@ impl Concentrator {
             log::trace!("transmitter is busy, sleeping for {:?}", SLEEP_TIME);
             thread::sleep(SLEEP_TIME);
         }
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_send(packet.try_into()?)) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe { hal_call!(lgw_send(&mut packet.try_into()?)) }?;
         Ok(())
     }
 
@@ -142,8 +180,19 @@ impl Concentrator {
     ///
     /// This function is intended to check if we the concentrator chip
     /// exists and is the correct version.
+    #[cfg(feature = "sx1301")]
     pub fn connect(&self) -> Result {
         unsafe { hal_call!(lgw_connect(false, 0)) }?;
+        Ok(())
+    }
+
+    /// Attempt to connect to concentrator.
+    ///
+    /// This function is intended to check if we the concentrator chip
+    /// exists and is the correct version.
+    #[cfg(feature = "sx1302")]
+    pub fn connect(&self, spidev_path: &::std::ffi::CStr) -> Result {
+        unsafe { hal_call!(lgw_connect(spidev_path.as_ptr())) }?;
         Ok(())
     }
 }
@@ -158,7 +207,19 @@ impl Concentrator {
     fn transmit_status(&self) -> Result<TxStatus> {
         const TX_STATUS: u8 = 1;
         let mut tx_status = 0xFE;
+        #[cfg(feature = "sx1301")]
         unsafe { hal_call!(lgw_status(TX_STATUS, &mut tx_status)) }?;
+        #[cfg(feature = "sx1302")]
+        unsafe {
+            hal_call!(lgw_status(
+                {
+                    log::warn!("remove hardcoded RF chain argument from status calls");
+                    0u8
+                },
+                TX_STATUS,
+                &mut tx_status
+            ))
+        }?;
         tx_status.try_into()
     }
 }
