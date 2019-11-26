@@ -1,5 +1,4 @@
-use crate::error;
-use crate::llg;
+use crate::{error, llg};
 use std::{convert::TryFrom, fmt, time};
 
 const MOD_LORA: u8 = 0x10;
@@ -36,6 +35,22 @@ impl TryFrom<&str> for RadioType {
 }
 
 /// Spreading factor.
+#[cfg(feature = "sx1301")]
+#[derive(Debug, Clone, Copy)]
+#[allow(missing_docs)]
+pub enum Spreading {
+    Undefined = 0x00,
+    SF7 = 0x02,
+    SF8 = 0x04,
+    SF9 = 0x08,
+    SF10 = 0x10,
+    SF11 = 0x20,
+    SF12 = 0x40,
+    Multi = 0x7E,
+}
+
+/// Spreading factor.
+#[cfg(feature = "sx1302")]
 #[derive(Debug, Clone, Copy)]
 #[allow(missing_docs)]
 pub enum Spreading {
@@ -53,6 +68,23 @@ pub enum Spreading {
 
 impl TryFrom<u32> for Spreading {
     type Error = error::Error;
+
+    #[cfg(feature = "sx1301")]
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        Ok(match other {
+            0x00 => Spreading::Undefined,
+            0x02 => Spreading::SF7,
+            0x04 => Spreading::SF8,
+            0x08 => Spreading::SF9,
+            0x10 => Spreading::SF10,
+            0x20 => Spreading::SF11,
+            0x40 => Spreading::SF12,
+            0x7E => Spreading::Multi,
+            _ => return Err(error::Error::Data),
+        })
+    }
+
+    #[cfg(feature = "sx1302")]
     fn try_from(other: u32) -> Result<Self, error::Error> {
         Ok(match other {
             0 => Spreading::Undefined,
@@ -74,6 +106,29 @@ impl TryFrom<u32> for Spreading {
 }
 
 /// Configured receive bandwidth.
+#[cfg(feature = "sx1301")]
+#[derive(Debug, Clone, Copy)]
+pub enum Bandwidth {
+    /// Auto bandwidth.
+    Undefined = 0,
+    /// 500 kHz.
+    BW500kHz = 0x01,
+    /// 250 kHz.
+    BW250kHz = 0x02,
+    /// 125 kHz.
+    BW125kHz = 0x03,
+    /// 62.5 kHz
+    BW62_5kHz = 0x04,
+    /// 31.2 kHz.
+    BW31_2kHz = 0x05,
+    /// 15.6 kHz.
+    BW15_6kHz = 0x06,
+    /// 7.8 kHz.
+    BW7_8kHz = 0x07,
+}
+
+/// Configured receive bandwidth.
+#[cfg(feature = "sx1302")]
 #[derive(Debug, Clone, Copy)]
 pub enum Bandwidth {
     /// Auto bandwidth.
@@ -88,6 +143,26 @@ pub enum Bandwidth {
 
 impl TryFrom<u32> for Bandwidth {
     type Error = error::Error;
+
+    #[cfg(feature = "sx1301")]
+    fn try_from(other: u32) -> Result<Self, error::Error> {
+        Ok(match other {
+            0 => Bandwidth::Undefined,
+            0x01 => Bandwidth::BW500kHz,
+            0x02 => Bandwidth::BW250kHz,
+            0x03 => Bandwidth::BW125kHz,
+            0x04 => Bandwidth::BW62_5kHz,
+            0x05 => Bandwidth::BW31_2kHz,
+            0x06 => Bandwidth::BW15_6kHz,
+            0x07 => Bandwidth::BW7_8kHz,
+            invalid => {
+                log::error!("unable to convert {:?} to Bandwidth", invalid);
+                return Err(error::Error::Data);
+            }
+        })
+    }
+
+    #[cfg(feature = "sx1302")]
     fn try_from(other: u32) -> Result<Self, error::Error> {
         Ok(match other {
             0 => Bandwidth::Undefined,
@@ -676,6 +751,7 @@ impl TryFrom<TxPacket> for llg::lgw_pkt_tx_s {
 #[derive(Debug, Clone, Default)]
 pub struct TxGain {
     /// Measured TX power at the board connector (in dBm).
+    #[cfg(feature = "sx1302")]
     pub rf_power: i8,
     /// Control of the digital gain of SX1301 (2 bits).
     pub dig_gain: u8,
@@ -685,6 +761,9 @@ pub struct TxGain {
     pub dac_gain: u8,
     /// control of the radio mixer (4 bits).
     pub mix_gain: u8,
+    /// Measured TX power at the board connector (in dBm).
+    #[cfg(feature = "sx1301")]
+    pub rf_power: i8,
     /// (sx125x) calibrated I offset.
     #[cfg(feature = "sx1302")]
     pub offset_i: i8,
