@@ -7,4 +7,4 @@
 	url = https://github.com/helium/longfi-core.git
 [submodule "libloragw-sx1302-sys/vendor/sx1302_hal"]
 	path = libloragw-sx1302-sys/vendor/sx1302_hal
-	url = git@github.com:Lora-net/sx1302_hal.git
+	url = https://github.com/Lora-net/sx1302_hal.git
