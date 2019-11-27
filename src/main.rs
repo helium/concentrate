@@ -6,30 +6,37 @@ mod cmdline;
 mod error;
 
 use crate::error::AppResult;
-use std::process;
+use env_logger;
+use std::{env, process};
 use structopt::StructOpt;
+use syslog;
 
-#[cfg(feature = "log_env")]
-fn init_logging() {
-    use env_logger::{Builder, Env};
-    Builder::from_env(
-        Env::new()
-            .filter("CONCENTRATE_LOG")
-            .write_style("CONCENTRATE_LOG_STYLE"),
-    )
-    .init();
-    log_panics::init();
+fn main() {
+    init_logging();
+    let cmd = cmdline::Cmd::from_args();
+    match go(cmd) {
+        Ok(()) => process::exit(0),
+        Err(e) => {
+            eprintln!("{} {}", "error:", e);
+            process::exit(1);
+        }
+    }
 }
 
-#[cfg(feature = "log_sys")]
 fn init_logging() {
-    use syslog::*;
-    init_unix(Facility::LOG_USER, log::LevelFilter::Debug).unwrap();
+    const CONCENTRATE_LOG: &str = "CONCENTRATE_LOG";
+    if env::var(CONCENTRATE_LOG).is_ok() {
+        env_logger::Builder::from_env(
+            env_logger::Env::new()
+                .filter("CONCENTRATE_LOG")
+                .write_style("CONCENTRATE_LOG_STYLE"),
+        )
+        .init();
+    } else {
+        syslog::init_unix(syslog::Facility::LOG_USER, log::LevelFilter::Debug).unwrap();
+    }
     log_panics::init();
 }
-
-#[cfg(not(any(feature = "log_env", feature = "log_sys")))]
-fn init_logging() {}
 
 fn go(cmd: cmdline::Cmd) -> AppResult {
     use crate::cmdline::Cmd::*;
@@ -42,17 +49,5 @@ fn go(cmd: cmdline::Cmd) -> AppResult {
         LongFiTest(args) => app::longfi_test(args),
         Send(args) => app::send(args),
         Serve(args) => app::serve(args),
-    }
-}
-
-fn main() {
-    init_logging();
-    let cmd = cmdline::Cmd::from_args();
-    match go(cmd) {
-        Ok(()) => process::exit(0),
-        Err(e) => {
-            eprintln!("{} {}", "error:", e);
-            process::exit(1);
-        }
     }
 }
