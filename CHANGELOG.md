@@ -19,6 +19,13 @@ Bug fixes:
   A bugfix.
 -->
 
+0.2.9 (2019-11-27)
+==================
+Feature enhancements:
+
+* [#48](https://github.com/helium/concentrate/pull/48):
+  Allow runtime choice of logging backend.
+
 0.2.8 (2019-11-26)
 ==================
 Housekeeping:

@@ -47,10 +47,6 @@ concentrate -p listen
 ```
 
 ### Notes
-To build with `log_env`:
-```
-~/concentrate/concentrate$ cargo build --no-default-features --features log_env
-```
 
 For 10.76.100.10: 
 ```
